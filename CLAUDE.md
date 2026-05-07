@@ -110,10 +110,6 @@ the user's first framing rather than examining it.
   surfaced or a new rule was established. The retrospective uses
   `### YYYY-MM-DD — Title` headers for entries. New entries append
   to the existing file.
-- Numbered sessions are full work sessions that progress the project.
-  Small post-session commits (rule additions, doc fixes) belong to
-  the previous full session and are not numbered as their own
-  session.
 
 ## Architecture in one paragraph
 
@@ -178,51 +174,32 @@ defer to these answers unless the principle is explicitly revisited.
   exists (ported from predecessor)
 - `docs/mockup.html` — the approved design (ported from predecessor)
 
+**Operator reference (not read by default):**
+- `OPERATING.md` — launch commands, permission-mode guidance, session
+  conventions, recovery patterns. For the human operator; not part of
+  Code's startup reading.
+
 **Archived (do not use as current source of truth):**
 - `docs/archive/*` — superseded plans and proposals.
 
 ## Predecessor project
 
-This plugin supersedes the booking-page CSS+JS project at
-`https://github.com/TripN-Chill-Zone/booking-page`. The pivot decision
-and reasoning are recorded in `docs/architecture-pivot-decision.md`.
-
-What ported forward: the retrospective rules, the design language and
-mockup, the Beds24 admin learnings, the Beds24 v2 API spike findings.
-
-What did not port forward: the CSS, JS, and helper files that styled
-Beds24's iframe; the GitHub Actions deployment chain; the
-astrongpresence.com hosting dependency. The new architecture renders
-its own DOM and ships via WordPress plugin installation.
+This plugin supersedes the predecessor CSS+JS project. Pivot decision and
+porting record: `docs/architecture-pivot-decision.md`. Operator context:
+`OPERATING.md`.
 
 ## Tooling
 
-This project uses two tools that shape how sessions run:
+Two tools shape how sessions run. Both are referenced in the startup
+reading list above.
 
-**Claude Code modes** sets the system prompt for the session. The project
-has named presets in `.claude-mode.json`; see `docs/tooling/claude-code-modes.md`
-for the phase-to-mode mapping and default invocation. The upstream reference
-is `docs/tooling/claude-code-modes-reference.md`. Repository: `nklisch/claude-code-modes`.
+**Claude Code modes** sets the system prompt for the session. Project
+presets are in `.claude-mode.json`. Phase-to-mode mapping and default
+invocation: `docs/tooling/claude-code-modes.md`. Upstream reference:
+`docs/tooling/claude-code-modes-reference.md`.
 
-**Crosslink** is the project's session memory and workflow engine.
-Adoption is staged: Session 1 (this scaffold) does not use Crosslink;
-Session 2 runs the adoption process and verifies fit; Sessions 3+ use
-Crosslink as the primary workflow tool. Full reasoning, command
-reference, and usage notes live in `docs/tooling/crosslink.md`. The
-repository is `forecast-bio/crosslink`.
-
-Future sessions read both tooling documents at session start so the
-in-session conversation knows what tools are in use without having to
-discover them.
-
-## Repository
-
-- **Repo:** `https://github.com/rock-solid-sites/beds24-booking-plugin`
-- **License:** GPL-2.0-or-later (required for WordPress plugin
-  ecosystem compatibility, including potential WP.org submission)
-- **Distribution:** GitHub releases (manual ZIP install or Git
-  Updater for automated updates). WP.org submission is a possible
-  future step.
+**Crosslink** is the session memory and workflow engine. Command
+reference and usage notes: `docs/tooling/crosslink.md`.
 
 ## Beds24 dependencies
 
