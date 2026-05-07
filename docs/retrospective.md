@@ -1297,3 +1297,43 @@ their state-check steps. The lesson generalizes: external state is
 multi-dimensional, and partial verification is a source of session
 halts that look like prompt failures but are really
 incomplete-prompt failures.
+
+---
+
+### 2026-05-07 — PowerShell default encoding corrupted .gitignore silently
+
+**Context:** Session 3 began with a `.gitignore` state check. Git
+reported `.claude/` as untracked despite the `.gitignore` appearing to
+contain a `.claude/` entry. The repo state didn't match the expected
+"clean working tree."
+
+**What happened:** The `.claude/` entry in `.gitignore` was written in
+a prior session using PowerShell's default encoding (UTF-16 LE with
+null bytes between each character: `.^@c^@l^@a^@u^@d^@e^@/`). Git's
+pattern matching requires UTF-8 — the null-byte-padded entry matched
+nothing. The file looked correct in any text editor that auto-detects
+encoding, so the corruption was invisible until a `cat -A` hex dump.
+
+**Root causes:**
+1. PowerShell's default `Out-File` encoding is UTF-16 LE. Writing
+   a gitignore line with `echo '.claude/' >> .gitignore` or
+   `".claude/" | Out-File .gitignore -Append` from PowerShell produces
+   UTF-16 LE output that git silently ignores.
+2. No post-write verification step — git status after the write would
+   have caught the mismatch immediately (`.claude/` would still show
+   as untracked).
+
+**Rules established:** When writing to configuration files from
+PowerShell, always use `-Encoding utf8` or use the Read/Write/Edit
+tools rather than PowerShell redirection operators. After writing to
+`.gitignore`, verify the intended path is actually ignored:
+`git check-ignore -v <path>` confirms whether the pattern matched.
+
+**Concrete cost:** One diagnostic pass at session start to identify the
+corruption. Low impact but would have silently admitted `.claude/`
+commits had the session added untracked files without noticing.
+
+**Resolution:** Truncated file at last clean UTF-8 line, rewrote the
+corrupted entry in UTF-8 using Python (the system Python at
+`/c/Python312/python`, not the store alias). Crosslink's init then
+replaced the ad-hoc entry with a properly managed gitignore block.
