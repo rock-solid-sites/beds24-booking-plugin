@@ -1,7 +1,6 @@
 # Tooling Decision: Crosslink as Workflow Engine
 
 **Date:** 2026-05-07
-**Status:** Adopted; Session 3 runs the round-trip verification.
 **Decision authority:** Project owner
 
 This document records the adoption of Crosslink as the project's primary
@@ -9,33 +8,8 @@ workflow tool and how to use it.
 
 ## What Crosslink is
 
-Crosslink is a CLI issue tracker and workflow engine built specifically
-for AI-assisted development. It provides:
-
-- **Persistent session memory** through handoff notes and breadcrumbs
-  that survive context compression
-- **Behavioral hooks** that run on every Claude Code action and enforce
-  project rules without manual prompting
-- **Design document workflow** (`/design`) that produces validated,
-  codebase-grounded design documents
-- **Implementation orchestration** (`crosslink kickoff plan` and
-  `kickoff run`) that drives single-agent or multi-agent
-  implementation against design documents
-- **Knowledge management** with searchable design and reference
-  documents
-- **Multi-agent coordination** through distributed locking via git
-- **Drift detection** that increases reminder frequency when an
-  agent's behavior diverges from project norms
-
-Repository: `forecast-bio/crosslink` (forked from
-`dollspace-gay/chainlink`). Active development. MIT licensed.
-
-## Why Crosslink
-
-Crosslink covers session memory and workflow in one tool: breadcrumbs replace
-hand-written handoff files, behavioral hooks enforce retrospective rules at
-tool-call time, and `/design` + `kickoff` drive design-driven implementation.
-Adoption reasoning is in the commit history if needed.
+Crosslink is a CLI issue tracker and workflow engine built for
+AI-assisted development. Repository: `forecast-bio/crosslink`. MIT licensed.
 
 ## Adoption sequence
 
