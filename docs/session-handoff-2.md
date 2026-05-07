@@ -178,3 +178,50 @@ OPERATING.md body: 74 non-blank lines (100 total with blanks). Within the
 - HEAD: `f5fad97` (Create OPERATING.md; migrate operator-facing content from CLAUDE.md)
 - Tag: `v0.0.2-modes` (on `b563bc1`, two commits behind HEAD — per project
   convention, small post-session commits belong to the previous session's tag)
+
+---
+
+## Documentation trim pass (post-session addition)
+
+### What was trimmed
+
+| File | What was removed | Remaining size |
+|---|---|---|
+| `claude-code-modes-reference.md` | Installation section (~28 lines). Replaced with one-line upstream pointer at end. | ~290 lines |
+| `claude-code-modes.md` | "Why the project uses modes" section cut to one framing sentence; "Default invocation" two-paragraph rationale cut to one sentence. | ~128 lines |
+| `crosslink.md` | "Why Crosslink" three-paragraph justification → one sentence; "Adoption sequence" three-paragraph breakdown → one sentence; "Risk and fallback" section removed (~27 lines). | ~152 lines |
+| `CLAUDE.md` | Three stale "Session 2" references updated to "Session 3" (mechanical only). | ~228 lines |
+
+### Rationale-overlap check (OPERATING.md vs. claude-code-modes.md)
+
+No duplicate reasoning found. OPERATING.md's permission-mode table answers
+"auto or default?" (operator decision). claude-code-modes.md's phase table
+answers "which preset?" (Code's working mode). Different questions, no overlap
+to resolve.
+
+### Session-2 reference cleanup in crosslink.md
+
+Beyond CLAUDE.md, `crosslink.md` had two stale Session-2 references:
+- Document header status: "pending Session 2 round-trip verification" → "Session 3 runs the round-trip verification"
+- Hooks section: "Session 2's adoption work includes..." → "Session 3's adoption work includes..."
+Both fixed in the same commit.
+
+### Post-Session-3 cleanup flags
+
+`crosslink.md` still has content that will want trimming once Crosslink is
+actually adopted:
+- The "What Crosslink replaces" section (lists what manual practices Crosslink
+  substitutes) will be obviously correct or incorrect once adoption runs. If
+  adoption goes well, this section stays as-is. If adoption reveals exceptions,
+  the list updates.
+- "Adoption sequence" is already one sentence but will want updating once
+  Session 3 completes.
+- The document title ("Tooling Decision: Crosslink as Workflow Engine") is
+  still decision-framing. After adoption, consider renaming to "Crosslink —
+  Workflow Engine Reference" and moving the decision history to a commit
+  message or retrospective entry.
+
+### Repo state at end of trim pass
+
+- HEAD: `4194639` (Trim rationale and install instructions from tooling docs)
+- Tag: `v0.0.2-modes` (on `b563bc1`, four commits behind HEAD)
