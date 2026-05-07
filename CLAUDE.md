@@ -16,19 +16,13 @@ Every session, in this order, before doing anything else:
    extended as new rules emerge. They take precedence over any
    instruction that contradicts them.
 3. **`docs/session-handoff-{N}.md`** (latest) — current project state
-   (or use `crosslink session start` once Crosslink is adopted in
-   Session 3).
+   (use `crosslink session start`).
 4. **`docs/architecture.md`** — the architecture and design principles.
    Read before making any decision that affects how the plugin is
    structured or what it owns vs. delegates to Beds24. (Drafted in
-   Session 3; until then, see `docs/architecture-prep.md` and
-   `docs/architecture-pivot-decision.md`.)
-5. **`docs/architecture-prep.md`** if it exists and is non-empty.
-   Captures architectural thinking that has been done but not yet
-   landed in `architecture.md`. Read before any session that involves
-   architectural decisions or builds features.
-6. **`docs/tooling/crosslink.md`** — Crosslink workflow and commands.
-7. **Current plan doc** if one exists (e.g., `docs/v1-plan.md` during
+   Session 4.)
+5. **`docs/tooling/crosslink.md`** — Crosslink workflow and commands.
+6. **Current plan doc** if one exists (e.g., `docs/v1-plan.md` during
    active build phases).
 
 Read the documents before inspecting code, running tools, or making
@@ -88,6 +82,18 @@ turns out to be wrong is better than agreement that turns out to
 be wrong, because pushback gets corrected in the next exchange
 and agreement compounds.
 
+**Document access before discussion.** When a document's content
+matters to a response, Claude verifies it has access before
+reasoning about the content. If the document hasn't been shared,
+isn't fetchable, or a fetch fails, Claude requests upload rather
+than speculating about content.
+
+**Direct asks for missing documents.** When Claude needs a
+document it doesn't have, the request names the file and asks
+for upload. Not "could you describe it" or "let me work from
+what I remember" — a direct ask: "I need to see `<filename>`.
+Could you upload it?"
+
 These are working agreements, not constraints to be policed. The
 goal is sessions that produce better thinking faster, by removing
 the conversational patterns that subtly reward going along with
@@ -110,6 +116,19 @@ the user's first framing rather than examining it.
   surfaced or a new rule was established. The retrospective uses
   `### YYYY-MM-DD — Title` headers for entries. New entries append
   to the existing file.
+
+## One kind of work per session
+
+Architecture, code, admin configuration through Chrome, WordPress
+admin through MCP, code review, and refactor are different kinds
+of sessions even when they share a Claude Code mode. Mixing two
+kinds in a single session surfaces unrelated risks against each
+other and forces context-switching mid-session. Sessions are split
+by kind of work, not just by mode.
+
+Exception: when two kinds of work are tightly coupled and splitting
+them would introduce coordination costs that outweigh the focus
+benefit.
 
 ## Architecture in one paragraph
 
@@ -144,12 +163,10 @@ defer to these answers unless the principle is explicitly revisited.
 
 **Read every session:**
 - `docs/retrospective.md` — Active Rules and failure-mode log
-- `docs/session-handoff-{N}.md` — current state (or use `crosslink
-  session start` once Crosslink is adopted)
-- `docs/architecture.md` — architecture and design principles (when
-  drafted in Session 3)
-- `docs/architecture-prep.md` — pre-architecture-doc captured thinking
-  (until architecture.md absorbs it)
+- `docs/session-handoff-{N}.md` — current state (Crosslink-managed
+  since Session 3)
+- `docs/architecture.md` — architecture and design principles (drafted
+  in Session 4)
 - `docs/tooling/crosslink.md` — Crosslink workflow and commands
 - `docs/tooling/claude-code-modes.md` — Claude Code modes project guide
   (phase-to-mode mapping, default invocation, operational notes)
