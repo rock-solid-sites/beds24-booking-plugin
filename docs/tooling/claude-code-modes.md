@@ -8,21 +8,8 @@ Config file: `.claude-mode.json` at repo root
 
 ---
 
-## Why the project uses modes
-
-Claude Code's default prompt optimizes for minimal, cautious, narrow behavior.
-That's right for some tasks (surgical live fixes) and wrong for others (V1
-build from a design doc, architectural work, root-cause investigation). Leaving
-the defaults in place means fighting the system prompt in CLAUDE.md every
-session. `claude-mode` replaces the behavioral layer once at session start,
-so the in-session conversation matches the task.
-
-The project also uses the chill base, which produces calmer, less hedging
-behavior based on Anthropic's emotion research. Less ALL-CAPS instruction
-pressure, worked examples, explicit priority hierarchy. It's shorter and
-produces more useful output on architectural work.
-
----
+Modes shape Claude Code's behavior to match the session's task. The mapping
+below is the project's primary reference.
 
 ## Default invocation
 
@@ -33,16 +20,12 @@ claude-mode safe --base chill --context-pacing
 Or with the project config loaded:
 
 ```bash
-claude-mode rollout    # safe equivalent with context-pacing, chill base as default
+claude-mode rollout
 ```
 
-`safe` (collaborative / minimal / narrow) is the conservative default:
-explains plans before acting, makes the smallest correct change, stays strictly
-within scope. Chill base reduces anxious hedging. Context-pacing tells Claude
-to pause cleanly rather than rushing as context fills up.
-
-This is appropriate when the task is unclear, when working with live property
-data, or when starting a session before switching to a more specific mode.
+`safe` (collaborative / minimal / narrow) is the conservative default — use it
+when the session's scope isn't yet clear or before switching to a more specific
+preset.
 
 ---
 

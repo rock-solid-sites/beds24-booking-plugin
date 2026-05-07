@@ -28,38 +28,6 @@ It spawns Claude Code with direct TTY ownership — no intermediary process.
 
 ---
 
-## Installation and updates
-
-**Binary (no Bun required):**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nklisch/claude-code-modes/main/install.sh | sh
-```
-
-Installs to `~/.local/bin/claude-mode`. Verifies SHA-256 checksum against
-the release.
-
-**From source (requires Bun):**
-
-```bash
-git clone https://github.com/nklisch/claude-code-modes.git
-cd claude-code-modes
-bun install
-bun link
-```
-
-**Updating (binary install only):**
-
-```bash
-claude-mode update              # latest release
-claude-mode update --check      # check without installing
-claude-mode update 0.2.5        # pin a specific version
-```
-
-For source installs: `git pull && bun install`.
-
----
-
 ## The three-axis model
 
 The behavioral layer is composed from three independent axes. Each axis is a
@@ -348,3 +316,8 @@ behavioral instructions directly in custom specialist definitions if needed.
 - **`--version` is standalone-only.** Combining it with other flags exits
   non-zero. Use `claude-mode -- --version` to pass `--version` to Claude
   Code itself.
+
+---
+
+For installation, updates, and source-build instructions, see the upstream
+README at `https://github.com/nklisch/claude-code-modes`.

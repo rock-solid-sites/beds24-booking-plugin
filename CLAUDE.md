@@ -17,11 +17,11 @@ Every session, in this order, before doing anything else:
    instruction that contradicts them.
 3. **`docs/session-handoff-{N}.md`** (latest) — current project state
    (or use `crosslink session start` once Crosslink is adopted in
-   Session 2).
+   Session 3).
 4. **`docs/architecture.md`** — the architecture and design principles.
    Read before making any decision that affects how the plugin is
    structured or what it owns vs. delegates to Beds24. (Drafted in
-   Session 2; until then, see `docs/architecture-prep.md` and
+   Session 3; until then, see `docs/architecture-prep.md` and
    `docs/architecture-pivot-decision.md`.)
 5. **`docs/architecture-prep.md`** if it exists and is non-empty.
    Captures architectural thinking that has been done but not yet
@@ -147,7 +147,7 @@ defer to these answers unless the principle is explicitly revisited.
 - `docs/session-handoff-{N}.md` — current state (or use `crosslink
   session start` once Crosslink is adopted)
 - `docs/architecture.md` — architecture and design principles (when
-  drafted in Session 2)
+  drafted in Session 3)
 - `docs/architecture-prep.md` — pre-architecture-doc captured thinking
   (until architecture.md absorbs it)
 - `docs/tooling/crosslink.md` — Crosslink workflow and commands
