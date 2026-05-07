@@ -109,9 +109,10 @@ artifacts machine-actionable.
 
 ## What Crosslink does not replace
 
-- **Claude Code modes** (`claude-mode safe --base chill
-  --context-pacing`) continue to control the system prompt for each
-  session. Crosslink and modes are orthogonal layers.
+- **Claude Code modes** continue to control the system prompt for each
+  session. Crosslink and modes are orthogonal layers. The project's named
+  presets live in `.claude-mode.json`; the phase-to-mode mapping and default
+  invocation are documented in `docs/tooling/claude-code-modes.md`.
 - **CLAUDE.md** continues to be the project entry point read at the
   start of every session, including the conversational defaults.
 - **The retrospective as a text file** stays as the human-readable

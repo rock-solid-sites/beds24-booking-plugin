@@ -1,0 +1,47 @@
+{
+  "defaultBase": "chill",
+  "presets": {
+    "architecture": {
+      "agency": "surgical",
+      "quality": "architect",
+      "scope": "narrow",
+      "modifiers": ["methodical", "context-pacing"]
+    },
+    "v1-build": {
+      "agency": "autonomous",
+      "quality": "architect",
+      "scope": "unrestricted",
+      "modifiers": ["context-pacing"]
+    },
+    "feature": {
+      "agency": "autonomous",
+      "quality": "pragmatic",
+      "scope": "adjacent",
+      "modifiers": ["context-pacing"]
+    },
+    "rollout": {
+      "agency": "collaborative",
+      "quality": "minimal",
+      "scope": "narrow",
+      "modifiers": ["context-pacing"]
+    },
+    "bugfix": {
+      "agency": "collaborative",
+      "quality": "minimal",
+      "scope": "narrow",
+      "modifiers": ["context-pacing"]
+    },
+    "review": {
+      "agency": "collaborative",
+      "quality": "architect",
+      "scope": "narrow",
+      "modifiers": ["readonly"]
+    },
+    "docs": {
+      "agency": "surgical",
+      "quality": "minimal",
+      "scope": "narrow",
+      "modifiers": ["methodical"]
+    }
+  }
+}

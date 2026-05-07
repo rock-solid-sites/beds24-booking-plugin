@@ -155,8 +155,8 @@ defer to these answers unless the principle is explicitly revisited.
 - `docs/architecture-prep.md` — pre-architecture-doc captured thinking
   (until architecture.md absorbs it)
 - `docs/tooling/crosslink.md` — Crosslink workflow and commands
-- `docs/tooling/claude-code-modes.md` — Claude Code modes reference
-  (when established)
+- `docs/tooling/claude-code-modes.md` — Claude Code modes project guide
+  (phase-to-mode mapping, default invocation, operational notes)
 
 **Read when the task requires it:**
 
@@ -199,10 +199,10 @@ its own DOM and ships via WordPress plugin installation.
 
 This project uses two tools that shape how sessions run:
 
-**Claude Code modes** (`claude-mode safe --base chill --context-pacing`)
-sets the system prompt for the session. Modes documentation lives at
-`docs/tooling/claude-code-modes.md` (when established). The repository
-is `nklisch/claude-code-modes`.
+**Claude Code modes** sets the system prompt for the session. The project
+has named presets in `.claude-mode.json`; see `docs/tooling/claude-code-modes.md`
+for the phase-to-mode mapping and default invocation. The upstream reference
+is `docs/tooling/claude-code-modes-reference.md`. Repository: `nklisch/claude-code-modes`.
 
 **Crosslink** is the project's session memory and workflow engine.
 Adoption is staged: Session 1 (this scaffold) does not use Crosslink;
