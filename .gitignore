@@ -1,0 +1,50 @@
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Node (if using build tooling for blocks/assets)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# PHP / Composer
+vendor/
+composer.phar
+composer.lock
+
+# Build artifacts
+build/
+dist/
+*.zip
+
+# WordPress local dev
+wp-config.php
+.wp-env.json
+.wp-env.override.json
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Plugin testing
+tests/coverage/
+.phpunit.result.cache
+
+# Logs
+*.log
+
+# Crosslink (when adopted — Session 2)
+.crosslink/issues.db
+.crosslink/locks/
