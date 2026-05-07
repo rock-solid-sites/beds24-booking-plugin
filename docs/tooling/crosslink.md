@@ -1,21 +1,35 @@
-# Tooling Decision: Crosslink as Workflow Engine
+# Crosslink — Workflow Engine
 
-**Date:** 2026-05-07
-**Decision authority:** Project owner
+**Adopted:** 2026-05-07
+**Status:** In use from Session 3 forward
 
-This document records the adoption of Crosslink as the project's primary
-workflow tool and how to use it.
+This document records how to use Crosslink as the project's primary workflow tool.
 
 ## What Crosslink is
 
 Crosslink is a CLI issue tracker and workflow engine built for
 AI-assisted development. Repository: `forecast-bio/crosslink`. MIT licensed.
 
-## Adoption sequence
+## Adoption summary (Session 3)
 
-Adoption runs in Session 3: `crosslink init`, rules configuration from the
-retrospective, and the `/design` round-trip to draft `docs/architecture.md`.
-Sessions 3+ use Crosslink as the primary workflow tool.
+`crosslink init` ran in Session 3. Hooks, commands, and rules deployed. Project
+rules written to `.crosslink/rules/project.md`. Tracking mode set to "relaxed"
+(solo project; strict team-gate is inappropriate here). Round-trip verification
+(session end → session start) confirmed memory persists.
+
+**Init quirk on Windows:** Running in Claude Code's non-interactive environment,
+`crosslink init` deployed rules but skipped hooks on the first run. Required
+`crosslink init --force --skip-signing --python-prefix "python"` to deploy
+`.claude/hooks/`, `.claude/commands/`, `.claude/mcp/`, and `.claude/settings.json`.
+
+**cpitd:** Auto-install failed because Windows redirects `python3` to the Store
+alias. Install manually: `pip install cpitd` (using `/c/Python312/python`). The
+`pre-web-check.py` hook degrades gracefully if cpitd is absent — it still runs
+but skips the prompt-injection detection step.
+
+**tracker_remote warning:** Each crosslink command prints a WARN about
+`tracker_remote` not being configured. This is a multi-agent feature; benign for
+solo use. Defaults to "origin" automatically.
 
 ## What Crosslink replaces
 
