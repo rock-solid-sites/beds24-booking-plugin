@@ -123,3 +123,58 @@ Three items remain:
 
 Session 3 should start with: `claude-mode architecture` (or `architecture`
 preset) and verify Crosslink installs on Windows before anything else.
+
+---
+
+## OPERATING.md migration (post-session addition)
+
+### What was migrated
+
+Four items moved from `CLAUDE.md` to `OPERATING.md`:
+
+| Item | Framing rationale |
+|---|---|
+| Numbered-sessions convention | Operator decision about numbering. Code doesn't assign session numbers. |
+| Predecessor project section | Historical narrative. Code needs the project purpose, not the porting record. Brief pointer left in CLAUDE.md. |
+| Repository section (URL, license, distribution) | Code uses git; it doesn't need the repo URL or license details to do its work. |
+| Tooling section's adoption staging and upstream repo URLs | Process history. Code needs to know the tools and where their docs are, not the adoption timeline. |
+
+`OPERATING.md` also adds content that was never in CLAUDE.md:
+- Launch command pattern with `--permission-mode` table per session type
+- Session prompt conventions (expected-state lines, how to update them)
+- Recovery patterns (halt behavior, permission fatigue, context pacing)
+
+### Borderline cases
+
+**"Predecessor project" section.** The pivot decision and "what ported forward"
+are useful context for Code when making architectural decisions (avoid
+reintroducing predecessor patterns). Resolution: migrated the narrative,
+left a 3-line pointer in CLAUDE.md pointing to `docs/architecture-pivot-decision.md`
+and `OPERATING.md`. The pivot-decision doc itself stays in Code's "Read when
+task requires it" section of the file map.
+
+**Tooling section.** What stays vs. migrates: tool names and doc paths stay
+(Code needs to know where its guides are); adoption staging and upstream repo
+URLs migrate (Code doesn't need process history or upstream URLs). The trimmed
+section is 6 lines vs. the original 14.
+
+**"No time estimates" convention.** Borderline — could be seen as operator
+process. Kept in CLAUDE.md because it shapes Code's output in plans and
+handoffs. Code is the thing that writes plans and handoffs; this tells Code
+what not to produce.
+
+### Structural notes
+
+Nothing in the migration broke CLAUDE.md's coherence. The document flows
+from "Read before acting" through behavioral instructions to project constraints.
+No dangling headers. The "Predecessor project" section survived as a 3-line
+pointer — not a dangling header, meaningful pointer.
+
+OPERATING.md body: 74 non-blank lines (100 total with blanks). Within the
+~80 line target.
+
+### Repo state at end of post-session addition
+
+- HEAD: `f5fad97` (Create OPERATING.md; migrate operator-facing content from CLAUDE.md)
+- Tag: `v0.0.2-modes` (on `b563bc1`, two commits behind HEAD — per project
+  convention, small post-session commits belong to the previous session's tag)
