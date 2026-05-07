@@ -290,6 +290,14 @@ otherwise be lost, but they belong in other documents:
 - **The Crosslink VS Code extension exists** as an alternative
   interface to the CLI. Mentioned in the upstream README. Worth
   considering during Session 2's adoption work but no urgency.
+- **Cargo PATH on MSYS**: ~/.cargo/bin is not in MSYS's default
+  PATH. After `cargo install crosslink` (which we just verified
+  works on Windows), the crosslink binary is at
+  C:\Users\Dr. COMPUTER\.cargo\bin\crosslink.exe but isn't on
+  PATH for new MSYS shell sessions. Session 2's Crosslink
+  adoption step should add ~/.cargo/bin to the shell profile
+  (e.g., ~/.bashrc or ~/.bash_profile) so the binary is
+  invokable without an absolute path.
 
 ## Maintenance
 
