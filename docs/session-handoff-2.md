@@ -2,9 +2,11 @@
 
 ## What this session did
 
-Session 2 documented Claude Code modes — both as an upstream reference and
-as a project-specific guide. The `.claude-mode.json` config was written and
-validated. All references in existing docs were updated.
+Session 2 was documentation work: Claude Code modes documented as an upstream
+reference and a project guide; seven project presets written and validated in
+`.claude-mode.json`; operator-facing content migrated from `CLAUDE.md` into a
+new `OPERATING.md`; rationale and install-instruction content trimmed from all
+tooling docs; stale Session-2 references updated to Session-3 throughout.
 
 No architecture drafting was done. No Crosslink adoption was run. Both remain
 deferred to Session 3.
@@ -15,16 +17,17 @@ deferred to Session 3.
 
 | File | Purpose |
 |---|---|
-| `docs/tooling/claude-code-modes-reference.md` | Faithful upstream summary grounded in fragment content |
-| `docs/tooling/claude-code-modes.md` | Project guide — phase-to-mode mapping, operational notes; read every session |
+| `docs/tooling/claude-code-modes-reference.md` | Faithful upstream summary grounded in fragment content; Installation section omitted, upstream pointer added at end |
+| `docs/tooling/claude-code-modes.md` | Project guide — phase-to-mode mapping, operational notes; read every session; "Why" rationale trimmed to one sentence |
 | `.claude-mode.json` | Seven validated project presets; `defaultBase: "chill"` |
+| `OPERATING.md` | Operator guide — launch commands, permission-mode table, session conventions, recovery patterns |
 
-**Updated:**
+## Files updated
 
-| File | Change |
+| File | Changes |
 |---|---|
-| `CLAUDE.md` | Removed "(when established)" caveat; updated Tooling section |
-| `docs/tooling/crosslink.md` | Updated modes mention to point at project guide |
+| `CLAUDE.md` | Modes docs reference updated; Tooling section trimmed to essentials; OPERATING.md added to file map; operator-facing content removed (numbered-sessions convention, predecessor project narrative, Repository section, Tooling adoption staging); Session-2 references updated to Session-3 |
+| `docs/tooling/crosslink.md` | Modes mention updated; feature list → one-liner; "Why Crosslink" section removed; "Adoption sequence" → one sentence; "Risk and fallback" removed; Status header line removed; Session-2 references → Session-3 |
 
 ---
 
@@ -93,11 +96,92 @@ invocation and produced clean output, so the absence didn't cause a problem.
 
 ---
 
+## OPERATING.md — migration decisions
+
+Four items moved from `CLAUDE.md` to `OPERATING.md`:
+
+| Item | Framing rationale |
+|---|---|
+| Numbered-sessions convention | Operator decision about numbering. Code doesn't assign session numbers. |
+| Predecessor project section | Historical narrative. Code needs the project purpose, not the porting record. Brief pointer left in CLAUDE.md. |
+| Repository section (URL, license, distribution) | Code uses git; it doesn't need the repo URL or license details to do its work. |
+| Tooling section's adoption staging and upstream repo URLs | Process history. Code needs to know the tools and where their docs are, not the adoption timeline. |
+
+`OPERATING.md` also adds content that was never in `CLAUDE.md`:
+- Launch command pattern with `--permission-mode` table per session type
+- Session prompt conventions (expected-state lines, how to update them)
+- Recovery patterns (halt behavior, permission fatigue, context pacing)
+
+### Borderline cases
+
+**"Predecessor project" section.** The pivot decision and "what ported forward"
+are useful context for Code when making architectural decisions (avoid
+reintroducing predecessor patterns). Resolution: migrated the narrative,
+left a 3-line pointer in CLAUDE.md pointing to `docs/architecture-pivot-decision.md`
+and `OPERATING.md`. The pivot-decision doc itself stays in Code's "Read when
+task requires it" section of the file map.
+
+**Tooling section.** Tool names and doc paths stay (Code needs to know where
+its guides are); adoption staging and upstream repo URLs migrate (Code doesn't
+need process history or upstream URLs). The trimmed section is 6 lines vs.
+the original 14.
+
+**"No time estimates" convention.** Borderline — could be seen as operator
+process. Kept in CLAUDE.md because it shapes Code's output in plans and
+handoffs. Code is the thing that writes plans and handoffs; this tells Code
+what not to produce.
+
+### Structural notes
+
+Nothing in the migration broke CLAUDE.md's coherence. The document flows
+from "Read before acting" through behavioral instructions to project constraints.
+No dangling headers. The "Predecessor project" section survived as a 3-line
+pointer — not a dangling header, meaningful pointer.
+
+OPERATING.md body: 74 non-blank lines (100 total with blanks).
+
+---
+
+## Documentation trim pass
+
+Cuts made to existing files across the trim passes. Files produced in this
+session (reference doc, project guide) had their rationale trimmed during
+drafting; those trims are part of how those files turned out, not a separate
+pass.
+
+| File | What was removed |
+|---|---|
+| `crosslink.md` | Seven-bullet feature list → one-liner; "Why Crosslink" section removed; "Adoption sequence" → one sentence; "Risk and fallback" section removed; Status header line removed; Session-2 references → Session-3 |
+| `CLAUDE.md` | Three stale "Session 2" references updated to "Session 3" (mechanical only) |
+
+### Rationale-overlap check (OPERATING.md vs. claude-code-modes.md)
+
+No duplicate reasoning found. OPERATING.md's permission-mode table answers
+"auto or default?" (operator decision). claude-code-modes.md's phase table
+answers "which preset?" (Code's working mode). Different questions, no overlap
+to resolve.
+
+### Post-Session-3 cleanup flags
+
+`crosslink.md` still has content that will want revisiting once Crosslink is
+actually adopted:
+- **"What Crosslink replaces"** — lists manual practice substitutions. If
+  adoption reveals exceptions, the list updates. If adoption goes well, it
+  stays as-is.
+- **"Adoption sequence"** — one sentence; will want updating once Session 3
+  completes.
+- **Document title** ("Tooling Decision: Crosslink as Workflow Engine") — still
+  decision-framing. After adoption, rename candidate: "Crosslink — Workflow
+  Engine Reference."
+
+---
+
 ## Repo state at session end
 
 - Branch: `main`
-- HEAD: `b563bc1` (Document Claude Code modes; add project presets; map phases to modes)
-- Tag: `v0.0.2-modes`
+- HEAD: `246ea11` (Further trim crosslink.md: remove feature list, Why section, Status line)
+- Tag: `v0.0.2-modes` (on `b563bc1`, per project convention small post-session
+  commits belong to the previous session's tag)
 - Remote: pushed and in sync with `origin/main`
 - Working tree: clean (`.claude/` is gitignored)
 
@@ -114,114 +198,12 @@ Three items remain:
 
 2. **`docs/architecture.md` drafting.** Use the `/design` workflow (if Crosslink
    adopted) or draft manually from `docs/architecture-prep.md` and
-   `docs/architecture-pivot-decision.md`. The architecture document is the
-   Session 2 scope item that was pushed to Session 3 because the current
-   session's scope (modes documentation) was sufficient work for one session.
+   `docs/architecture-pivot-decision.md`. The architecture document was originally
+   planned for Session 2; modes documentation was sufficient scope for one session
+   and it moved to Session 3.
 
 3. **`docs/v1-plan.md`.** Once the architecture doc is drafted, the V1 plan
    follows. No plan exists yet.
 
-Session 3 should start with: `claude-mode architecture` (or `architecture`
-preset) and verify Crosslink installs on Windows before anything else.
-
----
-
-## OPERATING.md migration (post-session addition)
-
-### What was migrated
-
-Four items moved from `CLAUDE.md` to `OPERATING.md`:
-
-| Item | Framing rationale |
-|---|---|
-| Numbered-sessions convention | Operator decision about numbering. Code doesn't assign session numbers. |
-| Predecessor project section | Historical narrative. Code needs the project purpose, not the porting record. Brief pointer left in CLAUDE.md. |
-| Repository section (URL, license, distribution) | Code uses git; it doesn't need the repo URL or license details to do its work. |
-| Tooling section's adoption staging and upstream repo URLs | Process history. Code needs to know the tools and where their docs are, not the adoption timeline. |
-
-`OPERATING.md` also adds content that was never in CLAUDE.md:
-- Launch command pattern with `--permission-mode` table per session type
-- Session prompt conventions (expected-state lines, how to update them)
-- Recovery patterns (halt behavior, permission fatigue, context pacing)
-
-### Borderline cases
-
-**"Predecessor project" section.** The pivot decision and "what ported forward"
-are useful context for Code when making architectural decisions (avoid
-reintroducing predecessor patterns). Resolution: migrated the narrative,
-left a 3-line pointer in CLAUDE.md pointing to `docs/architecture-pivot-decision.md`
-and `OPERATING.md`. The pivot-decision doc itself stays in Code's "Read when
-task requires it" section of the file map.
-
-**Tooling section.** What stays vs. migrates: tool names and doc paths stay
-(Code needs to know where its guides are); adoption staging and upstream repo
-URLs migrate (Code doesn't need process history or upstream URLs). The trimmed
-section is 6 lines vs. the original 14.
-
-**"No time estimates" convention.** Borderline — could be seen as operator
-process. Kept in CLAUDE.md because it shapes Code's output in plans and
-handoffs. Code is the thing that writes plans and handoffs; this tells Code
-what not to produce.
-
-### Structural notes
-
-Nothing in the migration broke CLAUDE.md's coherence. The document flows
-from "Read before acting" through behavioral instructions to project constraints.
-No dangling headers. The "Predecessor project" section survived as a 3-line
-pointer — not a dangling header, meaningful pointer.
-
-OPERATING.md body: 74 non-blank lines (100 total with blanks). Within the
-~80 line target.
-
-### Repo state at end of post-session addition
-
-- HEAD: `f5fad97` (Create OPERATING.md; migrate operator-facing content from CLAUDE.md)
-- Tag: `v0.0.2-modes` (on `b563bc1`, two commits behind HEAD — per project
-  convention, small post-session commits belong to the previous session's tag)
-
----
-
-## Documentation trim pass (post-session addition)
-
-### What was trimmed
-
-| File | What was removed | Remaining size |
-|---|---|---|
-| `claude-code-modes-reference.md` | Installation section (~28 lines). Replaced with one-line upstream pointer at end. | ~290 lines |
-| `claude-code-modes.md` | "Why the project uses modes" section cut to one framing sentence; "Default invocation" two-paragraph rationale cut to one sentence. | ~128 lines |
-| `crosslink.md` | "Why Crosslink" three-paragraph justification → one sentence; "Adoption sequence" three-paragraph breakdown → one sentence; "Risk and fallback" section removed (~27 lines). | ~152 lines |
-| `CLAUDE.md` | Three stale "Session 2" references updated to "Session 3" (mechanical only). | ~228 lines |
-
-### Rationale-overlap check (OPERATING.md vs. claude-code-modes.md)
-
-No duplicate reasoning found. OPERATING.md's permission-mode table answers
-"auto or default?" (operator decision). claude-code-modes.md's phase table
-answers "which preset?" (Code's working mode). Different questions, no overlap
-to resolve.
-
-### Session-2 reference cleanup in crosslink.md
-
-Beyond CLAUDE.md, `crosslink.md` had two stale Session-2 references:
-- Document header status: "pending Session 2 round-trip verification" → "Session 3 runs the round-trip verification"
-- Hooks section: "Session 2's adoption work includes..." → "Session 3's adoption work includes..."
-Both fixed in the same commit.
-
-### Post-Session-3 cleanup flags
-
-`crosslink.md` still has content that will want trimming once Crosslink is
-actually adopted:
-- The "What Crosslink replaces" section (lists what manual practices Crosslink
-  substitutes) will be obviously correct or incorrect once adoption runs. If
-  adoption goes well, this section stays as-is. If adoption reveals exceptions,
-  the list updates.
-- "Adoption sequence" is already one sentence but will want updating once
-  Session 3 completes.
-- The document title ("Tooling Decision: Crosslink as Workflow Engine") is
-  still decision-framing. After adoption, consider renaming to "Crosslink —
-  Workflow Engine Reference" and moving the decision history to a commit
-  message or retrospective entry.
-
-### Repo state at end of trim pass
-
-- HEAD: `4194639` (Trim rationale and install instructions from tooling docs)
-- Tag: `v0.0.2-modes` (on `b563bc1`, four commits behind HEAD)
+Session 3 should start with `claude-mode architecture` and verify Crosslink
+installs on Windows before anything else.
