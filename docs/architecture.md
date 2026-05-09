@@ -285,6 +285,21 @@ without the guest having to navigate Beds24's UI.
 
 ---
 
+## Visual customization architecture
+
+The plugin renders structural DOM with a stable, themeable class
+contract. Visual presentation (colors, typography, spacing, accent
+treatments) comes from the active theme via `theme.json` token
+consumption (primary path) or plugin admin settings (fallback for
+themes without theme.json). All styling is plumbed through CSS
+custom properties under the `--beds24-*` namespace.
+
+For full detail — token roles, default values, the class contract,
+the iframe CSS generation workflow, and the architectural decisions
+behind this system — see `docs/styling-contract.md`.
+
+---
+
 ## Design decisions
 
 These questions were open in `docs/architecture-prep.md`. Each is
