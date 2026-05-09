@@ -15,14 +15,12 @@ Every session, in this order, before doing anything else:
    process constraints, ported from the predecessor project and
    extended as new rules emerge. They take precedence over any
    instruction that contradicts them.
-3. **`docs/session-handoff-{N}.md`** (latest) — current project state
-   (use `crosslink session start`).
+3. **`docs/session-handoff-{N}.md`** (latest) — current project state.
 4. **`docs/architecture.md`** — the architecture and design principles.
    Read before making any decision that affects how the plugin is
    structured or what it owns vs. delegates to Beds24. (Drafted in
    Session 4.)
-5. **`docs/tooling/crosslink.md`** — Crosslink workflow and commands.
-6. **Current plan doc** if one exists (e.g., `docs/v1-plan.md` during
+5. **Current plan doc** if one exists (e.g., `docs/v1-plan.md` during
    active build phases).
 
 Read the documents before inspecting code, running tools, or making
@@ -163,11 +161,9 @@ defer to these answers unless the principle is explicitly revisited.
 
 **Read every session:**
 - `docs/retrospective.md` — Active Rules and failure-mode log
-- `docs/session-handoff-{N}.md` — current state (Crosslink-managed
-  since Session 3)
+- `docs/session-handoff-{N}.md` — current state
 - `docs/architecture.md` — architecture and design principles (drafted
   in Session 4)
-- `docs/tooling/crosslink.md` — Crosslink workflow and commands
 - `docs/tooling/claude-code-modes.md` — Claude Code modes project guide
   (phase-to-mode mapping, default invocation, operational notes)
 
@@ -191,6 +187,10 @@ defer to these answers unless the principle is explicitly revisited.
   exists (ported from predecessor)
 - `docs/mockup.html` — the approved design (ported from predecessor)
 
+*Tooling reference:*
+- `docs/tooling/crosslink.md` — Crosslink command reference and opt-in
+  workflow (hooks run automatically; session-memory commands are opt-in)
+
 **Operator reference (not read by default):**
 - `OPERATING.md` — launch commands, permission-mode guidance, session
   conventions, recovery patterns. For the human operator; not part of
@@ -207,16 +207,19 @@ porting record: `docs/architecture-pivot-decision.md`. Operator context:
 
 ## Tooling
 
-Two tools shape how sessions run. Both are referenced in the startup
-reading list above.
+Two tools shape how sessions run.
 
 **Claude Code modes** sets the system prompt for the session. Project
 presets are in `.claude-mode.json`. Phase-to-mode mapping and default
 invocation: `docs/tooling/claude-code-modes.md`. Upstream reference:
 `docs/tooling/claude-code-modes-reference.md`.
 
-**Crosslink** is the session memory and workflow engine. Command
-reference and usage notes: `docs/tooling/crosslink.md`.
+**Crosslink** is installed and runs in the background — hooks
+fire on tool calls, prompt-guard injects project rules at
+session start. The session-memory commands (`crosslink session
+start`, `crosslink session action`, `crosslink quick`) are
+opt-in: use them when they help, skip them when they don't.
+Reference: `docs/tooling/crosslink.md`.
 
 ## Beds24 dependencies
 

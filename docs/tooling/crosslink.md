@@ -1,9 +1,33 @@
 # Crosslink — Workflow Engine
 
 **Adopted:** 2026-05-07
-**Status:** In use from Session 3 forward
+**Status:** Opt-in from Session 7 forward (see below)
 
-This document records how to use Crosslink as the project's primary workflow tool.
+## Status: Opt-in tooling
+
+Crosslink was adopted in Session 3 and evaluated in Session 7's
+post-Code-session investigation. The evaluation found:
+- Session memory (breadcrumbs, last-handoff) works but largely
+  duplicates the project's `docs/session-handoff-{N}.md` files
+- The prompt-guard hook genuinely injects project rules and
+  fires automatically — this is the clearest ongoing value
+- The /design workflow is unsuitable for project-level
+  architecture (Windows/MSYS bug + scope mismatch)
+- The issue tracker has been misused as a session log; feature
+  tracking hasn't started
+
+**Decision:** Keep the installation; drop the per-session
+ceremony from CLAUDE.md. Use Crosslink commands opt-in when
+they're useful (e.g., `crosslink quick` for real feature
+issues during V1 build, `crosslink session last-handoff` if
+context compression makes the text handoff hard to find).
+
+The hooks continue to run without ceremony. This document is
+preserved as reference for opt-in usage.
+
+---
+
+This document records how to use Crosslink as the project's workflow tool.
 
 ## What Crosslink is
 
