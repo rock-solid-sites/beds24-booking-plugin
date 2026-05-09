@@ -199,6 +199,26 @@ defer to these answers unless the principle is explicitly revisited.
 **Archived (do not use as current source of truth):**
 - `docs/archive/*` — superseded plans and proposals.
 
+## Project skills
+
+Three skills at `skills/` capture project-specific procedural knowledge
+that activates when relevant during Code sessions:
+
+- `beds24-booking-plugin-context` — foundational project context
+  (conversational defaults, design principles, conventions, architecture
+  summary, active rules)
+- `beds24-api-work` — Beds24 v2 API client patterns, auth flow, method
+  signatures, response shape quirks
+- `beds24-property-rollout` — Beds24 property configuration and onboarding
+
+Skills are written for use by Claude Code when working on the matching
+task type. Each contains a SKILL.md with focused procedural guidance and
+a `references/` subdirectory with fuller documentation.
+
+A separate chat-side skill exists in the operator's local skills directory
+for use during strategic planning conversations; that skill is not in this
+repo.
+
 ## Predecessor project
 
 This plugin supersedes the predecessor CSS+JS project. Pivot decision and
