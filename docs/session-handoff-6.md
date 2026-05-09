@@ -168,7 +168,8 @@ issue — just an expectations note for anyone reading the overview doc.
 
 Before any frontend work:
 1. Activate the plugin on staging WordPress (WordPress MCP)
-2. Verify `[beds24_booking]` renders its stub string on a test page
+2. Verify `[beds24_booking]` renders its stub string on a test page ← **outdated;
+   see continuation below — the block replaces the shortcode**
 3. Seed the refresh token into `wp_options` for propid 271142
 4. Confirm a `Beds24_API_Client(271142)->get_offers(...)` call works inside
    WordPress (proves the class integrates correctly with WP HTTP API and
@@ -184,3 +185,67 @@ Then frontend work:
 are blocked on the multi-room URL parameter empirical test (see architecture
 Known Unknown #1 and #2), which is a separate browser session with Chrome MCP
 against the live Beds24 booking page.
+
+---
+
+## Session 6 continuation — 2026-05-09
+
+Absorbed the design conversation's styling contract and reconciled the
+shortcode/block divergence. Three commits on top of `v0.1.0-api-client`.
+
+### Styling contract
+
+`docs/styling-contract.md` added and committed. Content is the design
+conversation's deliverable, landed unchanged. Five architectural decisions
+ratified, token roles documented (color, typography, spacing, layout),
+standard BEM class contract with `beds24-` namespace prefix defined, iframe
+CSS generation workflow specified.
+
+One terminology note: the prompt described the staleness mitigation as a
+"token-hash comparison mechanism"; the document uses timestamp comparison
+instead (when tokens last changed vs. when operator last confirmed paste).
+Both are staleness-detection approaches; the timestamp approach is what the
+design conversation produced. The structural requirement is met — V1.x scoped,
+specific mechanism, not just "future tooling."
+
+### Architecture doc
+
+`docs/architecture.md` has a new "Visual customization architecture" section
+after the multi-room URL construction block, pointing at
+`docs/styling-contract.md`. No other architecture content changed.
+
+### Block conversion
+
+`[beds24_booking]` shortcode removed from `plugin/beds24-booking-plugin.php`.
+Replaced by the `beds24/booking-flow` Gutenberg block.
+
+**Implementation approach: static block, PHP-rendered, no build step.**
+- `plugin/blocks/booking-flow/block.json` — block metadata, `apiVersion: 3`,
+  category `embed`, editorScript + render declared
+- `plugin/blocks/booking-flow/render.php` — server-side render callback,
+  V1 stub div, same output the shortcode produced
+- `plugin/blocks/booking-flow/editor.js` — plain JS (no JSX, no webpack),
+  uses global `wp.blocks` / `wp.element`, static placeholder in editor,
+  `save()` returns null (dynamic block pattern)
+
+Rationale for static/PHP approach: no build toolchain needed for V1's stub.
+If Session 7+ frontend work pushes toward rich editor interactivity, migrate
+then — complexity is not justified until there's a concrete requirement.
+
+### WordPress activation — still pending
+
+WordPress MCP is not configured in `.mcp.json` (only crosslink MCPs present).
+Activation and block-inserter verification could not happen in this session.
+This remains the first step for Session 7.
+
+Session 7 step 2 update: verify the **block** (not shortcode) can be inserted
+on a test page and renders the stub div on the front end. No pages using the
+old shortcode exist on staging (plugin was never activated), so no migration
+needed.
+
+### Repo state after continuation
+
+- HEAD: `1515a5c` (Convert shortcode to beds24/booking-flow Gutenberg block)
+- Remote: pushed and in sync with `origin/main`
+- Working tree: clean
+- Tag: `v0.1.0-api-client` unchanged (continuation is post-Session-6 cleanup)
