@@ -1,0 +1,13 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "beds24/booking-flow",
+    "version": "0.1.0",
+    "title": "Beds24 Booking Flow",
+    "category": "embed",
+    "description": "Renders the full Beds24 booking experience: date search, room results, cart, and Beds24 checkout iframe.",
+    "keywords": [ "beds24", "booking", "hostel", "accommodation" ],
+    "textdomain": "beds24-booking-plugin",
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

@@ -58,20 +58,18 @@ function beds24_booking_plugin_deactivate(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Shortcode
+// Block registration
 // ---------------------------------------------------------------------------
 
-add_shortcode( 'beds24_booking', 'beds24_booking_shortcode' );
+add_action( 'init', 'beds24_booking_plugin_register_blocks' );
 
 /**
- * [beds24_booking] shortcode handler.
+ * Register the beds24/booking-flow block.
  *
- * V1 stub: confirms the plugin is loaded. The real search form and room
- * results rendering will replace this output in a later session.
- *
- * @param  array $atts Shortcode attributes (unused in V1 stub).
- * @return string      HTML output.
+ * WordPress reads block.json from the block directory and handles
+ * editorScript enqueueing and render callback wiring automatically.
+ * The render callback is defined in blocks/booking-flow/render.php.
  */
-function beds24_booking_shortcode( array $atts = [] ): string {
-    return '<div class="beds24-booking-plugin">Beds24 Booking Plugin loaded.</div>';
+function beds24_booking_plugin_register_blocks(): void {
+    register_block_type( BEDS24_BOOKING_PLUGIN_DIR . 'blocks/booking-flow' );
 }
