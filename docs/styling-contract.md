@@ -1,0 +1,629 @@
+# Styling Contract — Beds24 Booking Plugin
+
+**Status:** Draft for ratification
+**Version:** 0.1.0 (pre-release)
+**Last updated:** 2026-05-08
+**Source documents:** `docs/architecture.md`, design-conversation responses 2026-05-08
+**Owners:** Plugin project (canonical), design conversation (contributor)
+
+---
+
+## Purpose
+
+This document defines the public styling surface of the Beds24 booking
+plugin. It specifies what the plugin emits as DOM (with documented CSS
+classes), what design tokens the plugin consumes from the active theme,
+and how themes can override defaults via theme.json or plugin admin
+settings.
+
+The contract is one-way:
+
+- The **plugin commits** to the documented DOM, the documented class
+  set, the documented token consumption behavior, and the stability
+  guarantees in this document.
+- The **theme commits to nothing.** A theme can populate any subset of
+  the documented tokens, target any subset of the documented classes,
+  or do neither. The plugin's defaults must produce a presentable
+  booking flow on a theme that has done nothing.
+
+This document is the source of truth. If the plugin's implementation
+diverges from the contract, fix the implementation or update the
+contract. Themes can rely on what is documented here; they cannot rely
+on undocumented internal classes or token names.
+
+---
+
+## Architectural decisions ratified
+
+These decisions are settled by this document. They are foundational to
+everything below. Future sessions revisit them only with explicit
+intent.
+
+### Decision 1 — theme.json consumption is the primary visual customization mechanism
+
+The plugin reads design tokens from the active theme's `theme.json`
+when present. This is the primary path for block themes.
+
+**Rationale:** All four hostel properties will use block themes. For
+the broader WP.org case, block themes are the current direction for
+new WordPress builds. Reading from theme.json gives themes a
+declarative, single-source-of-truth way to customize the plugin
+without writing CSS or configuring plugin settings separately.
+
+**Confidence:** High. Ratified in design conversation 2026-05-08
+following plugin project's proposed layered approach.
+
+### Decision 2 — Plugin admin settings are the fallback
+
+When a theme does not define the relevant tokens (classic themes, hybrid
+themes, themes that haven't adopted FSE), the plugin's admin UI lets
+operators configure values manually. Settings are stored in `wp_options`
+via CMB2.
+
+**Rationale:** The plugin must be usable on themes that haven't adopted
+theme.json. The admin settings panel is the path that makes the plugin
+work on any WordPress site, not only block-theme sites. For WP.org
+distribution, this is necessary.
+
+**Confidence:** High. Ratified together with Decision 1.
+
+### Decision 3 — CSS variables are the underlying transport
+
+Both theme.json tokens and admin settings produce CSS custom properties
+on the plugin's root element. All plugin styling references these
+variables. The DOM does not know or care which source populated them.
+
+**Variable namespace:** `--beds24-*`. Matches the `beds24-` class
+prefix used throughout the plugin's emitted DOM. Replaces the
+inconsistently-named `--booking-*` variables proposed in earlier
+discussion.
+
+**Rationale:** A single styling layer simplifies the plugin's CSS. The
+plugin's stylesheet references variables; the variables get populated
+from theme.json or admin settings depending on what's available;
+themes can additionally override variables directly via their own CSS
+if neither path is sufficient.
+
+**Confidence:** High. Standard CSS-variable-based theming pattern.
+
+### Decision 4 — The plugin renders structure; the theme renders character
+
+Distinctive visual elements (badges, polaroid treatments, marquees,
+display typography, decorative borders) are theme concerns. The plugin
+renders the booking flow's structure with predictable, themeable DOM.
+Themes layer character on top via CSS targeting the documented
+classes.
+
+**Rationale:** Property visual identity varies. A plugin that bakes in
+a specific aesthetic forces every property to match that aesthetic or
+fight the plugin. A plugin that exposes a styleable structure lets
+each property apply its own design language.
+
+**Confidence:** High. Aligns with `docs/architecture.md` design
+principle 2 (the plugin handles discovery; Beds24 handles
+transactions) and the predecessor project's design-language separation
+of structure and treatment.
+
+### Decision 5 — Iframe CSS is generated programmatically
+
+For the Beds24 iframe (the transaction half of the booking flow), the
+plugin generates a complete CSS payload from the configured tokens and
+displays it in plugin admin for the operator to copy into Beds24's
+"Insert in HTML \<HEAD\> bottom" field. The operator does not write CSS
+by hand.
+
+When tokens change (theme.json updates, admin settings change), the
+generated CSS changes. The operator regenerates and re-pastes.
+
+**Rationale:** The plugin lacks Beds24 admin API write access, and
+the architecture's transaction-boundary principle (`docs/architecture.md`)
+pushes back on the plugin having admin-write access regardless. The
+copy-paste workflow is operationally simple and keeps Beds24 admin
+under operator control. See `docs/skill/property-setup.md` for the
+field path and operational procedure.
+
+**Confidence:** High. Confirmed in design conversation 2026-05-08.
+
+**Known friction:** Operators will forget to regenerate and re-paste
+when tokens change. This is the most common kind of post-rollout
+customization and the friction will produce visual mismatches between
+the on-site rendering and the iframe.
+
+This is V1.x territory, not unbounded future work. The mitigation
+mechanism is sketched in Known unknown 6 below. V1 ships without the
+mitigation; the property setup documentation surfaces the dependency
+manually until the tooling lands.
+
+---
+
+## Design tokens consumed
+
+The plugin reads the following token roles from the active theme's
+theme.json. If a token is not defined, the plugin falls back to its
+default value (defined per-token below). Themes may define some,
+all, or none of these tokens.
+
+The plugin's admin settings UI lets operators configure these same
+roles when theme.json doesn't define them. The two sources are
+layered, not overlapping: theme.json is read first, and admin
+settings supply values only for roles theme.json hasn't defined. A
+role defined in theme.json is not overridable through admin
+settings in V1. See Known unknown 2 for the reasoning and the
+condition under which an override mechanism would be added.
+
+### Color tokens
+
+The plugin consumes colors by their semantic role, not by theme.json
+slug. The plugin's settings UI maps theme palette slugs to roles. For
+themes whose theme.json palette uses the same slugs the plugin looks
+for, mapping is automatic.
+
+| Role | Where used | Default value |
+|---|---|---|
+| `primary` | Confirm Booking button background, selected room highlight | `#2563eb` |
+| `primary-text` | Text on primary-colored surfaces | `#ffffff` |
+| `accent` | Price emphasis, "from" labels, badge highlights | `#f59e0b` |
+| `surface` | Room card backgrounds, cart background | `#ffffff` |
+| `surface-text` | Body text on surface backgrounds | `#1f2937` |
+| `surface-muted` | Secondary text (descriptions, metadata) | `#6b7280` |
+| `border` | Card borders, dividers, input borders | `#e5e7eb` |
+| `success` | Confirmation states, "available" indicators | `#10b981` |
+| `unavailable` | Sold-out states, disabled selections | `#9ca3af` |
+
+**Theme.json slug mapping:**
+
+When reading theme.json, the plugin first looks for a palette slug
+matching the role name (e.g., `primary`, `accent`). If not found, the
+plugin's admin UI prompts the operator to choose which theme color
+fills each role. The mapping is stored in `wp_options` and persists
+across plugin updates.
+
+**Default values rationale:**
+
+Defaults are visually plain — neutral palette, single accent — to
+avoid clashing with the widest range of themes. They produce a
+presentable booking flow on a stock theme without configuration.
+Themes that want a distinctive look override the variables; themes
+that don't can leave them as-is.
+
+### Typography tokens
+
+| Role | Where used | Default value |
+|---|---|---|
+| `font-family-body` | Room descriptions, form labels, body text | `system-ui, -apple-system, sans-serif` |
+| `font-family-heading` | Room names, section headings | `system-ui, -apple-system, sans-serif` |
+| `font-family-display` | Optional accent font for prices, "from" labels | (inherits `font-family-heading`) |
+| `font-size-base` | Body text base size | `1rem` |
+| `font-size-small` | Metadata, captions, tags | `0.875rem` |
+| `font-size-large` | Room names, prominent prices | `1.25rem` |
+| `font-weight-body` | Body text weight | `400` |
+| `font-weight-heading` | Heading weight | `600` |
+| `line-height-body` | Body text line height | `1.5` |
+| `line-height-heading` | Heading line height | `1.2` |
+
+**Theme.json mapping:**
+
+theme.json's `typography.fontFamilies` array is read. The plugin
+looks for slugs matching `body`, `heading`, and `display`. If not
+present, the plugin uses theme.json's default font (the first entry
+in `fontFamilies`) for all three roles. Sizes and weights are read
+from theme.json's typography presets where available; otherwise
+defaults apply.
+
+### Spacing tokens
+
+The plugin uses theme.json's spacing scale directly via the standard
+WordPress preset reference syntax (`var(--wp--preset--spacing--XX)`).
+Internally, the plugin's CSS variables map to specific scale steps:
+
+| Role | Used for | Default value |
+|---|---|---|
+| `space-xs` | Tag padding, tight inline gaps | `0.25rem` |
+| `space-sm` | Card internal padding (mobile), small gaps | `0.5rem` |
+| `space-md` | Card padding (desktop), section gaps (mobile) | `1rem` |
+| `space-lg` | Section gaps (desktop), card-to-card spacing | `1.5rem` |
+| `space-xl` | Major section breaks | `2rem` |
+
+**Theme.json mapping:**
+
+If theme.json defines `spacing.spacingScale`, the plugin maps its xs–xl
+roles to the closest scale steps. If theme.json defines explicit
+spacing presets with matching slugs (`xs`, `sm`, `md`, `lg`, `xl`), those
+are used directly. Otherwise defaults apply.
+
+**Why a five-step scale:**
+
+A booking interface has limited spacing variety in practice. Five
+roles cover the cases without over-specifying. A theme that wants
+finer control overrides the variables directly via CSS.
+
+### Layout tokens
+
+| Role | Used for | Default value |
+|---|---|---|
+| `border-radius` | Cards, buttons, inputs | `0.5rem` |
+| `border-radius-small` | Tags, small accents | `0.25rem` |
+| `shadow-card` | Room card elevation | `0 1px 3px rgba(0,0,0,0.1)` |
+| `shadow-floating` | Mobile cart bar, sticky elements | `0 -2px 8px rgba(0,0,0,0.1)` |
+| `card-max-width` | Constraint on card-bearing container width | `none` (cards fill their container) |
+
+**Theme.json mapping:**
+
+Border radius is read from theme.json's `custom` section if a
+`border-radius` key is defined. Shadows are not standardly defined in
+theme.json; the plugin uses admin-settings values when configured,
+falling back to the defaults above.
+
+---
+
+## CSS class contract
+
+### Principles
+
+The plugin emits DOM with classes following standard BEM conventions
+with a namespace prefix.
+
+**Namespace prefix:** `beds24-`. Every plugin-emitted block class
+begins with this prefix to avoid collisions with theme classes.
+
+**Naming convention:** `.beds24-<block>` for blocks (the major
+conceptual units — `.beds24-room-card`, `.beds24-search-form`),
+`.beds24-<block>__<element>` for elements within a block
+(`.beds24-room-card__price`, `.beds24-search-form__submit`),
+`.beds24-<block>--<modifier>` for state or variant modifiers on a
+block (`.beds24-room-card--selected`),
+`.beds24-<block>__<element>--<modifier>` for modifiers on elements
+(`.beds24-room-card__tag--unavailable`).
+
+The block portion is hyphen-separated when multi-word
+(`room-card`, not `roomcard` or `room_card`). The element and
+modifier separators (`__` and `--`) carry the BEM semantic and
+are not used elsewhere in class names.
+
+This is standard BEM with a project namespace prefix on each block.
+Theme developers familiar with BEM should recognize the convention
+without explanation.
+
+**Examples of correct class names:**
+
+- `.beds24-room-card` — block
+- `.beds24-room-card__photo` — element of the room-card block
+- `.beds24-room-card__price` — element of the room-card block
+- `.beds24-room-card--selected` — block-level modifier (selected state)
+- `.beds24-room-card__tag` — element
+- `.beds24-room-card__tag--unavailable` — element-level modifier
+- `.beds24-cart` — block
+- `.beds24-cart__item` — element
+- `.beds24-cart__confirm-button` — element (multi-word element name uses hyphen)
+
+**Public vs. internal:**
+
+Classes documented in the class catalog (below, when drafted) are
+**public**: themes can target them with confidence that the plugin
+will not rename or restructure them without a major version bump.
+
+Classes that the plugin emits but does not document are **internal**:
+the plugin reserves the right to rename, restructure, or remove them
+between versions. Themes that target undocumented classes do so at
+their own risk.
+
+The plugin commits to:
+
+- The documented classes existing on the documented DOM elements
+- The documented classes carrying the documented semantic meaning
+- New public classes being added in a forward-compatible way (existing
+  classes continue to work)
+- Removals or renames of public classes happening only in major
+  version bumps, with a deprecation notice in the prior minor version
+
+### Class catalog
+
+**[Section to be drafted by plugin project at Session 7+.]**
+
+The full class catalog requires the plugin's actual DOM emission to
+be drafted. Session 7+ will produce:
+
+- Search form classes (input wrappers, button, validation states)
+- Room card classes (container, photo area, content area, price area, action area, tag list, individual tags)
+- Cart classes (container, item list, individual items, total, confirm button)
+- Mobile-specific classes (bottom bar, drawer, drawer states)
+- State modifier classes (selected, unavailable, disabled, loading)
+
+When that catalog is drafted, this section is replaced with the full
+table. Each class entry will include:
+
+- The class name
+- What DOM element carries it
+- What it represents semantically
+- What other classes commonly co-occur on the same element
+- Any state variants (`--selected`, `--disabled`, etc.)
+
+### Targeting guidance for themes
+
+Themes that want to apply distinctive visual treatments (badges,
+polaroid borders, custom accents) target the public classes via their
+own stylesheet or via theme.json's `styles.blocks` declarations for
+the `beds24/booking-flow` block.
+
+The plugin's CSS specificity is intentionally low — single-class
+selectors, no `!important` declarations, no nested specificity tricks
+— so that theme CSS overrides cleanly without specificity battles.
+
+See `docs/retrospective.md` rule "Inject overrides via JS when CSS
+load order fails" for related context on specificity issues observed
+in the predecessor project.
+
+---
+
+## Iframe CSS generation
+
+For the iframe-rendered transaction half of the booking flow (guest
+details form, payment, confirmation), the plugin generates a CSS
+payload from the same token configuration that drives the on-site
+rendering.
+
+### Generation workflow
+
+1. The plugin's admin UI exposes a "Beds24 admin setup" page.
+2. This page displays a paste-ready CSS string, generated from the
+   currently-configured tokens.
+3. The operator copies the string and pastes it into Beds24's "Insert
+   in HTML \<HEAD\> bottom" field for the property. (See
+   `docs/skill/property-setup.md`.)
+4. When tokens change, the page displays the updated string. The
+   operator re-copies and re-pastes.
+
+The plugin does not write to Beds24 admin programmatically. The paste
+step is manual.
+
+### What the iframe CSS targets
+
+The CSS targets Beds24's rendered iframe DOM, not the plugin's own DOM.
+Selector targets are based on the predecessor project's accumulated
+DOM knowledge.
+
+The CSS sets the same `--beds24-*` variables on a root element inside
+the iframe, then applies them to the iframe's elements via selectors
+targeting Beds24's classes. This produces visual continuity between
+the on-site rendering (search, room cards, cart) and the iframe
+rendering (guest details, payment, confirmation).
+
+### Stability of the iframe CSS
+
+Beds24's iframe DOM is owned by Beds24 and may change without notice.
+The plugin's iframe CSS is more fragile than the on-site styling
+because of this — it depends on classes the plugin does not control.
+
+**Mitigation:** The predecessor project's retrospective (rules "Verify
+saves before building on them," "Test CSS against real DOM before
+deployment") informs the iframe CSS workflow. When Beds24 updates the
+iframe DOM, the plugin's iframe CSS may need updates; this is a
+maintenance task, not an unrecoverable failure.
+
+---
+
+## Stability and versioning
+
+### What is stable
+
+- The token roles documented in this document
+- The CSS variable names (`--beds24-*`) corresponding to those roles
+- The default values for each token (changes here are visible to
+  every consumer)
+- The class naming convention (standard BEM with `beds24-` namespace prefix)
+- Documented public classes (when the catalog is drafted)
+- The behavior of the theme.json reader (which slugs are looked for,
+  the fallback order)
+
+### What is internal and may change
+
+- Internal CSS classes not documented in the class catalog
+- The exact CSS rules the plugin uses to style its own DOM
+- The internal structure of the plugin's CSS (file organization,
+  custom properties beyond `--beds24-*`, internal mixins)
+- The plugin's admin UI implementation details
+
+### Versioning
+
+The plugin follows semantic versioning. The styling contract is
+versioned with the plugin.
+
+- **Major version bump:** breaking changes to public classes, token
+  roles, default values, or the variable namespace.
+- **Minor version bump:** additions to public classes, new optional
+  tokens, new default-value tokens. Existing consumers are not broken.
+- **Patch version bump:** internal changes, default-value
+  refinements that don't change semantic meaning.
+
+**Deprecation policy:** Public classes or tokens marked for removal in
+a future major version are documented as deprecated in the prior minor
+version. Themes have at least one minor-version cycle to migrate.
+
+---
+
+## Known unknowns
+
+These are open questions that need resolution at implementation. They
+are listed here so future sessions encountering them can find the
+context.
+
+### 1. theme.json palette slug conventions
+
+Whether to look only for the role-name slugs (`primary`, `accent`,
+etc.) or also accept common alternative slugs (`brand-primary`,
+`color-primary`, etc.) is not yet decided. The current plan is to look
+for role-name slugs first and fall back to admin-configured mapping.
+A list of common alternative slugs that are auto-recognized could
+reduce per-property configuration but adds complexity to the reader.
+
+**Verify at implementation:** when the plugin's theme.json reader is
+built (Session 7+), survey the four properties' theme.json files and
+record which slugs they actually use. If they consistently use
+non-standard slugs, expand the auto-recognition list. If they're
+inconsistent, leave the fallback as admin-configured.
+
+### 2. Default-value override mechanism
+
+When a theme defines theme.json tokens for some roles but not others,
+the plugin uses defaults for the unset roles. Whether the admin
+settings panel should also let operators override the defaults
+explicitly (even when theme.json sets them) is not decided.
+
+**Argument for:** operators may want to override a theme.json value
+without editing the theme.
+
+**Argument against:** introduces three layers of token sources
+(theme.json, admin settings, defaults) which is harder to reason
+about than two.
+
+**Verify at implementation:** start with admin settings as fallback
+only (no override of theme.json values). If operators report needing
+to override, add an explicit "override theme.json" toggle then.
+
+### 3. Iframe CSS stability under Beds24 updates
+
+The plugin's iframe CSS depends on Beds24's iframe DOM, which Beds24
+may change without notice. The plugin has no way to detect such
+changes proactively.
+
+**Verify at rollout:** the rollout plan for each property should
+include an end-to-end test of the iframe rendering. If Beds24 updates
+the iframe DOM between rollouts, the iframe CSS may need updates.
+
+### 4. Display token usage in V1
+
+The `font-family-display` token is documented but its actual use in
+V1 is limited (currently planned only for "from" labels and prominent
+prices). If V1 doesn't use a display font distinctly from the heading
+font, the token may be dropped from V1 and reintroduced when needed.
+
+**Verify at implementation:** Session 7+ decides whether to use the
+display token. If not used, mark as "reserved for future use" rather
+than removing — the doc references will accumulate slowly.
+
+### 5. Mobile cart styling tokens
+
+The mobile cart's bottom bar and slide-up drawer (per
+`docs/architecture.md`) may need their own token roles (e.g.,
+`mobile-bar-height`, `drawer-max-height`) that aren't currently
+listed. These are layout values that may not have analogues in
+theme.json and may need to be admin-settings-only.
+
+**Verify at implementation:** when the mobile cart is built (Session
+8+ likely), determine whether its layout tokens need to be exposed in
+this contract or remain internal.
+
+### 6. Iframe CSS staleness mitigation (V1.x scope)
+
+Decision 5 above describes a manual copy-paste workflow for the
+iframe CSS. This works for initial property setup but produces a
+predictable friction point: when an operator changes design tokens
+post-rollout (the most common kind of post-rollout customization),
+the on-site rendering updates immediately while the iframe CSS goes
+stale until the operator manually regenerates and re-pastes.
+
+V1 ships with the manual workflow only. V1.x adds a mitigation
+mechanism. The design conversation has thought through the UX shape
+in advance so the plugin project doesn't need to design it from
+scratch:
+
+**Approach considered (recommended):** automatic detection with
+prominent re-paste prompt. The plugin tracks two timestamps — when
+tokens last changed, and when the operator last confirmed pasting
+the iframe CSS. When the first is more recent than the second,
+plugin admin displays a prominent banner on relevant pages with the
+regenerated CSS and a copy button. The operator copies, pastes into
+Beds24's "Insert in HTML \<HEAD\> bottom" field, and confirms the
+paste in plugin admin to dismiss the banner.
+
+**Approaches considered and rejected:**
+
+- *Banner without copy affordance:* relies on operators noticing
+  the banner and navigating to find the CSS. Adds friction without
+  reducing it.
+- *Email notification to operator:* introduces SMTP dependency on
+  the WordPress install. WP email reliability is uneven; some sites
+  silently drop transactional email. Not robust enough to trust as
+  the primary signal.
+- *Automatic API push to Beds24 admin:* would require Beds24 admin
+  API write access the plugin doesn't have, and would conflict with
+  the architecture's transaction-boundary principle (the plugin
+  doesn't write to Beds24 admin).
+
+**Verify at implementation:** when V1.x lands the mitigation
+(Session 9+ likely), implement the automatic-detection-with-prompt
+approach. The exact banner placement, dismiss/confirm UX, and
+timestamp storage are plugin-project decisions; the design
+conversation has only specified the shape.
+
+**Property setup documentation in V1:** until the mitigation lands,
+`docs/skill/property-setup.md` must surface the dependency
+explicitly. Specifically: a section noting that any change to design
+tokens (theme.json updates, plugin admin settings changes) requires
+regenerating and re-pasting the iframe CSS, and where the
+regenerated CSS is found in plugin admin.
+
+---
+
+## Cross-references
+
+This document interacts with:
+
+- **`docs/architecture.md`** — the architectural reasoning behind the
+  plugin's structure, including the discovery-transaction boundary
+  that determines what the plugin renders vs. what Beds24 renders.
+  The styling contract applies to the plugin-rendered half; the
+  iframe CSS section bridges to the Beds24-rendered half.
+- **`docs/skill/property-setup.md`** — the operational procedure for
+  configuring each Beds24 property. Includes the copy-paste step for
+  the iframe CSS that this contract describes generating.
+- **`docs/architecture-pivot-decision.md`** — historical context for
+  why the plugin exists and why the discovery-transaction split was
+  chosen. Useful for understanding the constraints this contract
+  operates within.
+- **The design conversation's per-property design system docs**
+  (when established) — each property's theme.json values are the
+  design conversation's deliverable; this contract specifies what
+  those values feed into.
+
+---
+
+## Sections to be drafted by plugin project
+
+These sections of this document require plugin-implementation context
+that the design conversation does not have:
+
+1. **CSS class catalog** (in "CSS class contract" above) — the actual
+   list of public classes, what DOM they appear on, and what they
+   represent. Drafted at Session 7+ when the plugin's frontend
+   rendering is built.
+2. **Default value refinements** — the default token values in this
+   draft are reasonable starting points but may want adjustment based
+   on plugin team aesthetic preferences and WP.org distribution
+   considerations.
+3. **Specific theme.json slug list** for auto-recognition (per Known
+   unknown 1).
+4. **Versioning specifics** — exact policy on minor vs. patch bumps,
+   deprecation notice format, changelog conventions for contract
+   changes.
+
+The design conversation has fully drafted the sections it has standing
+to define: token roles, the contract framework, the cross-cutting
+principles, the iframe CSS workflow.
+
+---
+
+## Document history
+
+- **2026-05-08:** Initial draft for ratification. Token roles,
+  contract framework, architectural decisions, and known unknowns
+  drafted by design conversation. CSS class catalog and some defaults
+  marked as to-be-drafted by plugin project.
+- **2026-05-08 (rev 1):** Three corrections following plugin-project
+  review. Body text in "Design tokens consumed" intro corrected to
+  match Known Unknown 2 (theme.json values not overridable through
+  admin settings in V1). Class naming convention corrected to
+  standard BEM with `beds24-` namespace prefix (was incorrectly
+  using `.beds24` as a single root class). Iframe CSS staleness
+  mitigation lifted from "future tooling" to V1.x scope as Known
+  Unknown 6, with worked-through UX shape.
