@@ -59,6 +59,23 @@ it is actually run, update the expected-state line to the new HEAD before
 pasting. The commit hash in a stale session prompt causes a state-check halt
 that requires re-reading and correcting the prompt before work begins.
 
+**Continuation prompts.** When a Code session continues (same instance,
+follow-up prompt), no launch command is needed — just paste the continuation
+prompt. New sessions in a fresh terminal need the launch command. Drafted
+prompts that are meant as continuations should be marked as such so the
+operator knows not to look for a launch command.
+
+**Operator-side material stays operator-side.** Personal preferences,
+environment notes, and operator-side reasoning don't go in Code-facing
+prompts. They live in OPERATING.md or the operator's local notes. Prompts
+to Code contain only what Code needs to do the work.
+
+**Operator saves files directly when practical.** For large content
+(drafted documents, captured wiki pages, design specs), the operator saves
+the file directly to the repo and the Code session commits it. Embedding
+hundreds of lines of content inside a prompt for Code to write is
+unnecessary friction.
+
 ---
 
 ## Project conventions (operator-facing)
