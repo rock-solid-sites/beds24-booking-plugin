@@ -72,6 +72,30 @@ a clean slate.
 
 ---
 
+## Session 8 start checks
+
+*Items below are inherited from this session's end state. Verify each
+before relying on it — handoff facts can drift if intermediate work
+happened off-session or if earlier claims were inferences rather than
+measurements.*
+
+- **Repo:** `git log --oneline -1` matches expected HEAD; `git status`
+  shows clean working tree (`.claude/` untracked is expected).
+- **VPS SSH:** `ssh tripn-vps` connects as `claude-code`.
+- **WP-CLI:** `wp --version` returns 2.12.0 at `~/.local/bin/wp`; if
+  absent, `WP_CLI_PHP` in `~/.bashrc` may need sourcing.
+- **Chill Zone WordPress:** `https://chillzone.astrongpresence.com/wp-admin`
+  loads and accepts credentials for `astrongpresencebiz_kixfumj4`.
+- **MCP stack:** both MCP Adapter and mcp-expose-abilities show active
+  and auto-updates off on the Plugins page.
+- **Beds24 refresh token:** `wp option get beds24_booking_plugin_refresh_token_271142`
+  returns a non-empty value.
+- **Application Password:** operator confirms `.env` contains a valid
+  `WORDPRESS_APP_PASSWORD_CHILL_ZONE` (value cannot be re-retrieved
+  from WordPress — if missing, generate a new one).
+
+---
+
 ## Session 8 scope
 
 **Plugin repo clone to VPS + Beds24 booking plugin install on Chill Zone.**
