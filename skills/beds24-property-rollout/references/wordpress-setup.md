@@ -2,8 +2,8 @@
 
 **Status:** Partially verified
 **Verified against:** SSH user and ACL setup (step 7) verified on
-staging VPS 2026-05-11. Remaining steps (MCP stack, WP-CLI, Application
-Password) pending verification on first property setup.
+staging VPS 2026-05-11. MCP stack verification pending Session 7 on
+Chill Zone staging.
 **Companion document:** `references/property-setup.md` (Beds24-side
 configuration for the same property)
 
@@ -39,6 +39,8 @@ ratified during design conversation 2026-05-08:
   block libraries
 - **Forms:** Fluent Forms (free version)
 - **Booking:** the project's custom Beds24 plugin (separate repo)
+- **Caching:** LiteSpeed Cache plugin (default with OpenLiteSpeed
+  via aapanel); handles page cache and Cloudflare integration
 - **MCP layer:** Abilities API (core 6.9), MCP Adapter (plugin),
   mcp-expose-abilities (plugin)
 - **Build agent access:** SSH from Claude Code, plus MCP via
@@ -107,22 +109,55 @@ abilities. Core 6.9 ships three read-only abilities
 `core/get-environment-info`) — useful for site introspection but
 insufficient for build operations.
 
+The `WordPress/abilities-api` GitHub repository was archived in
+February 2026 once the API merged into 6.9 core. The standalone
+plugin remains available as a back-compat path for sites running
+WordPress older than 6.9; this project standardizes on 6.9+ and
+treats the API as a core feature, not a separate install.
+
 **Layer 2 — MCP Adapter.** The official WordPress core team plugin
 that exposes the Abilities API to MCP-aware agents over HTTP.
-Repository: `github.com/WordPress/mcp-adapter`. Install as a
-standard WordPress plugin. Activate.
+Repository: `github.com/WordPress/mcp-adapter`. **Not available on
+the WordPress.org plugin directory** — install from the GitHub
+releases page only. Activate after install.
 
 **Layer 3 — mcp-expose-abilities.** Community plugin that registers
-~66 core abilities (and additional add-ons available, none of which
-are needed for this project). Provides the content-management
+66 core abilities (additional add-ons available, none of which are
+needed for this project). Provides the content-management
 abilities (`content/create-page`, `content/patch-post`,
 `media/upload`, `menus/add-item`) that the build phase needs.
-Repository: `github.com/bjornfix/mcp-expose-abilities`. Install as a
-standard WordPress plugin. Activate.
+Repository: `github.com/bjornfix/mcp-expose-abilities`. **Not
+available on the WordPress.org plugin directory** — install from
+the GitHub releases page only. Activate after install.
 
 Installation order matters: Abilities API must be available (it
 will be, in 6.9 core), then MCP Adapter must be active before
 mcp-expose-abilities can register against it.
+
+#### Install method
+
+Both MCP Adapter and mcp-expose-abilities are GitHub-only. The
+install paths in order of preference:
+
+1. **WP-CLI from a GitHub release URL:**
+
+       wp plugin install https://github.com/WordPress/mcp-adapter/releases/latest/download/mcp-adapter.zip --activate
+       wp plugin install https://github.com/bjornfix/mcp-expose-abilities/releases/latest/download/mcp-expose-abilities.zip --activate
+
+   (Verify the exact asset filename on each release page before
+   running; release ZIP naming can vary by upstream conventions.)
+
+2. **WordPress admin upload:** download the release ZIP locally,
+   then Plugins → Add New → Upload Plugin.
+
+3. **Git clone into `wp-content/plugins/`:** clone the repo
+   directly. Useful when running `composer install` is needed
+   (MCP Adapter ships Composer dependencies and may require this
+   step depending on the release).
+
+For this project, WP-CLI install from release URL is the default.
+Fall back to git clone + composer install if the release ZIP omits
+vendored dependencies.
 
 #### Version pinning
 
@@ -140,10 +175,66 @@ build, manual updates only, after testing.
 
 #### Add-ons not used
 
-mcp-expose-abilities ships several optional add-ons (filesystem,
-GeneratePress, Elementor, etc.). None are needed for this project.
-The core 66 abilities cover all required operations. Install only
-the core plugin.
+mcp-expose-abilities ships several optional add-ons (Filesystem,
+Elementor, GeneratePress, Cloudflare, Rank Math, Wordfence, etc.).
+None are needed for this project. The core 66 abilities cover all
+required operations. Install only the core plugin.
+
+Note on the Cloudflare add-on specifically: cache management for
+this project is handled by LiteSpeed Cache plugin (default with
+OpenLiteSpeed), which integrates with Cloudflare natively. The MCP
+Cloudflare add-on would duplicate that responsibility and requires
+storing Cloudflare API credentials in WordPress options. Skip it.
+
+### 4a. MCP-public meta flag
+
+A WordPress 6.9 default that's easy to miss: **abilities are not
+exposed via MCP by default.** Every ability registered with the
+Abilities API must carry a `meta.mcp.public = true` flag for the
+MCP Adapter's default server to include it in discovery. This is
+a deliberate safety control — abilities can be registered for
+internal PHP/REST use without becoming AI-callable.
+
+**What mcp-expose-abilities handles automatically:** the plugin
+sets `meta.mcp.public = true` on its own 66 abilities at
+registration time via the `mcp_expose_all_abilities()` filter.
+After installing both stack plugins, the 66 mcp-expose-abilities
+abilities should appear in MCP discovery.
+
+**What requires explicit exposure:** the 3 abilities in WordPress
+core (`core/get-site-info`, `core/get-user-info`,
+`core/get-environment-info`) are registered without the meta flag
+and will not appear in MCP discovery unless a bridge mu-plugin
+adds it via the `wp_register_ability_args` filter.
+
+**Bridge mu-plugin pattern** (drop into
+`wp-content/mu-plugins/mcp-ability-bridge.php` if site/user/
+environment introspection abilities are wanted, or as a fallback
+if mcp-expose-abilities doesn't expose its own abilities):
+
+    <?php
+    /**
+     * Plugin Name: MCP Ability Bridge
+     * Description: Exposes core WordPress abilities via MCP.
+     */
+    add_filter(
+        'wp_register_ability_args',
+        static function ( array $args, string $ability_id ): array {
+            // Skip MCP Adapter's own abilities (already exposed).
+            if ( str_starts_with( $ability_id, 'mcp-adapter/' ) ) {
+                return $args;
+            }
+            $args['meta']['mcp']['public'] = true;
+            return $args;
+        },
+        10,
+        2
+    );
+
+The mu-plugin path is recommended over a regular plugin so the
+bridge can't be deactivated accidentally from the admin Plugins
+screen. mu-plugins under `wp-content/mu-plugins/` load
+unconditionally.
 
 ### 5. WP-CLI verification
 
@@ -152,9 +243,7 @@ it by default, but verify before relying on it.
 
 Over SSH:
 
-```bash
-wp --version
-```
+    wp --version
 
 Should return `WP-CLI 2.x.x` or higher. If the command isn't found,
 install WP-CLI per the official instructions
@@ -185,19 +274,17 @@ Do not look for an aapanel UI for this; use the commands below.
 
 #### Creating the SSH user
 
-```bash
-# Create user (adjust uid/gid to first available on your VPS)
-useradd -m -u 1003 -g 1005 -G www claude-code
-# Lock password — SSH key auth only
-usermod -L claude-code
-# Create .ssh directory
-mkdir -p /home/claude-code/.ssh
-chmod 700 /home/claude-code/.ssh
-# Add authorized key (reuse existing key or generate a new one)
-cat /root/.ssh/authorized_keys > /home/claude-code/.ssh/authorized_keys
-chmod 600 /home/claude-code/.ssh/authorized_keys
-chown -R claude-code:claude-code /home/claude-code/.ssh
-```
+    # Create user (adjust uid/gid to first available on your VPS)
+    useradd -m -u 1003 -g 1005 -G www claude-code
+    # Lock password — SSH key auth only
+    usermod -L claude-code
+    # Create .ssh directory
+    mkdir -p /home/claude-code/.ssh
+    chmod 700 /home/claude-code/.ssh
+    # Add authorized key (reuse existing key or generate a new one)
+    cat /root/.ssh/authorized_keys > /home/claude-code/.ssh/authorized_keys
+    chmod 600 /home/claude-code/.ssh/authorized_keys
+    chown -R claude-code:claude-code /home/claude-code/.ssh
 
 Verified configuration on staging VPS: user `claude-code`, uid 1003,
 primary group `claude-code` (gid 1005), supplementary group `www`.
@@ -205,10 +292,10 @@ Password locked. SSH key reuses the root authentication key (same
 human, two paths into the box — intentional).
 
 Optional sshd hardening (in `/etc/ssh/sshd_config`):
-```
-AllowUsers root claude-code
-PermitRootLogin prohibit-password
-```
+
+    AllowUsers root claude-code
+    PermitRootLogin prohibit-password
+
 Reload sshd after editing: `systemctl reload sshd`.
 
 #### Granting access to WordPress site files
@@ -220,15 +307,13 @@ alone were not sufficient for all operations; POSIX ACLs are used
 instead.
 
 Apply per-site access ACL:
-```bash
-setfacl -R -m u:claude-code:rwX /www/wwwroot/<site-dir>/
-```
+
+    setfacl -R -m u:claude-code:rwX /www/wwwroot/<site-dir>/
 
 Apply default ACL on the parent so new sites inherit access
 automatically:
-```bash
-setfacl -d -m u:claude-code:rwX /www/wwwroot/
-```
+
+    setfacl -d -m u:claude-code:rwX /www/wwwroot/
 
 Capital `X` (not lowercase `x`) avoids setting the execute bit on
 text and PHP files — execute is granted only to directories and
@@ -280,10 +365,22 @@ After completing the steps above, verify the setup is working:
    shows both as active and auto-updates disabled.
 4. **WP-CLI works:** `wp --info` over SSH returns version info and
    reads the WordPress install correctly.
-5. **MCP discovery works:** from Claude Code (or another MCP-aware
-   client), authenticate to the WordPress site and call
-   `discover-abilities`. Should return the core 3 abilities plus
-   the 66 from mcp-expose-abilities (~69 total).
+5. **MCP discovery works — progressive check:**
+   - From an MCP-aware client (or via the REST endpoint
+     `/wp-json/mcp/mcp-adapter-default-server`), call
+     `discover-abilities`.
+   - **After MCP Adapter activated, before mcp-expose-abilities:**
+     discovery returns only the MCP Adapter's own built-ins
+     (`mcp-adapter-discover-abilities`,
+     `mcp-adapter-get-ability-info`,
+     `mcp-adapter-execute-ability`). The 3 `core/*` abilities will
+     not appear unless the bridge mu-plugin is installed.
+   - **After mcp-expose-abilities activated:** discovery should
+     additionally return ~66 abilities in `content/*`, `plugins/*`,
+     `menus/*`, `widgets/*`, `media/*`, `users/*`, `options/*`,
+     `system/*` namespaces.
+   - If the jump to ~66 doesn't happen, install the bridge
+     mu-plugin (see §4a) and re-check.
 6. **SSH access works:** SSH from the build agent's environment
    reaches the VPS and can list `wp-content/themes/`.
 
@@ -336,6 +433,15 @@ aapanel supports multiple PHP versions side-by-side. The default may
 be older than 8.0 on some installs. Verify and switch if needed
 before installing mcp-expose-abilities.
 
+### 4. Release ZIP asset naming
+
+Both MCP Adapter and mcp-expose-abilities use GitHub Releases for
+distribution. Asset filenames within a release may not always match
+`<repo-name>.zip` (e.g., release tag variations, version suffixes).
+Confirm the exact filename on each release page before running
+`wp plugin install <url>`. If the release lacks vendored Composer
+dependencies, fall back to git clone + `composer install`.
+
 ---
 
 ## Document history
@@ -348,3 +454,12 @@ before installing mcp-expose-abilities.
   management. Added concrete user creation commands, ACL approach
   (POSIX ACLs via setfacl, not group permissions), and aapanel-specific
   notes (www group gid 1000, .user.ini immutability).
+- **2026-05-11:** MCP install path corrected — both MCP Adapter and
+  mcp-expose-abilities are GitHub-only, not on WordPress.org plugin
+  directory. Added §4a MCP-public meta flag section covering the
+  6.9 default that abilities aren't MCP-exposed without explicit
+  opt-in, with the bridge mu-plugin pattern. Verification step 5
+  restructured as a progressive check. LiteSpeed Cache plugin added
+  to the Stack overview as the canonical cache layer; Cloudflare MCP
+  add-on explicitly skipped. Stable-tag for mcp-expose-abilities
+  noted as 66 (not "~66"). Status line refined.
