@@ -12,7 +12,7 @@ is the next full work session.
 ## State at session end
 
 **Plugin repo (`beds24-booking-plugin`):** clean working tree at HEAD
-`520a4896675fa656becab84298c8adc89c9735f2`. All Session 6 follow-up commits pushed
+`f7a2af4db4a476350133c40cbeb9033ba9479c39`. All Session 6 follow-up commits pushed
 to `origin/main`.
 
 **Site-design repo (`tripn-sites`):** clean working tree at HEAD
