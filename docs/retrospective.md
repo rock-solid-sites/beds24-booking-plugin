@@ -1475,3 +1475,34 @@ Linux tooling.
 that would have misled VPS setup work on future properties.
 
 **Resolution:** `wordpress-setup.md` corrected as part of this session.
+
+---
+
+### 2026-05-11 — Verify cross-document references with grep before closing a session
+
+When a session's work involves moving, renaming, or removing files that are referenced elsewhere, the session must end with grep verification across the affected repos before the closing commit, not as a follow-up task.
+
+Two observations grounded this rule:
+
+- The Session 6 consolidation moved files from `docs/skill/` to `skills/<name>/references/` and reported "all references updated," but four active references in `docs/styling-contract.md` survived and three file-level moves weren't committed at all.
+- The Session 6 follow-up caught both gaps via an explicit grep step in the session prompt. The catches happened because verification was in scope, not because the original session was re-examined.
+
+The pattern: a session that updates references in the files it has in hand will miss references in files it doesn't think to open. Grep across the affected repos surfaces them mechanically.
+
+Practical shape:
+- After the substantive work, run `grep -rn "<old-path>" --include="*.md" .` for any file paths that changed
+- For cross-repo work, run grep in each affected repo
+- Treat any surviving reference as either an in-scope fix or an explicit decision to leave it; don't let it slide silently
+
+---
+
+### 2026-05-11 — Acknowledge and decide on session scope drift, don't slide
+
+When a session's actual work diverges materially from its named scope by mid-session, pause and decide explicitly whether to:
+
+- Rename the session to reflect the actual scope and continue
+- Hold the line on the original scope and defer the discovered work to its own session
+
+Don't let scope drift silently. The implicit-acceptance pattern produces sessions that ostensibly accomplish one thing but actually did something else, which makes the session record harder to use as a reference.
+
+The Session 6 follow-up that established this rule was a worked example: started intending MCP setup, found the surrounding documentation was inconsistent enough to make MCP setup risky, and spent the session making documentation reliable instead. That was the right call but the session's identity should reflect it.
