@@ -1506,3 +1506,43 @@ When a session's actual work diverges materially from its named scope by mid-ses
 Don't let scope drift silently. The implicit-acceptance pattern produces sessions that ostensibly accomplish one thing but actually did something else, which makes the session record harder to use as a reference.
 
 The Session 6 follow-up that established this rule was a worked example: started intending MCP setup, found the surrounding documentation was inconsistent enough to make MCP setup risky, and spent the session making documentation reliable instead. That was the right call but the session's identity should reflect it.
+
+---
+
+### 2026-05-11 — Secrets in Code prompts: write up to the gate
+
+**Context.** A prior session established that Code prompts should not
+contain operator-fillable blanks (e.g., `{REFRESH_TOKEN_VALUE}`). The
+substitution-just-before-paste pattern is fragile — easy to miss, easy
+to paste literal, easy to leave broken state.
+
+**Where this session surfaced friction.** Session 7's continuation
+prompt needed the Beds24 refresh token value. Two bad options surfaced
+first: (1) include the secret value in chat directly so the prompt is
+complete, which puts a long-lived secret in chat history; (2) use a
+placeholder marker the operator substitutes, which reintroduces the
+fragility the no-blanks rule warns against.
+
+**Rule.** When a Code prompt needs a secret value, write the prompt
+only up to the gating action where the secret would appear, and stop
+there. Do not write the gating command itself with a placeholder. Do
+not write subsequent steps that depend on the gating action.
+
+The operator then constructs the single gating command themselves, with
+the secret substituted directly, and pastes that one command to Code.
+Once Code reports back, a continuation prompt covers the remaining
+steps.
+
+**Why this works.** The secret never appears in chat (the operator
+constructs and pastes the command directly to Code). There's no template
+to substitute into and no marker to overlook — the operator writes the
+single command from scratch using the secret. The handoff is one
+command, not a multi-step prompt block requiring careful substitution.
+
+**Distinguishing secrets from other values.** A value is a secret when
+its disclosure in chat would meaningfully change the security posture
+(i.e., would require rotation). API tokens, refresh tokens, passwords,
+OAuth credentials, private keys — secrets. Configuration paths,
+usernames, port numbers, file paths — not secrets; handle via the
+normal no-blanks rule (request the value or write up to the point it
+becomes available).
