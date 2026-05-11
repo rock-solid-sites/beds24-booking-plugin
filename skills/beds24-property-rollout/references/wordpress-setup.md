@@ -159,6 +159,17 @@ For this project, WP-CLI install from release URL is the default.
 Fall back to git clone + composer install if the release ZIP omits
 vendored dependencies.
 
+**Symlink caveat.** When installing a plugin from a separate
+location on disk (e.g., a developer's clone outside the WordPress
+site directory), symlinks can fail on VPSes with restrictive PHP
+`open_basedir` settings. PHP resolves the symlink to its target
+path before checking `open_basedir`; if the target is outside the
+allowed paths, PHP refuses to load the file even though the symlink
+itself is valid. The plugin may appear correctly registered (WP-CLI
+sees it, activation succeeds) while front-end requests silently
+fail. Directory copy is the safe default. See "VPS environment
+notes" below for the constraint on the project's current VPS.
+
 #### Version pinning
 
 Disable auto-updates for both MCP Adapter and mcp-expose-abilities.
@@ -462,6 +473,48 @@ dependencies, fall back to git clone + `composer install`.
 
 ---
 
+## VPS environment notes (current VPS)
+
+The runbook above is written to be portable across VPSes running
+aapanel + OpenLiteSpeed. The following constraints are specific to
+the project's current VPS and may differ on other VPSes; verify on
+first deployment to a new host.
+
+### open_basedir
+
+aapanel configures a per-site `open_basedir` PHP restriction in the
+site's Nginx vhost config, typically scoped to:
+
+    /tmp/:/www/wwwroot/<site-directory>/
+
+Any PHP file the site needs to load must live within those paths.
+Practical implications:
+
+- Symlink-based plugin install (symlinking a directory from outside
+  `/www/wwwroot/<site>/` into `wp-content/plugins/`) fails on the
+  front end despite working in WP-CLI. PHP resolves the symlink
+  before applying `open_basedir`, so the target's location is what
+  matters. The plugin appears active in WP admin and WP-CLI; PHP
+  silently fails to load it on front-end requests.
+- Plugin updates from a separate clone must be applied as file
+  copies, not symlink updates. Workflow: `git pull` in the clone,
+  then copy changed files into the site's plugins directory.
+- The constraint applies per-site. If multiple property sites need
+  a shared plugin location, the location must be inside a path
+  allowed by each site's `open_basedir` — most likely impossible
+  without modifying aapanel's vhost generation.
+
+The setting is managed by aapanel; the `claude-code` user cannot
+directly read the Nginx vhost config. Modifying it (if ever needed)
+requires root and aapanel awareness.
+
+### Other constraints
+
+Add new VPS-specific constraints to this section as they are
+discovered.
+
+---
+
 ## Document history
 
 - **2026-05-08:** Initial draft from design conversation. Captures
@@ -490,3 +543,9 @@ dependencies, fall back to git clone + `composer install`.
   practice. Bridge mu-plugin demoted to contingency. `wp rest list`
   availability note added to step 5 (WP-CLI verification). Status
   updated to verified for Chill Zone staging.
+- **2026-05-12:** Added open_basedir constraint discovered during
+  Session 8 plugin install. Symlink caveat added to §4 Install method
+  (before Version pinning). New "VPS environment notes" section added
+  with full detail on aapanel's per-site `open_basedir` restriction,
+  its practical implications for plugin install workflows, and the
+  copy-based update workflow required as a result.
