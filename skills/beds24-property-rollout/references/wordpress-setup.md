@@ -1,9 +1,9 @@
 # WordPress Setup — Plugin Stack and Build Environment
 
-**Status:** Partially verified
+**Status:** Verified for Chill Zone staging
 **Verified against:** SSH user and ACL setup (step 7) verified on
-staging VPS 2026-05-11. MCP stack verification pending Session 7 on
-Chill Zone staging.
+staging VPS 2026-05-11. MCP stack (steps 4–5) verified on Chill Zone
+staging 2026-05-11 (Session 7).
 **Companion document:** `references/property-setup.md` (Beds24-side
 configuration for the same property)
 
@@ -253,6 +253,15 @@ The build phase uses WP-CLI for operations not well-suited to MCP:
 file/theme operations, plugin activation, options updates, bulk
 queries. WP-CLI complements the MCP stack rather than replacing it.
 
+**Note on `wp rest list`:** the command to enumerate REST routes
+(`wp rest list`) is available in WP-CLI 2.13 and later. For WP-CLI
+2.12 and earlier, enumerate routes via:
+
+    wp eval 'print_r(array_keys(rest_get_server()->get_routes()));'
+
+Chill Zone's VPS runs WP-CLI 2.12.0, installed at `~/.local/bin/wp`
+with `WP_CLI_PHP=/www/server/php/83/bin/php` configured in `~/.bashrc`.
+
 ### 6. Forms plugin
 
 Install Fluent Forms (free version, from the WordPress plugin
@@ -366,21 +375,30 @@ After completing the steps above, verify the setup is working:
 4. **WP-CLI works:** `wp --info` over SSH returns version info and
    reads the WordPress install correctly.
 5. **MCP discovery works — progressive check:**
-   - From an MCP-aware client (or via the REST endpoint
-     `/wp-json/mcp/mcp-adapter-default-server`), call
-     `discover-abilities`.
+   - The MCP endpoint speaks JSON-RPC 2.0 over HTTP via
+     `POST /wp-json/mcp/mcp-adapter-default-server`. GET requests
+     return HTTP 405 (SSE not implemented in MCP Adapter v0.5.0).
+   - **Discovery flow:** send an `initialize` request → capture the
+     `Mcp-Session-Id` value from the response header → send a
+     `tools/call` request with `mcp-adapter-discover-abilities` as the
+     tool name, including the session ID header. The response lists all
+     exposed abilities.
    - **After MCP Adapter activated, before mcp-expose-abilities:**
-     discovery returns only the MCP Adapter's own built-ins
-     (`mcp-adapter-discover-abilities`,
-     `mcp-adapter-get-ability-info`,
-     `mcp-adapter-execute-ability`). The 3 `core/*` abilities will
-     not appear unless the bridge mu-plugin is installed.
-   - **After mcp-expose-abilities activated:** discovery should
-     additionally return ~66 abilities in `content/*`, `plugins/*`,
-     `menus/*`, `widgets/*`, `media/*`, `users/*`, `options/*`,
-     `system/*` namespaces.
-   - If the jump to ~66 doesn't happen, install the bridge
-     mu-plugin (see §4a) and re-check.
+     discovery returns only the 3 MCP Adapter built-ins
+     (`mcp-adapter-discover-abilities`, `mcp-adapter-get-ability-info`,
+     `mcp-adapter-execute-ability`).
+   - **After mcp-expose-abilities activated:** discovery returns
+     **74 abilities** (verified on Chill Zone staging, 2026-05-11):
+     68 from mcp-expose-abilities (across `content/*`, `plugins/*`,
+     `menus/*`, `comments/*`, `users/*`, `media/*`, `system/*`,
+     `options/*`, `widgets/*`, `meta/*`, `taxonomy/*` namespaces),
+     3 MCP Adapter built-ins (`mcp-adapter/*`), and 3 `core/*`
+     abilities. The `core/*` abilities appeared without the bridge
+     mu-plugin — load order was not an issue in practice.
+   - The bridge mu-plugin (§4a) remains a documented contingency but
+     is not the default path. If `core/*` abilities are missing after
+     both plugins are active, install the bridge mu-plugin and
+     re-check.
 6. **SSH access works:** SSH from the build agent's environment
    reaches the VPS and can list `wp-content/themes/`.
 
@@ -463,3 +481,12 @@ dependencies, fall back to git clone + `composer install`.
   to the Stack overview as the canonical cache layer; Cloudflare MCP
   add-on explicitly skipped. Stable-tag for mcp-expose-abilities
   noted as 66 (not "~66"). Status line refined.
+- **2026-05-11:** MCP stack verification completed on Chill Zone
+  staging (Session 7). Verification step 5 updated: endpoint confirmed
+  as JSON-RPC 2.0 POST (GET returns 405); discovery flow requires
+  `initialize` → capture `Mcp-Session-Id` → `tools/call`. Verified
+  ability count on Chill Zone is 74 (68 mcp-expose + 3 mcp-adapter + 3
+  core); `core/*` abilities appeared without the bridge mu-plugin in
+  practice. Bridge mu-plugin demoted to contingency. `wp rest list`
+  availability note added to step 5 (WP-CLI verification). Status
+  updated to verified for Chill Zone staging.
