@@ -87,7 +87,11 @@ principle is explicitly revisited.
 - **Use Beds24 admin field names** when communicating about Beds24
   configuration (e.g., "Insert in HTML \<HEAD\> bottom", not `customhead`).
 - **Design target:** Hostelworld-like density, not minimalist. The
-  approved mockup at `docs/mockup.html` defines the visual language.
+  mockup at `docs/mockup.html` is the canonical visual reference for
+  the booking-page DOM structure and layout — what the plugin emits.
+  Layout and functionality carry across properties; visual presentation
+  (colors, typography, accent treatments) is per-property and is
+  captured in the tripn-sites repo's per-property handoff documents.
 - **Fail loud during dev** — no graceful degradation fallbacks that hide
   bugs.
 - **At session end:** add a retrospective entry if a failure mode was
@@ -132,6 +136,29 @@ https://beds24.com/booking3.php?propid={id}&checkin={date}&checkout={date}
 - Beds24 v2 API — live availability and pricing (`GET /properties`,
   `GET /inventory/rooms/offers`)
 - WordPress plugin admin — room descriptions, photos, amenity labels
+
+---
+
+## Two-repo structure
+
+The project uses two repositories with distinct scopes:
+
+- **`beds24-booking-plugin`** (this repo) — the plugin: search form,
+  room results, cart accumulation, Beds24 API integration, block
+  registration. Plugin Code sessions live here.
+- **`tripn-sites`** — per-property site design artifacts: handoff
+  documents, child theme specs, content briefs. VPS-side build
+  sessions use tripn-sites' per-property handoffs as input.
+
+The styling contract bridges them: the plugin emits DOM structure;
+per-property themes emit visual presentation (colors, typography,
+accent treatments). Per-property design decisions live in tripn-sites,
+not in this repo.
+
+**Plugin Code sessions should not expand scope into site-design work.
+That is tripn-sites' territory.** If a session starts pulling in
+per-property visual decisions or child theme details, it has drifted
+into the wrong repo's concerns.
 
 ---
 

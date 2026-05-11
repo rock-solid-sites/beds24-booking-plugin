@@ -1337,3 +1337,141 @@ commits had the session added untracked files without noticing.
 corrupted entry in UTF-8 using Python (the system Python at
 `/c/Python312/python`, not the store alias). Crosslink's init then
 replaced the ad-hoc entry with a properly managed gitignore block.
+
+---
+
+### 2026-05-11 — aapanel makes .user.ini immutable
+
+**Context:** VPS setup session — creating SSH users and configuring
+POSIX ACLs for site file access on the staging server.
+
+**What happened:** File operations targeting `.user.ini` files returned
+`Operation not permitted` (EPERM) even when running as root. Initial
+interpretation was a filesystem or permissions failure requiring
+investigation.
+
+**Root causes:**
+1. aapanel applies `chattr +i` (immutable flag) to every site's
+   `.user.ini` file to protect its `open_basedir` PHP restrictions
+   from being overwritten.
+2. The immutable flag blocks all writes, renames, and link operations
+   on the file — including those by root. This is expected aapanel
+   behavior, not a filesystem failure.
+
+**Rules established:** Future Code sessions encountering EPERM on
+`.user.ini` should recognize this pattern and move on rather than
+treating it as a blocker. If a legitimate edit is ever needed:
+`chattr -i <path>` to remove the immutable flag (root required), make
+the change, then `chattr +i <path>` to restore. Do not leave
+`.user.ini` files without the immutable flag after editing.
+
+**Concrete cost:** Diagnostic time spent treating expected behavior as
+an unexpected failure.
+
+**Resolution:** Recognized as expected aapanel behavior. Proceeding
+past `.user.ini` files without modification is correct.
+
+---
+
+### 2026-05-11 — Code's Bash tool has a static analyzer
+
+**Context:** Running multi-step shell commands during SSH user and ACL
+setup on the VPS.
+
+**What happened:** Several commands were rejected before execution with
+the message `Contains shell syntax (string) that cannot be statically
+analyzed`. The rejection is a pre-execution check — the command does
+not run.
+
+**Root causes:**
+1. Code's Bash tool runs commands through static analysis before
+   executing. Known rejected constructs:
+   - `$(...)` command substitution
+   - Some `for`/glob control flow
+   - The `time` keyword in some shell contexts
+2. Rejection is a hard stop with no partial execution.
+
+**Rules established:** When the analyzer rejects a script, flatten to
+a sequence of plain commands. Don't fight the analyzer; restructure.
+Trade-off: a flat sequence without `set -e` won't halt on first
+failure, so verifying each step's output becomes more important.
+Idempotent operations (like `setfacl`) are safer in this pattern
+because re-running them is harmless. Measure performance outside the
+script rather than wrapping commands with `time`.
+
+**Concrete cost:** Commands had to be restructured mid-session.
+
+**Resolution:** Restructured affected commands as plain sequences.
+Recognized as expected tool behavior, not a session failure.
+
+---
+
+### 2026-05-11 — Flag plan deviations explicitly
+
+**Context:** Executing the SSH/user/ACL setup plan on the VPS.
+
+**What happened:** Code made technical refinements during execution
+without explicitly flagging them as deviations from the plan:
+
+1. Used `setfacl -m u:claude-code:rwX` (capital X) rather than
+   lowercase `x`. Capital X means "execute only if directory or
+   already executable" — avoids setting the execute bit on text/PHP
+   files. An improvement, but not surfaced proactively.
+2. Chose `usermod -L` (lock password) rather than generating a
+   password and saving it to file. Sensible for SSH-key-only
+   authentication, but the deviation wasn't flagged until operator
+   feedback prompted it.
+
+**Root causes:**
+1. Deviation-flagging discipline was applied inconsistently —
+   flagged for the `setfacl` case, missed for `usermod`.
+2. The "technical refinement" vs. "deviation" distinction was
+   being evaluated informally rather than uniformly applied.
+
+**Rules established:** When Code's approach diverges from the prompt —
+even when the deviation is an improvement — name the change, the
+reason, and leave the call with the operator. The discipline is uniform
+regardless of whether the deviation is a technical refinement (flag
+choices, command alternatives) or a procedural one (sequencing, skipped
+steps). Surface deviations; don't smuggle them in silently.
+
+**Concrete cost:** Operator feedback loop required to surface the
+`usermod` deviation. Small time cost but breaks the collaborative model
+where deviations are transparent.
+
+**Resolution:** Corrected via operator feedback during the session.
+Added as an explicit process rule.
+
+---
+
+### 2026-05-11 — aapanel does not manage SSH users
+
+**Context:** Planning SSH user setup for VPS access. The
+`wordpress-setup.md` skill reference contained a claim that "aapanel's
+user management can scope an SSH user to specific directories."
+
+**What happened:** aapanel does not create or manage Linux SSH users —
+this applies to both the free and paid versions, confirmed via aapanel
+staff responses on their official forum. SSH user creation is standard
+Linux work: `useradd`, `~/.ssh/authorized_keys`, optionally `AllowUsers`
+in `sshd_config`. aapanel runs as root and manages WordPress sites as
+the `www` user; that is the extent of its user management.
+
+**Root causes:**
+1. The `wordpress-setup.md` claim was written from research and
+   inference, not verified against aapanel's actual behavior.
+2. The claim was specific enough ("can scope an SSH user to specific
+   directories") to read as authoritative, making it more likely to
+   be acted on rather than questioned.
+
+**Rules established:** aapanel provides hosting infrastructure (PHP,
+OpenLiteSpeed, MySQL, WP Toolkit) and manages WordPress sites as `www`.
+Linux user management — including SSH users — is OS-level work done
+with standard Linux commands, not aapanel commands. Do not look to
+aapanel docs for SSH user creation or file access scoping; use standard
+Linux tooling.
+
+**Concrete cost:** Incorrect documentation in `wordpress-setup.md`
+that would have misled VPS setup work on future properties.
+
+**Resolution:** `wordpress-setup.md` corrected as part of this session.

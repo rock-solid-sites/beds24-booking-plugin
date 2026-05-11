@@ -1,9 +1,10 @@
 # WordPress Setup — Plugin Stack and Build Environment
 
-**Status:** Draft for ratification
-**Verified against:** Not yet verified — drafted from research, requires
-verification on first property setup
-**Companion document:** `docs/skill/property-setup.md` (Beds24-side
+**Status:** Partially verified
+**Verified against:** SSH user and ACL setup (step 7) verified on
+staging VPS 2026-05-11. Remaining steps (MCP stack, WP-CLI, Application
+Password) pending verification on first property setup.
+**Companion document:** `references/property-setup.md` (Beds24-side
 configuration for the same property)
 
 ---
@@ -177,21 +178,72 @@ Claude Code needs SSH access to the VPS to write theme files,
 create patterns, and execute WP-CLI commands. This is the gating
 dependency for the build phase.
 
-Setup steps (one-time, project-level rather than per-property since
-SSH credentials work across all properties on the same VPS):
+Setup is one-time and project-level (SSH credentials work across all
+properties on the same VPS). **aapanel does not manage SSH users** —
+SSH user creation is standard Linux work, not an aapanel operation.
+Do not look for an aapanel UI for this; use the commands below.
 
-1. On the VPS, create or verify an SSH key-based account for Claude
-   Code's use. Standard SSH key authentication; no password access.
-2. The account needs read/write access to `/path/to/wp-content/`
-   for each property's WordPress install.
-3. The account needs permission to execute `wp` (WP-CLI) commands.
-4. Provide the SSH credentials to Claude Code's environment via
-   whatever mechanism the operator prefers (environment variables,
-   SSH config file, etc.).
+#### Creating the SSH user
 
-Aapanel's user management can scope an SSH user to specific
-directories; consult aapanel's SSH user documentation for the
-specific procedure on your aapanel version.
+```bash
+# Create user (adjust uid/gid to first available on your VPS)
+useradd -m -u 1003 -g 1005 -G www claude-code
+# Lock password — SSH key auth only
+usermod -L claude-code
+# Create .ssh directory
+mkdir -p /home/claude-code/.ssh
+chmod 700 /home/claude-code/.ssh
+# Add authorized key (reuse existing key or generate a new one)
+cat /root/.ssh/authorized_keys > /home/claude-code/.ssh/authorized_keys
+chmod 600 /home/claude-code/.ssh/authorized_keys
+chown -R claude-code:claude-code /home/claude-code/.ssh
+```
+
+Verified configuration on staging VPS: user `claude-code`, uid 1003,
+primary group `claude-code` (gid 1005), supplementary group `www`.
+Password locked. SSH key reuses the root authentication key (same
+human, two paths into the box — intentional).
+
+Optional sshd hardening (in `/etc/ssh/sshd_config`):
+```
+AllowUsers root claude-code
+PermitRootLogin prohibit-password
+```
+Reload sshd after editing: `systemctl reload sshd`.
+
+#### Granting access to WordPress site files
+
+aapanel uses group `www` (gid 1000) — not `www-data` (gid 33).
+WordPress files under `/www/wwwroot/` are owned `www:www`. The
+`claude-code` user is a member of `www`, but group write permissions
+alone were not sufficient for all operations; POSIX ACLs are used
+instead.
+
+Apply per-site access ACL:
+```bash
+setfacl -R -m u:claude-code:rwX /www/wwwroot/<site-dir>/
+```
+
+Apply default ACL on the parent so new sites inherit access
+automatically:
+```bash
+setfacl -d -m u:claude-code:rwX /www/wwwroot/
+```
+
+Capital `X` (not lowercase `x`) avoids setting the execute bit on
+text and PHP files — execute is granted only to directories and
+files already marked executable.
+
+Note: `.user.ini` files inside each site will refuse ACL changes
+with EPERM — this is expected. aapanel applies `chattr +i` to these
+files. Skip them; no ACL change is needed on `.user.ini`.
+
+#### Providing credentials to Claude Code
+
+Provide the SSH host, username (`claude-code`), and private key path
+via Claude Code's environment — SSH config file (`~/.ssh/config`) is
+the recommended approach, or environment variables if the operator
+prefers.
 
 ### 8. Application Password for MCP
 
@@ -242,7 +294,7 @@ build phase assumes all six work.
 
 ## Cross-references
 
-- `docs/skill/property-setup.md` — Beds24-side configuration. This
+- `references/property-setup.md` — Beds24-side configuration. This
   document is the WordPress-side companion.
 - `docs/architecture.md` — architectural reasoning for the stack
   decisions.
@@ -291,3 +343,8 @@ before installing mcp-expose-abilities.
 - **2026-05-08:** Initial draft from design conversation. Captures
   the stack decisions ratified during architecture/design discussion.
   Verification against actual property setup pending.
+- **2026-05-11:** Step 7 (SSH access) rewritten based on verified
+  staging VPS setup. Corrected false claim about aapanel SSH user
+  management. Added concrete user creation commands, ACL approach
+  (POSIX ACLs via setfacl, not group permissions), and aapanel-specific
+  notes (www group gid 1000, .user.ini immutability).

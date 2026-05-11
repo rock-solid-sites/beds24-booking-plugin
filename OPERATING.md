@@ -40,6 +40,39 @@ claude-mode rollout -- --permission-mode default
 
 ---
 
+## VPS-side Code launch pattern
+
+Claude Code sessions running on the VPS (via SSH) differ from the
+local developer-machine pattern above. No `.claude-mode.json` is
+available unless the tripn-sites repo is cloned on the VPS.
+
+```bash
+# From wherever the SSH session lands (typically /home/claude-code/)
+claude-mode <built-in preset>
+```
+
+No `cd` to a project directory is required first. VPS sessions operate
+on individual site directories via explicit paths.
+
+Only built-in `claude-mode` presets are available. Approximate
+equivalents to the project's custom presets:
+
+| Plugin project preset | Built-in equivalent | Use for |
+|---|---|---|
+| `architecture` | `methodical` | Design and documentation |
+| `v1-build` | `create` | Site build work |
+| `rollout` / `bugfix` | `safe` | Live site changes |
+| `review` | `explore` | Read-only investigation |
+
+Pass `--base chill` explicitly on the VPS when the chill base is
+wanted — no `.claude-mode.json` provides the default:
+
+```bash
+claude-mode methodical -- --base chill --permission-mode default
+```
+
+---
+
 ## Session prompt conventions
 
 Session prompts are pasted as the first user message. They live in session
@@ -85,6 +118,16 @@ that meaningfully progress the project. Small follow-on commits — rule
 additions, doc fixes, post-session cleanup — belong to the previous full
 session and are not assigned their own number. The next numbered session
 picks up from the highest number committed.
+
+**Two-repo structure.** The project uses two repositories:
+- `beds24-booking-plugin` (this repo) — plugin development and deployment
+- `tripn-sites` — per-property site design artifacts (handoffs, child theme specs, content)
+
+Plugin development work happens in this repo. Site-design work happens
+in tripn-sites. The styling contract is the bridge between them —
+the plugin emits structure; per-property themes emit visual presentation.
+VPS-side site building uses tripn-sites' per-property handoffs as input;
+the built WordPress sites are not in any repo.
 
 **Predecessor project.** This plugin supersedes `TripN-Chill-Zone/booking-page`
 (archived tag `archived-2026-05-07`). The pivot decision and reasoning are in
