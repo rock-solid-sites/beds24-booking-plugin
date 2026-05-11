@@ -170,16 +170,11 @@ defer to these answers unless the principle is explicitly revisited.
 **Read when the task requires it:**
 
 *Code structure:*
-- `docs/skill/SKILL.md` — working discipline and skill index (when
-  established)
-- `docs/skill/api-client.md` — Beds24 v2 API client architecture
-- `docs/skill/url-construction.md` — multi-room booking URL scheme
+- `skills/beds24-api-work/references/api-client.md` — Beds24 v2 API client architecture
 
 *Configuration:*
-- `docs/skill/property-setup.md` — Beds24 admin minimum configuration
+- `skills/beds24-property-rollout/references/property-setup.md` — Beds24 admin minimum configuration
   per property (Layout 6 with Offer Select only, etc.)
-- `docs/skill/wp-admin.md` — plugin's WordPress admin UI structure
-- `docs/skill/gotchas.md` — known pitfalls
 
 *Planning and context:*
 - `docs/v1-plan.md` (during V1 build) — phase-by-phase plan

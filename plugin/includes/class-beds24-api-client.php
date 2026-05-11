@@ -25,7 +25,7 @@
  *   HTTP errors, JSON parse errors, and missing token states all surface as
  *   WP_Error. Callers check with is_wp_error() before using the result.
  *
- * @see docs/skill/api-client.md for the full reference.
+ * @see skills/beds24-api-work/references/api-client.md for the full reference.
  * @see docs/reference/beds24-api-v2/openapi.yaml for endpoint schemas.
  */
 
