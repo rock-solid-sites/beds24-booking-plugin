@@ -105,9 +105,11 @@ the user's first framing rather than examining it.
 - Use Beds24 admin field names when communicating about Beds24
   configuration (e.g., "Insert in HTML <HEAD> bottom", not
   `customhead`).
-- Design target: Hostelworld-like density, not minimalist. The
-  predecessor project's mockup defines the visual language; this
-  project inherits and refines it.
+- Booking page design target: Hostelworld-like density, not minimalist.
+  Marketing site design is per-property and theme-driven — density
+  framing applies to the booking page specifically (room cards, dates,
+  prices), not the wider site. The predecessor project's mockup defines
+  the visual language; this project inherits and refines it.
 - Fail loud during dev — no graceful degradation fallbacks that hide
   bugs.
 - At session end: add a retrospective entry if a failure mode was

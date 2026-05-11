@@ -86,12 +86,15 @@ principle is explicitly revisited.
   doesn't map cleanly to human-hour estimates.
 - **Use Beds24 admin field names** when communicating about Beds24
   configuration (e.g., "Insert in HTML \<HEAD\> bottom", not `customhead`).
-- **Design target:** Hostelworld-like density, not minimalist. The
-  mockup at `docs/mockup.html` is the canonical visual reference for
-  the booking-page DOM structure and layout — what the plugin emits.
-  Layout and functionality carry across properties; visual presentation
-  (colors, typography, accent treatments) is per-property and is
-  captured in the tripn-sites repo's per-property handoff documents.
+- **Booking page design target:** Hostelworld-like density, not
+  minimalist. Marketing site design is per-property and theme-driven —
+  density framing applies to the booking page specifically (room cards,
+  dates, prices), not the wider site. The mockup at `docs/mockup.html`
+  is the canonical visual reference for the booking-page DOM structure
+  and layout — what the plugin emits. Layout and functionality carry
+  across properties; visual presentation (colors, typography, accent
+  treatments) is per-property and is captured in the tripn-sites repo's
+  per-property handoff documents.
 - **Fail loud during dev** — no graceful degradation fallbacks that hide
   bugs.
 - **At session end:** add a retrospective entry if a failure mode was
