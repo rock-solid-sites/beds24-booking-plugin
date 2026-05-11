@@ -119,7 +119,7 @@ generated CSS changes. The operator regenerates and re-pastes.
 the architecture's transaction-boundary principle (`docs/architecture.md`)
 pushes back on the plugin having admin-write access regardless. The
 copy-paste workflow is operationally simple and keeps Beds24 admin
-under operator control. See `docs/skill/property-setup.md` for the
+under operator control. See `skills/beds24-property-rollout/references/property-setup.md` for the
 field path and operational procedure.
 
 **Confidence:** High. Confirmed in design conversation 2026-05-08.
@@ -369,7 +369,7 @@ rendering.
    currently-configured tokens.
 3. The operator copies the string and pastes it into Beds24's "Insert
    in HTML \<HEAD\> bottom" field for the property. (See
-   `docs/skill/property-setup.md`.)
+   `skills/beds24-property-rollout/references/property-setup.md`.)
 4. When tokens change, the page displays the updated string. The
    operator re-copies and re-pastes.
 
@@ -557,7 +557,7 @@ timestamp storage are plugin-project decisions; the design
 conversation has only specified the shape.
 
 **Property setup documentation in V1:** until the mitigation lands,
-`docs/skill/property-setup.md` must surface the dependency
+`skills/beds24-property-rollout/references/property-setup.md` must surface the dependency
 explicitly. Specifically: a section noting that any change to design
 tokens (theme.json updates, plugin admin settings changes) requires
 regenerating and re-pasting the iframe CSS, and where the
@@ -574,7 +574,7 @@ This document interacts with:
   that determines what the plugin renders vs. what Beds24 renders.
   The styling contract applies to the plugin-rendered half; the
   iframe CSS section bridges to the Beds24-rendered half.
-- **`docs/skill/property-setup.md`** — the operational procedure for
+- **`skills/beds24-property-rollout/references/property-setup.md`** — the operational procedure for
   configuring each Beds24 property. Includes the copy-paste step for
   the iframe CSS that this contract describes generating.
 - **`docs/architecture-pivot-decision.md`** — historical context for
