@@ -169,6 +169,9 @@ for, mapping is automatic.
 | `border` | Card borders, dividers, input borders | `#e5e7eb` |
 | `success` | Confirmation states, "available" indicators | `#10b981` |
 | `unavailable` | Sold-out states, disabled selections | `#9ca3af` |
+| `error` | Text color for validation error messages | `#dc2626` |
+| `error-bg` | Background of error message regions | `#fef2f2` |
+| `error-border` | Border of error message regions | `#fecaca` |
 
 **Theme.json slug mapping:**
 
@@ -347,18 +350,6 @@ Its classes follow the BEM `beds24-search-form` block namespace.
 |---|---|---|
 | `beds24-booking-flow` | `<div>` | Outermost block wrapper. The plugin's root element. CSS custom property (`--beds24-*`) defaults are defined here. Themes override by targeting this class with their own custom property assignments. |
 | `wp-block-beds24-booking-flow` | `<div>` (same element) | WordPress-generated block identifier. Not part of the plugin's public class contract; do not rely on it for styling. |
-
-**Token additions (Session 9):**
-
-Three error-state tokens not in the original contract token table were
-added in Session 9's CSS and are documented here pending a full token
-table update:
-
-| Token | Role | Default |
-|---|---|---|
-| `--beds24-color-error` | Text color for validation error messages | `#dc2626` |
-| `--beds24-color-error-bg` | Background of the error message region | `#fef2f2` |
-| `--beds24-color-error-border` | Border of the error message region | `#fecaca` |
 
 ---
 
@@ -664,3 +655,7 @@ principles, the iframe CSS workflow.
   using `.beds24` as a single root class). Iframe CSS staleness
   mitigation lifted from "future tooling" to V1.x scope as Known
   Unknown 6, with worked-through UX shape.
+- **2026-05-12 (Session 9):** Search form class catalog drafted.
+  Three error-state color tokens (`error`, `error-bg`, `error-border`)
+  promoted from a temporary catalog note to the canonical Color tokens
+  table.
