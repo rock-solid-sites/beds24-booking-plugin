@@ -318,25 +318,62 @@ The plugin commits to:
 
 ### Class catalog
 
-**[Section to be drafted by plugin project at Session 7+.]**
+The catalog is built incrementally as the plugin's frontend layers are
+implemented. Entries added in Session 9 cover the search form. Room
+card, cart, and mobile bar entries follow in later sessions.
 
-The full class catalog requires the plugin's actual DOM emission to
-be drafted. Session 7+ will produce:
+---
 
-- Search form classes (input wrappers, button, validation states)
-- Room card classes (container, photo area, content area, price area, action area, tag list, individual tags)
-- Cart classes (container, item list, individual items, total, confirm button)
-- Mobile-specific classes (bottom bar, drawer, drawer states)
-- State modifier classes (selected, unavailable, disabled, loading)
+#### Search form — `beds24-search-form` block (added Session 9)
 
-When that catalog is drafted, this section is replaced with the full
-table. Each class entry will include:
+The search form renders as a `<form>` element inside the block wrapper.
+Its classes follow the BEM `beds24-search-form` block namespace.
 
-- The class name
-- What DOM element carries it
-- What it represents semantically
-- What other classes commonly co-occur on the same element
-- Any state variants (`--selected`, `--disabled`, etc.)
+| Class | Element | Semantics | State variants | Co-occurring classes |
+|---|---|---|---|---|
+| `beds24-search-form` | `<form>` | Root of the search form. Carries `data-property-id` and `data-min-stay` attributes consumed by the frontend JS. | — | — |
+| `beds24-search-form__min-stay` | `<p>` | Minimum stay notice displayed above the date inputs (e.g. "Minimum stay: 2 nights"). Informational; not an interactive element. | — | — |
+| `beds24-search-form__fields` | `<div>` | Flex container holding the two date field groups. Renders side-by-side on desktop (≥768px), stacked on mobile. | — | — |
+| `beds24-search-form__field-group` | `<div>` | Wrapper for one label + input pair. Two instances: check-in and check-out. | — | — |
+| `beds24-search-form__label` | `<label>` | Field label ("Check-in", "Check-out"). Associates with its input via `for` attribute. | — | — |
+| `beds24-search-form__check-in` | `<input type="date">` | Check-in date input. Native browser date picker. `id="beds24-check-in"` in V1 (static; single-instance assumption). | — | — |
+| `beds24-search-form__check-out` | `<input type="date">` | Check-out date input. Native browser date picker. `id="beds24-check-out"` in V1. | — | — |
+| `beds24-search-form__error` | `<div>` | Validation error message region. Hidden via the HTML `hidden` attribute when no error is present. JS removes `hidden` to reveal, sets it to re-hide. Carries `role="alert"` and `aria-live="assertive"` for accessible error announcement. | Hidden by default; revealed by JS on validation failure. No CSS class variant — the `hidden` attribute is the toggle. | — |
+| `beds24-search-form__submit` | `<button type="submit">` | Search Rooms submit button. Full-width. Primary color background. | `:disabled` state styled (unavailable color, `not-allowed` cursor) for future use when the button is disabled during API loading. | — |
+
+**Block wrapper (not part of the `beds24-search-form` BEM block):**
+
+| Class | Element | Semantics |
+|---|---|---|
+| `beds24-booking-flow` | `<div>` | Outermost block wrapper. The plugin's root element. CSS custom property (`--beds24-*`) defaults are defined here. Themes override by targeting this class with their own custom property assignments. |
+| `wp-block-beds24-booking-flow` | `<div>` (same element) | WordPress-generated block identifier. Not part of the plugin's public class contract; do not rely on it for styling. |
+
+**Token additions (Session 9):**
+
+Three error-state tokens not in the original contract token table were
+added in Session 9's CSS and are documented here pending a full token
+table update:
+
+| Token | Role | Default |
+|---|---|---|
+| `--beds24-color-error` | Text color for validation error messages | `#dc2626` |
+| `--beds24-color-error-bg` | Background of the error message region | `#fef2f2` |
+| `--beds24-color-error-border` | Border of the error message region | `#fecaca` |
+
+---
+
+#### Pending catalog sections
+
+The following sections will be drafted when their frontend layers are built:
+
+- **Room card classes** — `.beds24-room-card` block: container, photo area,
+  content area, price area, action area, tag list, individual tags, available
+  and unavailable state modifiers. (Session 10+)
+- **Cart classes** — `.beds24-cart` block: container, item list, individual
+  items, running total, Confirm Booking button. (Later session)
+- **Mobile cart classes** — bottom bar and slide-up drawer. (Later session)
+- **State modifier classes** — `--selected`, `--unavailable`, `--disabled`,
+  `--loading` variants across blocks. (Added per block as implemented)
 
 ### Targeting guidance for themes
 

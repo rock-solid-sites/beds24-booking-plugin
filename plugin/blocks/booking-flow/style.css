@@ -1,0 +1,203 @@
+/*
+ * Beds24 Booking Plugin — booking-flow block styles.
+ *
+ * Consumes --beds24-* custom properties. Fallback defaults are defined on
+ * the block root (.beds24-booking-flow) so the form is presentable on any
+ * theme that has not populated the tokens.
+ *
+ * Specificity contract (see docs/styling-contract.md):
+ *   - Single-class selectors throughout.
+ *   - No !important.
+ *   - No descendant-nesting specificity tricks.
+ *   - Themes override via their own single-class rules or custom-property
+ *     assignments on .beds24-booking-flow.
+ */
+
+/* ==========================================================================
+   Token defaults
+   Defined on the block root. Themes override by targeting .beds24-booking-flow
+   and setting the same custom property names, or via theme.json tokens (V1.x).
+   ========================================================================== */
+
+.beds24-booking-flow {
+    --beds24-color-primary:       #2563eb;
+    --beds24-color-primary-text:  #ffffff;
+    --beds24-color-accent:        #f59e0b;
+    --beds24-color-surface:       #ffffff;
+    --beds24-color-surface-text:  #1f2937;
+    --beds24-color-surface-muted: #6b7280;
+    --beds24-color-border:        #e5e7eb;
+    --beds24-color-success:       #10b981;
+    --beds24-color-unavailable:   #9ca3af;
+    --beds24-color-error:         #dc2626;
+    --beds24-color-error-bg:      #fef2f2;
+    --beds24-color-error-border:  #fecaca;
+
+    --beds24-space-xs: 0.25rem;
+    --beds24-space-sm: 0.5rem;
+    --beds24-space-md: 1rem;
+    --beds24-space-lg: 1.5rem;
+    --beds24-space-xl: 2rem;
+
+    --beds24-border-radius:       0.5rem;
+    --beds24-border-radius-small: 0.25rem;
+    --beds24-shadow-card:         0 1px 3px rgba(0, 0, 0, 0.1);
+
+    --beds24-font-family-body:    system-ui, -apple-system, sans-serif;
+    --beds24-font-family-heading: system-ui, -apple-system, sans-serif;
+    --beds24-font-size-base:      1rem;
+    --beds24-font-size-small:     0.875rem;
+    --beds24-font-weight-body:    400;
+    --beds24-font-weight-heading: 600;
+    --beds24-line-height-body:    1.5;
+    --beds24-line-height-heading: 1.2;
+}
+
+/* ==========================================================================
+   Search form — block container
+   ========================================================================== */
+
+.beds24-search-form {
+    background-color: var(--beds24-color-surface);
+    border:           1px solid var(--beds24-color-border);
+    border-radius:    var(--beds24-border-radius);
+    box-shadow:       var(--beds24-shadow-card);
+    padding:          var(--beds24-space-lg);
+    max-width:        560px;
+    box-sizing:       border-box;
+    font-family:      var(--beds24-font-family-body);
+    font-size:        var(--beds24-font-size-base);
+    font-weight:      var(--beds24-font-weight-body);
+    line-height:      var(--beds24-line-height-body);
+    color:            var(--beds24-color-surface-text);
+}
+
+/* ==========================================================================
+   Minimum stay note
+   ========================================================================== */
+
+.beds24-search-form__min-stay {
+    margin:     0 0 var(--beds24-space-md) 0;
+    font-size:  var(--beds24-font-size-small);
+    color:      var(--beds24-color-surface-muted);
+    font-style: italic;
+}
+
+/* ==========================================================================
+   Date fields row — side-by-side on desktop, stacked on mobile
+   ========================================================================== */
+
+.beds24-search-form__fields {
+    display:       flex;
+    gap:           var(--beds24-space-md);
+    margin-bottom: var(--beds24-space-md);
+}
+
+.beds24-search-form__field-group {
+    flex:           1;
+    display:        flex;
+    flex-direction: column;
+    gap:            var(--beds24-space-xs);
+}
+
+/* ==========================================================================
+   Labels
+   ========================================================================== */
+
+.beds24-search-form__label {
+    display:     block;
+    font-size:   var(--beds24-font-size-small);
+    font-weight: var(--beds24-font-weight-heading);
+    color:       var(--beds24-color-surface-muted);
+}
+
+/* ==========================================================================
+   Date inputs
+   ========================================================================== */
+
+.beds24-search-form__check-in,
+.beds24-search-form__check-out {
+    width:            100%;
+    padding:          var(--beds24-space-sm) var(--beds24-space-md);
+    border:           1px solid var(--beds24-color-border);
+    border-radius:    var(--beds24-border-radius-small);
+    font-family:      var(--beds24-font-family-body);
+    font-size:        var(--beds24-font-size-base);
+    color:            var(--beds24-color-surface-text);
+    background-color: var(--beds24-color-surface);
+    box-sizing:       border-box;
+    /* Restore native date picker affordance in case a theme reset strips it. */
+    -webkit-appearance: auto;
+    appearance:         auto;
+}
+
+.beds24-search-form__check-in:focus,
+.beds24-search-form__check-out:focus {
+    outline:        2px solid var(--beds24-color-primary);
+    outline-offset: 1px;
+    border-color:   var(--beds24-color-primary);
+}
+
+/* ==========================================================================
+   Error message region
+   The HTML hidden attribute hides this element (display:none) when empty.
+   JS removes the hidden attribute to reveal it, sets setAttribute('hidden')
+   to re-hide it. No CSS class toggle needed.
+   ========================================================================== */
+
+.beds24-search-form__error {
+    margin-bottom:    var(--beds24-space-sm);
+    padding:          var(--beds24-space-sm) var(--beds24-space-md);
+    background-color: var(--beds24-color-error-bg);
+    border:           1px solid var(--beds24-color-error-border);
+    border-radius:    var(--beds24-border-radius-small);
+    color:            var(--beds24-color-error);
+    font-size:        var(--beds24-font-size-small);
+}
+
+/* ==========================================================================
+   Submit button
+   ========================================================================== */
+
+.beds24-search-form__submit {
+    display:          block;
+    width:            100%;
+    padding:          var(--beds24-space-sm) var(--beds24-space-md);
+    background-color: var(--beds24-color-primary);
+    color:            var(--beds24-color-primary-text);
+    border:           none;
+    border-radius:    var(--beds24-border-radius);
+    font-family:      var(--beds24-font-family-body);
+    font-size:        var(--beds24-font-size-base);
+    font-weight:      var(--beds24-font-weight-heading);
+    line-height:      var(--beds24-line-height-body);
+    cursor:           pointer;
+    box-sizing:       border-box;
+    text-align:       center;
+}
+
+.beds24-search-form__submit:hover {
+    opacity: 0.88;
+}
+
+.beds24-search-form__submit:focus {
+    outline:        2px solid var(--beds24-color-primary);
+    outline-offset: 2px;
+}
+
+.beds24-search-form__submit:disabled {
+    background-color: var(--beds24-color-unavailable);
+    cursor:           not-allowed;
+    opacity:          1;
+}
+
+/* ==========================================================================
+   Mobile: stack date fields vertically at 767px
+   Matches the predecessor mockup's mobile breakpoint convention.
+   ========================================================================== */
+
+@media (max-width: 767px) {
+    .beds24-search-form__fields {
+        flex-direction: column;
+    }
+}

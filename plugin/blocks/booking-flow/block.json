@@ -9,5 +9,7 @@
     "keywords": [ "beds24", "booking", "hostel", "accommodation" ],
     "textdomain": "beds24-booking-plugin",
     "editorScript": "file:./editor.js",
+    "style": "file:./style.css",
+    "viewScript": "file:./view.js",
     "render": "file:./render.php"
 }
