@@ -188,6 +188,29 @@ This is not a workaround. It is the correct division of labor:
 Beds24 manages bookings and availability; WordPress manages
 presentation and marketing copy.
 
+**Room content storage — custom post type:**
+
+Room content is stored as a custom post type (`beds24_room`), registered
+by the plugin. Each Beds24 room maps to one post of this type. The fields
+map as follows:
+
+| Post field | Room content |
+|---|---|
+| Post title | Room name |
+| Post content | Room description |
+| Featured image | Primary room photo (via media library) |
+| `_beds24_room_id` | Beds24 room ID (post meta); links API responses to WordPress content |
+
+Additional amenities — custom amenities that have no Beds24 OTA feature
+code (e.g., "Hot spring access," "Hammock terrace") — are stored as terms
+in a custom taxonomy registered on `beds24_room`. Beds24 OTA featureCodes
+are **not** stored here: they are resolved at render time by the plugin's
+built-in mapping table and displayed as labels without WordPress storage.
+
+Each property's WordPress install has its own set of `beds24_room` posts.
+The plugin's render code queries by `_beds24_room_id` to match API offer
+responses to the correct WordPress post content.
+
 ---
 
 ## Pricing display
@@ -308,15 +331,17 @@ resolved here. Future sessions treat these as settled.
 ### featureCodes mapping approach
 
 **Decision:** Built-in mapping table in the plugin for Beds24 OTA
-feature codes, plus a per-room "additional amenities" free-text list
-in WordPress for amenities not in Beds24's vocabulary.
+feature codes, plus a custom taxonomy on the `beds24_room` CPT for
+amenities not in Beds24's vocabulary.
 
 **Rationale:** Beds24's OTA feature code vocabulary is stable and
 well-defined (`PRIVATE_BATHROOM`, `BED_KING`, `AIR_CONDITIONING`,
 etc.). A shipping mapping table covers standard amenities with zero
-operator configuration. A WordPress override field handles any
+operator configuration. The custom amenities taxonomy stores any
 property-specific or custom amenities that don't have Beds24 codes
-(e.g., "Hot spring access," "Hammock terrace").
+(e.g., "Hot spring access," "Hammock terrace") — operators add terms
+via the WordPress admin; the terms are shared across rooms on the
+same install, avoiding duplication and free-text typos.
 
 The alternative — fully labeled-string storage in WordPress per room
 — was rejected because it requires the operator to configure every
@@ -349,6 +374,44 @@ is empty. It enables when at least one room is selected.
 either produce a broken Beds24 URL or a confusing empty-cart state
 in Beds24's iframe. Disabling the button is the simplest correct
 behavior: the user cannot proceed until they have something to book.
+
+### Frontend JS state management
+
+**Decision:** A small plain-JS state store with a subscribe/notify
+mechanism. Render functions subscribe to state changes; event handlers
+call set to update state. No framework, no web components.
+
+**Rationale:**
+
+- **No framework.** The booking flow is a single block's viewScript with
+  a bounded scope: search form, room results, cart accumulator, and the
+  Confirm Booking handoff. A framework introduces a build step, bundle
+  weight, and learning curve the scope doesn't justify. WordPress's own
+  guidance for block viewScripts favors vanilla JS; the ecosystem pattern
+  for simple frontend interactivity is plain JS + DOM queries.
+
+- **No web components.** Shadow DOM isolates styles, which fights the
+  styling contract's design. The plugin's styling is built on CSS custom
+  properties and BEM classes targeting plugin-emitted DOM; shadow DOM
+  would require a separate styling channel for each component. The
+  ES6 class syntax required for custom elements also conflicts with the
+  view script's ES5-compatible syntax profile (no build step).
+
+- **State store.** Cart state, search result state, and loading state
+  need to be read by multiple render functions and written by multiple
+  event handlers. A shared state object with explicit get/set and a
+  subscribe/notify mechanism keeps render functions decoupled from each
+  other while making state flow traceable. This is the minimal structure
+  that avoids prop-drilling across DOM-manipulation functions without
+  introducing a full framework.
+
+The specific implementation (store structure, subscriber list, change
+detection granularity) is settled in the session where the card
+rendering and cart layers are built, once the concrete state fields
+are known. This decision records the approach and the rejected
+alternatives; it does not constrain the implementation shape.
+
+---
 
 ### Mobile cart placement
 

@@ -1,7 +1,7 @@
 # V1 Plan — Beds24 Booking Plugin
 
 **Status:** Living document. Updated between phases of work.
-**Last updated:** 2026-05-12 (drafted at start of Session 9)
+**Last updated:** 2026-05-13 (updated after Session 10 to record data model, JS state management, and Session 11 sequencing)
 **Purpose:** Forward visibility into V1 scope and progress. Not a binding
 schedule — work is sequenced one session at a time per project conventions.
 Read this to orient against the V1 destination; read session handoffs for
@@ -26,11 +26,15 @@ iframe.
 
 ## Current state
 
-- **Session:** 9 (V1 build phase opening)
-- **In flight:** Search form V1 build. See `docs/session-handoff-9-pre.md`
-  for inherited state and Session 9's specific scope.
-- **Most recent handoff:** `docs/session-handoff-9-pre.md`
-- **Repo HEAD at draft time:** `404f4d6`
+- **Session:** 10 complete. Session 11 in planning.
+- **Session 10 scope:** AJAX wire-up — REST route, view.js refactor, nonce
+  localization. Search form dispatches live availability searches; offers
+  logged to console; no room card rendering yet.
+- **Session 11 scope:** CPT registration (`beds24_room`), Beds24 room ID
+  meta box, amenities taxonomy, Chill Zone room seeding. Room card
+  rendering deferred to Session 12.
+- **Most recent handoff:** `docs/session-handoff-10.md`
+- **Repo HEAD at last update:** `da6af36`
 
 ---
 
@@ -50,6 +54,17 @@ explicitly revisited.
 - **Styling contract:** plugin emits BEM DOM with `beds24-` namespace prefix;
   CSS custom properties under `--beds24-*`; low-specificity selectors with no
   `!important`. See `docs/styling-contract.md`.
+- **Room content data model:** custom post type `beds24_room` (registered by
+  the plugin); room name = post title; description = post content; primary
+  photo = featured image; Beds24 room ID = post meta `_beds24_room_id`;
+  custom amenities = terms in a taxonomy registered on the CPT. Beds24 OTA
+  featureCodes are mapped at render time by a built-in table and not stored
+  in WordPress. See `docs/architecture.md` §"WordPress — content".
+- **Frontend JS state management:** plain-JS state store with subscribe/notify
+  mechanism; no framework; no web components. Render functions subscribe to
+  state; event handlers call set. Implementation shape settled when card and
+  cart layers are built. See `docs/architecture.md` §"Frontend JS state
+  management".
 - **Pricing model:** `numAdults=1` on all offers queries; "from €X / night"
   display; per-occupancy pricing flagged as known edge case for rollout. See
   `docs/architecture.md` §"Pricing display".
@@ -70,10 +85,11 @@ session at a time. Each area below is a destination, not a session.
 ### Frontend rendering
 
 - **Search form.** Two date pickers, Search button, validation, minimum-stay
-  subhead. No guest picker. Currently in flight (Session 9).
+  subhead. No guest picker. Complete (Sessions 9–10). Dispatches live
+  availability searches via REST route; results logged, card rendering pending.
 - **Room results.** Cards rendered from API data plus WordPress-stored
   content. Available and unavailable states. Dorm vs. private rendering.
-  Tag chips for amenities. Visual target: predecessor mockup.
+  Tag chips for amenities. Visual target: predecessor mockup. Session 12 scope.
 - **Cart accumulator ("Your Stay").** Per-card quantity controls; running
   total; selected-state styling on cards in cart. Desktop layout placement
   TBD. Mobile placement decided: fixed bottom bar + slide-up drawer.
@@ -86,6 +102,9 @@ session at a time. Each area below is a destination, not a session.
   as the frontend pieces above are built.
 - **Frontend JS for interactivity.** Search form submission, results
   fetching, cart state management, confirm-button URL construction.
+  State managed via a plain-JS state store with subscribe/notify;
+  no framework, no web components. See `docs/architecture.md`
+  §"Frontend JS state management".
 - **API client extensions.** Current client supports `get_properties()` and
   `get_offers()`. May need additions as frontend work surfaces gaps.
 - **Property ID resolution.** Hardcoded helper function in V1 (returns
@@ -94,9 +113,12 @@ session at a time. Each area below is a destination, not a session.
 
 ### Content management
 
-- **Room content storage.** Descriptions, photos, amenity overrides.
-  Probably custom post type or post meta keyed by Beds24 room ID. Data model
-  TBD.
+- **Room content storage — CPT.** Custom post type `beds24_room`: post title
+  (room name), post content (description), featured image (photo), post meta
+  `_beds24_room_id` (Beds24 room ID), custom taxonomy (additional amenities).
+  CPT registration, Beds24 room ID meta box, and Chill Zone room seeding are
+  Session 11 scope. Data model settled; see `docs/architecture.md`
+  §"WordPress — content".
 - **featureCodes mapping.** Built-in code-to-label table for Beds24's OTA
   vocabulary. See `docs/architecture.md` §"Design decisions".
 
@@ -146,8 +168,6 @@ they're real questions, not settled decisions.
 - **Per-occupancy pricing edge case.** Current properties are flat-priced;
   edge case kicks in if any future property uses per-occupant pricing on
   private rooms. See `docs/architecture.md` §"The numAdults=1 decision".
-- **Room content data model.** Custom post type vs. post meta vs. options.
-  Decision deferred until the content management work begins.
 - **Cart persistence scope.** Browser session only (decided); but whether
   to persist across page reloads within the session is open. See
   `docs/architecture.md` §"Cart data model".
