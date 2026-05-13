@@ -24,6 +24,7 @@ define( 'BEDS24_BOOKING_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/class-beds24-api-client.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/beds24-property-config.php';
+require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/class-beds24-offers-route.php';
 
 // ---------------------------------------------------------------------------
 // Activation and deactivation hooks
@@ -56,6 +57,39 @@ function beds24_booking_plugin_deactivate(): void {
     foreach ( $property_ids as $property_id ) {
         delete_transient( 'beds24_bkp_access_token_' . intval( $property_id ) );
     }
+}
+
+// ---------------------------------------------------------------------------
+// REST route registration
+// ---------------------------------------------------------------------------
+
+Beds24_Offers_Route::register();
+
+// ---------------------------------------------------------------------------
+// Frontend script localization
+// ---------------------------------------------------------------------------
+
+add_action( 'wp_enqueue_scripts', 'beds24_booking_plugin_localize_scripts' );
+
+/**
+ * Localize the booking-flow view script with the REST nonce and endpoint URL.
+ *
+ * wp_localize_script() stores data against the script handle in WP_Scripts.
+ * The data is output (as a JS variable assignment) whenever the script is
+ * printed — even when the script is enqueued lazily via block rendering.
+ *
+ * The script handle 'beds24-booking-flow-view-script' is registered
+ * automatically by register_block_type() reading block.json on init.
+ */
+function beds24_booking_plugin_localize_scripts(): void {
+    wp_localize_script(
+        'beds24-booking-flow-view-script',
+        'beds24BookingPlugin',
+        [
+            'nonce'   => wp_create_nonce( 'wp_rest' ),
+            'restUrl' => rest_url( 'beds24-booking-plugin/v1/offers' ),
+        ]
+    );
 }
 
 // ---------------------------------------------------------------------------
