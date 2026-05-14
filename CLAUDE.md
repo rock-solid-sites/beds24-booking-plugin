@@ -212,9 +212,13 @@ Skills are written for use by Claude Code when working on the matching
 task type. Each contains a SKILL.md with focused procedural guidance and
 a `references/` subdirectory with fuller documentation.
 
-A separate chat-side skill exists in the operator's local skills directory
-for use during strategic planning conversations; that skill is not in this
-repo.
+One chat-side skill is now tracked in this repo at
+`skills/user/code-session-prompts/` — it covers drafting Code session
+prompts (launch blocks, mode selection, prompt structure) and is kept
+in the repo so refactors land alongside the conventions the prompts
+reference. Other chat-side skills (e.g. for strategic planning
+conversations) still live in the operator's local skills directory and
+are not in this repo.
 
 ## Predecessor project
 
