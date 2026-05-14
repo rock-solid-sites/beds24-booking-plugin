@@ -25,6 +25,8 @@ define( 'BEDS24_BOOKING_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/class-beds24-api-client.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/beds24-property-config.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/class-beds24-offers-route.php';
+require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/beds24-room-cpt.php';
+require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/beds24-room-meta-box.php';
 
 // ---------------------------------------------------------------------------
 // Activation and deactivation hooks
