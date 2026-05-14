@@ -162,6 +162,40 @@ class Beds24_Offers_Route {
             );
         }
 
+        // Enrich each room item with WordPress content (title, description,
+        // image) joined by _beds24_room_id. When no matching post exists,
+        // wpContent is null — the client renders a fallback and logs clearly.
+        $rooms = isset( $result['data'] ) ? $result['data'] : [];
+        foreach ( $rooms as &$room ) {
+            $room_id = isset( $room['roomId'] ) ? (int) $room['roomId'] : 0;
+            $post    = beds24_get_room_post_by_room_id( $room_id );
+            if ( $post ) {
+                $room['wpContent'] = [
+                    'title'       => $post->post_title,
+                    'description' => wp_trim_words(
+                        wp_strip_all_tags( $post->post_content ),
+                        40,
+                        '…'
+                    ),
+                    'imageUrl'    => get_the_post_thumbnail_url( $post->ID, 'medium' ) ?: '',
+                    'imageAlt'    => $post->post_title,
+                ];
+            } else {
+                // Null signals to the client that this room ID has no
+                // matching beds24_room post — a seeding gap, not an error.
+                $room['wpContent'] = null;
+            }
+        }
+        unset( $room ); // Release the reference from the foreach.
+        $result['data'] = $rooms;
+
+        // Include currency so the client can format prices without a separate
+        // request. Both code and symbol are provided; the client uses the symbol.
+        $currency_code         = beds24_booking_plugin_get_currency();
+        $currency_symbol_map   = [ 'EUR' => '€', 'USD' => '$', 'GBP' => '£' ];
+        $result['currencyCode']   = $currency_code;
+        $result['currencySymbol'] = $currency_symbol_map[ $currency_code ] ?? $currency_code;
+
         return new \WP_REST_Response( $result, 200 );
     }
 

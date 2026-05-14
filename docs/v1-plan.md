@@ -26,15 +26,15 @@ iframe.
 
 ## Current state
 
-- **Session:** 10 complete. Session 11 in planning.
-- **Session 10 scope:** AJAX wire-up — REST route, view.js refactor, nonce
-  localization. Search form dispatches live availability searches; offers
-  logged to console; no room card rendering yet.
-- **Session 11 scope:** CPT registration (`beds24_room`), Beds24 room ID
-  meta box, amenities taxonomy, Chill Zone room seeding. Room card
-  rendering deferred to Session 12.
-- **Most recent handoff:** `docs/session-handoff-10.md`
-- **Repo HEAD at last update:** `da6af36`
+- **Session:** 11 complete. Session 12 in planning.
+- **Session 11 scope:** Minimum-viable room seeding (4 `beds24_room` posts
+  matching live Beds24 room IDs) and room card rendering (BEM DOM,
+  available/unavailable states, WordPress content join server-side in
+  REST route). `handleSearchResponse` now renders cards.
+- **Session 12 scope:** Cart accumulator — quantity controls per card,
+  running total, Confirm Booking URL construction.
+- **Most recent handoff:** `docs/session-handoff-11.md`
+- **Repo HEAD at last update:** *(see git log)*
 
 ---
 
@@ -88,8 +88,11 @@ session at a time. Each area below is a destination, not a session.
   subhead. No guest picker. Complete (Sessions 9–10). Dispatches live
   availability searches via REST route; results logged, card rendering pending.
 - **Room results.** Cards rendered from API data plus WordPress-stored
-  content. Available and unavailable states. Dorm vs. private rendering.
-  Tag chips for amenities. Visual target: predecessor mockup. Session 12 scope.
+  content. Available and unavailable states: complete (Session 11). Dorm
+  vs. private rendering distinction: deferred (currently both use same
+  card layout). Tag chips for amenities: deferred. Visual styling target:
+  predecessor mockup (structural DOM in place; visual polish is per-property
+  theme work).
 - **Cart accumulator ("Your Stay").** Per-card quantity controls; running
   total; selected-state styling on cards in cart. Desktop layout placement
   TBD. Mobile placement decided: fixed bottom bar + slide-up drawer.

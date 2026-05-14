@@ -43,3 +43,15 @@ function beds24_booking_plugin_get_current_property_id(): int {
 function beds24_booking_plugin_get_min_stay(): int {
     return 2;
 }
+
+/**
+ * Get the ISO 4217 currency code for the current property.
+ *
+ * V1: Hardcoded to EUR (Chill Zone). V1.x: read from wp_options or
+ * from the Beds24 API property metadata response.
+ *
+ * @return string  ISO 4217 currency code (e.g. 'EUR', 'USD', 'GBP').
+ */
+function beds24_booking_plugin_get_currency(): string {
+    return 'EUR';
+}

@@ -353,18 +353,60 @@ Its classes follow the BEM `beds24-search-form` block namespace.
 
 ---
 
+---
+
+#### Room results container — `beds24-room-results` (added Session 11)
+
+The results container is a sibling of `.beds24-search-form` inside
+`.beds24-booking-flow`. It is hidden (via the HTML `hidden` attribute) until
+a search completes; JS removes `hidden` after rendering cards.
+
+| Class | Element | Semantics | State variants |
+|---|---|---|---|
+| `beds24-room-results` | `<div>` | Container for all rendered room cards. Flex column layout, cards stacked vertically. Hidden by default; revealed by JS after card rendering. Carries `aria-live="polite"` so screen readers announce newly rendered cards. | Hidden by default; `hidden` attribute removed after rendering. |
+
+---
+
+#### Room card — `beds24-room-card` block (added Session 11)
+
+One card per room in the search results. Renders for both available and
+unavailable rooms. Unavailable rooms get the `--unavailable` modifier but
+are not omitted.
+
+| Class | Element | Semantics | State variants | Co-occurring classes |
+|---|---|---|---|---|
+| `beds24-room-card` | `<div>` | Card root. Carries `data-room-id` attribute with the Beds24 room ID for future JS targeting (cart accumulator). | `beds24-room-card--unavailable` when the room has no offers for the selected dates. | — |
+| `beds24-room-card__name` | `<h3>` | Room name heading. Text content from the matching `beds24_room` post title. Falls back to "Room {roomId}" if no post is found (fail-loud fallback — the mismatch is also logged to console). | — | — |
+| `beds24-room-card__body` | `<div>` | Flex container for photo + description. Desktop: photo and description side by side. Mobile (≤767px): stacked vertically. | — | — |
+| `beds24-room-card__photo` | `<div>` | Photo column. Width: 140px desktop, 100% mobile. Rendered only when the room post has a featured image. | — | — |
+| `beds24-room-card__content` | `<div>` | Description column. Flex-grows to fill remaining space. | — | — |
+| `beds24-room-card__description` | `<p>` | Room description text. Content from the `beds24_room` post, trimmed to 40 words. | — | — |
+| `beds24-room-card__offer` | `<div>` | Offer row at the card bottom. Contains price (available) or unavailable notice. Separated from the body by a top border. | — | — |
+| `beds24-room-card__price` | `<p>` | Price display for available rooms. Format: "from €XX / night", where XX = total offer price / nights. | — | Present on available cards only. |
+| `beds24-room-card__unavailable-notice` | `<p>` | "Not available for selected dates" text for unavailable rooms. | — | Present on unavailable cards only. |
+| `beds24-room-card--unavailable` | modifier on `beds24-room-card` | Applied when the room has no offers for the selected dates (`room.offers` is absent or empty). Reduces opacity and mutes the room name color. | — | Co-occurs with `beds24-room-card`. |
+
+**Note on tag chips:** The architecture specifies tag chips for amenities
+(featureCodes + custom taxonomy). These are deferred to a later session.
+The `beds24-room-card__tags` and `beds24-room-card__tag` elements are
+reserved but not yet in the catalog.
+
+**Note on cart controls:** Quantity inputs, running total, and the
+"Add to cart" / "Book" action elements are cart accumulator scope
+(a later session). Their classes will be added to this catalog when built.
+
+---
+
 #### Pending catalog sections
 
 The following sections will be drafted when their frontend layers are built:
 
-- **Room card classes** — `.beds24-room-card` block: container, photo area,
-  content area, price area, action area, tag list, individual tags, available
-  and unavailable state modifiers. (Session 10+)
+- **Room card tag chip classes** — `.beds24-room-card__tags`, `.beds24-room-card__tag`, and `--unavailable` variant. (Cart accumulator session+)
 - **Cart classes** — `.beds24-cart` block: container, item list, individual
   items, running total, Confirm Booking button. (Later session)
 - **Mobile cart classes** — bottom bar and slide-up drawer. (Later session)
-- **State modifier classes** — `--selected`, `--unavailable`, `--disabled`,
-  `--loading` variants across blocks. (Added per block as implemented)
+- **State modifier classes** — `--selected`, `--disabled`, `--loading`
+  variants across blocks. (Added per block as implemented)
 
 ### Targeting guidance for themes
 
@@ -659,3 +701,6 @@ principles, the iframe CSS workflow.
   Three error-state color tokens (`error`, `error-bg`, `error-border`)
   promoted from a temporary catalog note to the canonical Color tokens
   table.
+- **2026-05-15 (Session 11):** Room results container (`beds24-room-results`)
+  and room card block (`beds24-room-card`) class catalog drafted. Tag chips
+  and cart controls reserved in catalog notes, not yet implemented.

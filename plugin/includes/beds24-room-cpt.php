@@ -133,3 +133,34 @@ function beds24_register_room_post_type(): void {
         ]
     );
 }
+
+// ---------------------------------------------------------------------------
+// Room content lookup
+// ---------------------------------------------------------------------------
+
+/**
+ * Get a published beds24_room post by its Beds24 room ID.
+ *
+ * Used by the REST route handler to join WordPress content into the offers
+ * response. Returns null if no published post has `_beds24_room_id` matching
+ * the given value — callers should treat null as a data problem (no post
+ * seeded for that room ID) and log clearly.
+ *
+ * @param  int          $room_id  Beds24 v2 API room ID.
+ * @return WP_Post|null           Matching published post, or null if not found.
+ */
+function beds24_get_room_post_by_room_id( int $room_id ): ?WP_Post {
+    if ( $room_id <= 0 ) {
+        return null;
+    }
+    $posts = get_posts( [
+        'post_type'              => 'beds24_room',
+        'post_status'            => 'publish',
+        'meta_key'               => '_beds24_room_id',
+        'meta_value'             => $room_id,
+        'numberposts'            => 1,
+        'no_found_rows'          => true,
+        'update_post_term_cache' => false,
+    ] );
+    return $posts ? $posts[0] : null;
+}

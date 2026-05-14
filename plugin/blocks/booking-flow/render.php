@@ -100,4 +100,11 @@ $min_stay    = beds24_booking_plugin_get_min_stay();
             <?php esc_html_e( 'Search Rooms', 'beds24-booking-plugin' ); ?>
         </button>
     </form>
+
+    <div
+        class="beds24-room-results"
+        hidden
+        aria-live="polite"
+        aria-label="<?php esc_attr_e( 'Room search results', 'beds24-booking-plugin' ); ?>"
+    ></div>
 </div>

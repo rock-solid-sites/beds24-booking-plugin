@@ -1,13 +1,15 @@
 /**
- * Beds24 Booking Flow — search form client-side validation and AJAX dispatch.
+ * Beds24 Booking Flow — search form client-side validation, AJAX dispatch,
+ * and room card rendering.
  *
  * Behaviour:
  *   - Intercepts form submission and validates the date inputs.
  *   - Shows per-failure error messages in the form's error region.
  *   - On passing validation, dispatches a GET request to the plugin's
  *     REST route (/beds24-booking-plugin/v1/offers) with the validated dates.
- *   - On success: logs the parsed offer data and count to the console.
- *     Room card rendering is wired in a later session.
+ *   - On success: renders one room card per room in .beds24-room-results.
+ *     Cards render for both available and unavailable rooms; unavailable rooms
+ *     get the --unavailable modifier and show "Not available for selected dates."
  *   - On error: surfaces a user-readable message in the form's error region.
  *
  * Minimum stay and property ID are read from data attributes on the form
@@ -98,6 +100,120 @@
     }
 
     // -----------------------------------------------------------------------
+    // Room card rendering
+    // -----------------------------------------------------------------------
+
+    /**
+     * Build a single room card DOM element.
+     *
+     * An offer with no matching WordPress post (room.wpContent === null) fails
+     * loud: a console.warn names the missing room ID and the corrective action.
+     * The card still renders, using the Beds24 room ID as a fallback title, so
+     * the mismatch is visible in the UI as well as the console.
+     *
+     * @param  {Object} room            Room item from the enriched offers response.
+     * @param  {number} nights          Number of nights in the search.
+     * @param  {string} currencySymbol  Currency symbol (e.g. '€').
+     * @return {HTMLElement}            The built card element.
+     */
+    function buildCard( room, nights, currencySymbol ) {
+        var content   = room.wpContent;
+        var offers    = room.offers || [];
+        var available = offers.length > 0;
+
+        if ( ! content ) {
+            console.warn(
+                '[Beds24] No matching beds24_room post for roomId: ' + room.roomId +
+                '. Create a beds24_room post with _beds24_room_id set to ' + room.roomId + '.'
+            );
+        }
+
+        var card = document.createElement( 'div' );
+        card.className = 'beds24-room-card' + ( available ? '' : ' beds24-room-card--unavailable' );
+        card.setAttribute( 'data-room-id', String( room.roomId ) );
+
+        // Room name heading.
+        var nameEl = document.createElement( 'h3' );
+        nameEl.className = 'beds24-room-card__name';
+        nameEl.textContent = content ? content.title : ( 'Room ' + room.roomId );
+        card.appendChild( nameEl );
+
+        // Body: photo + description side by side.
+        var bodyEl = document.createElement( 'div' );
+        bodyEl.className = 'beds24-room-card__body';
+
+        if ( content && content.imageUrl ) {
+            var photoEl = document.createElement( 'div' );
+            photoEl.className = 'beds24-room-card__photo';
+            var imgEl = document.createElement( 'img' );
+            imgEl.src = content.imageUrl;
+            imgEl.alt = content.imageAlt || content.title || '';
+            imgEl.loading = 'lazy';
+            photoEl.appendChild( imgEl );
+            bodyEl.appendChild( photoEl );
+        }
+
+        var contentEl = document.createElement( 'div' );
+        contentEl.className = 'beds24-room-card__content';
+        if ( content && content.description ) {
+            var descEl = document.createElement( 'p' );
+            descEl.className = 'beds24-room-card__description';
+            descEl.textContent = content.description;
+            contentEl.appendChild( descEl );
+        }
+        bodyEl.appendChild( contentEl );
+        card.appendChild( bodyEl );
+
+        // Offer row: price (available) or unavailable notice.
+        var offerEl = document.createElement( 'div' );
+        offerEl.className = 'beds24-room-card__offer';
+
+        if ( available ) {
+            var offer    = offers[ 0 ];
+            var perNight = nights > 0 ? Math.round( offer.price / nights ) : offer.price;
+            var priceEl  = document.createElement( 'p' );
+            priceEl.className = 'beds24-room-card__price';
+            priceEl.textContent = 'from ' + currencySymbol + perNight + ' / night';
+            offerEl.appendChild( priceEl );
+        } else {
+            var noticeEl = document.createElement( 'p' );
+            noticeEl.className = 'beds24-room-card__unavailable-notice';
+            noticeEl.textContent = 'Not available for selected dates';
+            offerEl.appendChild( noticeEl );
+        }
+
+        card.appendChild( offerEl );
+        return card;
+    }
+
+    /**
+     * Render all room cards into the results container and reveal it.
+     *
+     * Clears any previous results before inserting new cards.
+     *
+     * @param {Array}       rooms           Room items from the enriched offers response.
+     * @param {number}      nights          Number of nights in the search.
+     * @param {string}      currencySymbol  Currency symbol (e.g. '€').
+     * @param {HTMLElement} container       The .beds24-room-results element.
+     */
+    function renderRoomCards( rooms, nights, currencySymbol, container ) {
+        if ( ! container ) {
+            console.error( '[Beds24] Room results container (.beds24-room-results) not found in the page DOM.' );
+            return;
+        }
+
+        // Clear previous results.
+        container.textContent = '';
+
+        var i;
+        for ( i = 0; i < rooms.length; i++ ) {
+            container.appendChild( buildCard( rooms[ i ], nights, currencySymbol ) );
+        }
+
+        container.removeAttribute( 'hidden' );
+    }
+
+    // -----------------------------------------------------------------------
     // AJAX dispatch
     // -----------------------------------------------------------------------
 
@@ -157,38 +273,44 @@
     /**
      * Handle a successful offers response (HTTP 200).
      *
-     * Phase: logs offer data to the console only. Room card rendering
-     * is wired in a later session once the card layer exists to consume
-     * the response.
-     *
-     * No-availability (all rooms have empty offers[]) is logged distinctly
-     * from an error — it is a valid state, not a failure.
+     * Renders room cards into .beds24-room-results. Each room in the response
+     * gets a card — available rooms show price, unavailable rooms show a notice.
+     * When no rooms have availability, all cards render in the unavailable state.
      *
      * @param {Object}      data  Parsed JSON body from the REST route.
-     * @param {HTMLElement} form  The search form (available for future DOM updates).
+     * @param {HTMLElement} form  The search form.
      */
-    function handleSearchResponse( data, form ) { // eslint-disable-line no-unused-vars
-        var rooms = ( data && data.data ) ? data.data : [];
+    function handleSearchResponse( data, form ) {
+        var rooms          = ( data && data.data )           ? data.data           : [];
+        var currencySymbol = ( data && data.currencySymbol ) ? data.currencySymbol : '€';
+
+        clearError( form );
+
+        // Compute nights from the form's current date values.
+        var checkInEl  = form.querySelector( '.beds24-search-form__check-in' );
+        var checkOutEl = form.querySelector( '.beds24-search-form__check-out' );
+        var nights     = 1;
+        if ( checkInEl && checkInEl.value && checkOutEl && checkOutEl.value ) {
+            nights = countNights(
+                parseLocalDate( checkInEl.value ),
+                parseLocalDate( checkOutEl.value )
+            );
+        }
+
+        var container = document.querySelector( '.beds24-room-results' );
+        renderRoomCards( rooms, nights, currencySymbol, container );
+
+        // Log for observability — useful during development and debugging.
         var offerCount = 0;
         var i;
         for ( i = 0; i < rooms.length; i++ ) {
             offerCount += ( rooms[ i ].offers || [] ).length;
         }
-
         if ( offerCount === 0 ) {
-            console.log( '[Beds24] No availability for selected dates', {
-                roomCount: rooms.length,
-                data: data,
-            } );
+            console.log( '[Beds24] No availability for selected dates', { roomCount: rooms.length } );
         } else {
-            console.log( '[Beds24] Offers received', {
-                roomCount:  rooms.length,
-                offerCount: offerCount,
-                data:       data,
-            } );
+            console.log( '[Beds24] Offers received', { roomCount: rooms.length, offerCount: offerCount } );
         }
-
-        // Room card rendering wired in a later session.
     }
 
     /**
