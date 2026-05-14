@@ -10,9 +10,13 @@ sessions, not how Claude should behave within them.
 ## Launch command pattern
 
 ```bash
-cd "C:/Users/Dr. COMPUTER/Desktop/Development/beds24-booking-plugin"
+cd ~/projects/beds24-booking-plugin
 claude-mode <preset>
 ```
+
+Local development runs inside WSL2 (Ubuntu 24.04) with DDEV providing
+the WordPress site at `https://chillzone.ddev.site`. Full environment
+setup: `docs/tooling/ddev.md`.
 
 The `.claude-mode.json` at the repo root sets `defaultBase: "chill"` and
 defines project presets. Built-in presets also use the chill base from
@@ -21,7 +25,7 @@ this directory. No `--base chill` flag needed.
 **Passing flags to Claude Code** — use the `--` separator:
 
 ```bash
-claude-mode v1-build -- --permission-mode auto
+claude-mode v1-build -- --permission-mode bypassPermissions
 claude-mode rollout -- --permission-mode default
 ```
 
@@ -30,8 +34,8 @@ claude-mode rollout -- --permission-mode default
 | Session type | `--permission-mode` | Why |
 |---|---|---|
 | Documentation, architecture | `auto` | Classifier-gated auto-accept; less interrupt for low-risk writes |
-| V1 build, feature extension | `auto` | High-volume file creation; auto-accept reduces friction |
-| Refactor | `auto` | Same rationale as build |
+| V1 build, feature extension (local) | `bypassPermissions` | High-volume edits in a trusted local tree (WSL2 + DDEV, isolated from production); per-edit prompts add no safety in this context and slow iteration |
+| Refactor (local) | `bypassPermissions` | Same rationale as local build |
 | Property rollouts | `default` | Per-action approval; live property data, deliberate |
 | Bug fixes (deployed plugin) | `default` | Same as rollout |
 | Read-only investigation | `default` or `auto` | Low stakes; either works |
