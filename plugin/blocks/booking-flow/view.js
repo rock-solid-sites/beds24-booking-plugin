@@ -291,18 +291,24 @@
     }
 
     /**
-     * Reveal the booking iframe and load the given URL into it.
+     * Transition from discovery UI to transaction UI.
      *
-     * The wrapper is shown, the iframe src is set, and the wrapper is scrolled
-     * into view. The URL is logged to the console before load so the operator
-     * can copy it and test it in a standalone browser tab to isolate
-     * iframe-embedding issues (e.g. X-Frame-Options) from URL parameter issues.
+     * Hides the room results and cart, sets the iframe src to the given URL,
+     * and reveals the iframe wrapper.  The search form stays visible so the
+     * user can see their selected dates.
+     *
+     * The URL is logged to the console before load so the operator can copy
+     * it and test it in a standalone browser tab to isolate iframe-embedding
+     * issues (e.g. X-Frame-Options) from URL parameter issues.
      *
      * @param {string} url  Fully-formed Beds24 booking URL.
      */
     function openBookingIframe( url ) {
-        var wrapper = document.querySelector( '.beds24-booking-iframe-wrapper' );
-        var iframe  = wrapper ? wrapper.querySelector( '.beds24-booking-iframe' ) : null;
+        var wrapper   = document.querySelector( '.beds24-booking-iframe-wrapper' );
+        var iframe    = wrapper ? wrapper.querySelector( '.beds24-booking-iframe' ) : null;
+        var resultsEl = document.querySelector( '.beds24-room-results' );
+        var cartEl    = document.querySelector( '.beds24-cart' );
+        var blockEl   = document.querySelector( '.beds24-booking-flow' );
 
         if ( ! iframe ) {
             console.error( '[Beds24] Iframe element (.beds24-booking-iframe) not found.' );
@@ -311,9 +317,63 @@
 
         console.log( '[Beds24] Confirm Booking — constructed URL:', url );
 
+        // Hide discovery UI (room cards and cart footer bar).
+        if ( resultsEl ) {
+            resultsEl.setAttribute( 'hidden', '' );
+        }
+        if ( cartEl ) {
+            cartEl.setAttribute( 'hidden', '' );
+        }
+        // Clear the sticky padding — the cart bar is now hidden.
+        if ( blockEl ) {
+            blockEl.style.paddingBottom = '';
+        }
+
+        // Set URL and reveal the iframe.
         iframe.src = url;
         wrapper.removeAttribute( 'hidden' );
         wrapper.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+    }
+
+    /**
+     * Transition from transaction UI back to discovery UI.
+     *
+     * Clears the iframe src, hides the iframe wrapper, resets cart state
+     * (which triggers renderCart and syncCardControls via subscribers —
+     * hiding the cart bar and clearing card selected states), then re-reveals
+     * the room results if they have content.
+     *
+     * Cart state is not preserved: the user can re-select from the results.
+     */
+    function closeBookingIframe() {
+        var wrapper   = document.querySelector( '.beds24-booking-iframe-wrapper' );
+        var iframe    = wrapper ? wrapper.querySelector( '.beds24-booking-iframe' ) : null;
+        var resultsEl = document.querySelector( '.beds24-room-results' );
+        var blockEl   = document.querySelector( '.beds24-booking-flow' );
+
+        // Unload the iframe safely and hide the wrapper.
+        if ( iframe ) {
+            iframe.src = 'about:blank';
+        }
+        if ( wrapper ) {
+            wrapper.setAttribute( 'hidden', '' );
+        }
+
+        // Reset cart state.  Subscribers fire immediately:
+        //   renderCart     → hides the (now-empty) cart bar
+        //   syncCardControls → removes --selected modifiers from all cards
+        //   syncConfirmButton → disables the Confirm Booking button
+        store.set( { cart: {} } );
+
+        // Re-reveal room results if they have rendered content.
+        if ( resultsEl && resultsEl.querySelector( '.beds24-room-card' ) ) {
+            resultsEl.removeAttribute( 'hidden' );
+        }
+
+        // Scroll back to the top of the booking flow block.
+        if ( blockEl ) {
+            blockEl.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -846,6 +906,12 @@
     function onCartClick( e ) {
         var btn  = e.target;
         var card, roomId;
+
+        // Back to rooms: close the iframe and return to discovery UI.
+        if ( btn.classList.contains( 'beds24-booking-iframe-nav__back' ) ) {
+            closeBookingIframe();
+            return;
+        }
 
         // Cart item remove: clear this room from the cart entirely.
         if ( btn.classList.contains( 'beds24-cart__item-remove' ) ) {

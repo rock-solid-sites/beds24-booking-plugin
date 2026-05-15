@@ -140,9 +140,17 @@ $min_stay    = beds24_booking_plugin_get_min_stay();
         hidden
         aria-label="<?php esc_attr_e( 'Beds24 booking form', 'beds24-booking-plugin' ); ?>"
     >
+        <div class="beds24-booking-iframe-nav">
+            <button
+                class="beds24-booking-iframe-nav__back"
+                type="button"
+                aria-label="<?php esc_attr_e( 'Return to room selection', 'beds24-booking-plugin' ); ?>"
+            >
+                <?php esc_html_e( '← Back to rooms', 'beds24-booking-plugin' ); ?>
+            </button>
+        </div>
         <iframe
             class="beds24-booking-iframe"
-            src=""
             title="<?php esc_attr_e( 'Confirm your booking', 'beds24-booking-plugin' ); ?>"
             referrerpolicy="origin"
         ></iframe>

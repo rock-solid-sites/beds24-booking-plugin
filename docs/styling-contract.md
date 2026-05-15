@@ -487,22 +487,45 @@ At ≥768px viewport width, `.beds24-cart` is positioned `fixed; bottom: 0; left
 
 ---
 
-#### Cart confirm button and iframe (added Session 13)
+#### Cart confirm button and iframe (added Session 13; transition added Session 15)
 
 The Confirm Booking button sits inside a `.beds24-cart__actions` wrapper at the
 bottom of the cart region. Clicking it constructs the multi-room Beds24 URL from
-cart state and loads the Beds24 booking page in an inline iframe.
+cart state, hides the discovery UI (room results and cart bar), and loads the
+Beds24 booking page in an inline iframe.
 
-The iframe is a sibling of `.beds24-cart` inside `.beds24-booking-flow`. It is
-hidden (HTML `hidden` attribute) until the button is clicked; JS removes `hidden`
-and sets the iframe `src`. Height is fixed at 900px in V1.
+**Discovery ↔ transaction transition:**
+
+- **Confirm Booking click:** `.beds24-room-results` and `.beds24-cart` receive the
+  `hidden` attribute; `.beds24-booking-iframe-wrapper` has `hidden` removed;
+  `iframe.src` is set to the constructed URL. The search form stays visible.
+- **Back to rooms click:** `iframe.src` is set to `about:blank`; the wrapper
+  receives `hidden`; cart state resets to empty (triggering `renderCart` and
+  `syncCardControls` subscribers — cart hides, card selected states clear);
+  `.beds24-room-results` has `hidden` removed if it contains rendered cards.
+
+The iframe starts with **no `src` attribute** (not even `src=""`). In Chrome,
+`src=""` resolves to the current page URL and loads it in the iframe. The `src`
+attribute is only ever set by `openBookingIframe()`.
+
+Height is fixed at 900px in V1.
+
+**`[hidden]` override note:** The stylesheet includes an explicit rule:
+`.beds24-cart[hidden], .beds24-room-results[hidden] { display: none !important; }`.
+This is required because Chrome's UA stylesheet applies `[hidden] { display: none }`
+without `!important`, so author `display` rules (e.g. `display: flex` on
+`.beds24-cart` in the desktop media query) silently override it. Firefox uses
+`!important` in its UA stylesheet and is unaffected. The rule ensures consistent
+hide behavior across browsers.
 
 | Class | Element | Semantics | State variants |
 |---|---|---|---|
 | `beds24-cart__actions` | `<div>` | Wrapper for the confirm button inside `.beds24-cart`. Provides bottom padding. | — |
 | `beds24-cart__confirm-button` | `<button type="button">` | "Confirm Booking" primary CTA. Full-width, primary color background. | `disabled` when the cart is empty (HTML attribute; styled with unavailable color and `not-allowed` cursor). Enabled when at least one room is in the cart. |
-| `beds24-booking-iframe-wrapper` | `<div>` | Wrapper for the Beds24 booking iframe. Sibling of `.beds24-cart`. Hidden by default; JS removes `hidden` on confirm. | Hidden by default; revealed by JS. |
-| `beds24-booking-iframe` | `<iframe>` | Loads the Beds24 booking3.php page with pre-populated room selections, dates, and adult counts. `src` is set by JS at confirm time. Fixed 900px height in V1. | — |
+| `beds24-booking-iframe-wrapper` | `<div>` | Wrapper for the Beds24 booking iframe nav strip and iframe. Sibling of `.beds24-cart`. Hidden by default; JS removes `hidden` on confirm, sets it again on back. | Hidden by default; toggled by JS. |
+| `beds24-booking-iframe-nav` | `<div>` | Navigation strip above the iframe. Contains the "← Back to rooms" button. | — |
+| `beds24-booking-iframe-nav__back` | `<button type="button">` | Back-to-rooms CTA. Minimal link-style button. Clicking resets cart, hides iframe wrapper, reveals room results. | Hover: text-decoration underline. |
+| `beds24-booking-iframe` | `<iframe>` | Loads the Beds24 booking3.php page with pre-populated room selections, dates, and adult counts. `src` is set by JS at confirm time; cleared to `about:blank` on back. Fixed 900px height in V1. | — |
 
 ---
 

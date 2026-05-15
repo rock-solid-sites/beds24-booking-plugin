@@ -571,6 +571,22 @@
 }
 
 /* ==========================================================================
+   [hidden] override
+
+   Chrome's UA stylesheet applies [hidden] without !important, so any
+   author display rule (e.g. display:flex on .beds24-cart in the desktop
+   media query, display:flex on .beds24-room-results in the base rules)
+   silently overrides it.  Firefox's UA stylesheet uses !important and is
+   unaffected.  These rules re-establish the invariant: [hidden] always
+   means display:none, regardless of what other display values are set.
+   ========================================================================== */
+
+.beds24-cart[hidden],
+.beds24-room-results[hidden] {
+    display: none !important;
+}
+
+/* ==========================================================================
    Beds24 booking iframe
    Revealed by JS after Confirm Booking is clicked.
    Height is fixed in V1 — the Beds24 booking page scrolls internally
@@ -579,6 +595,26 @@
 
 .beds24-booking-iframe-wrapper {
     margin-top: var(--beds24-space-lg);
+}
+
+/* Back-to-rooms navigation strip shown above the iframe. */
+.beds24-booking-iframe-nav {
+    padding-bottom: var(--beds24-space-sm);
+}
+
+.beds24-booking-iframe-nav__back {
+    background:  none;
+    border:      none;
+    padding:     0;
+    color:       var(--beds24-color-primary);
+    font-family: var(--beds24-font-family-body);
+    font-size:   var(--beds24-font-size-small);
+    font-weight: var(--beds24-font-weight-heading);
+    cursor:      pointer;
+}
+
+.beds24-booking-iframe-nav__back:hover {
+    text-decoration: underline;
 }
 
 .beds24-booking-iframe {
