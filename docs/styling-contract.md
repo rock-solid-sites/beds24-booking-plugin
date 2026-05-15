@@ -393,7 +393,7 @@ are public and stable.
 
 ---
 
-#### Room card tag chips (added Session 12)
+#### Room card tag chips (added Session 12; DOM position updated Session 18)
 
 Amenity chips render from the room's `beds24_amenity` taxonomy terms. Tags
 are user-defined content — Beds24 featureCodes are **not** included here
@@ -403,10 +403,16 @@ are the only implemented chip source in V1).
 The chip container is omitted entirely when a room has no assigned terms.
 No empty container, no error.
 
+**DOM position (updated Session 18):** `.beds24-room-card__tags` is a direct
+child of `.beds24-room-card` (sibling of `.beds24-room-card__body`), rendered
+between `__body` and `__offer`. This placement allows the chip row to span the
+full card width on mobile. At desktop, CSS provides a `padding-left` indent
+that aligns the chips under the description column.
+
 | Class | Element | Semantics | State variants |
 |---|---|---|---|
-| `beds24-room-card__tags` | `<div>` | Chip container inside `.beds24-room-card__content`. Flex-row, wrapping. Present only when the room has at least one amenity term. | — |
-| `beds24-room-card__tag` | `<span>` | Individual chip. One per amenity term. Small text on a border-radius-small background. | — |
+| `beds24-room-card__tags` | `<div>` | Chip container. Direct child of `.beds24-room-card`, between `__body` and `__offer`. Flex-row, wrapping. Present only when the room has at least one amenity term. At desktop, left-padding indented to align under the description column. At mobile, full card width. | — |
+| `beds24-room-card__tag` | `<span>` | Individual chip. One per amenity term. Small text (0.75rem / 12px), subtle background (#f3f4f6), bordered, inline-flex. | — |
 
 ---
 
@@ -892,6 +898,17 @@ principles, the iframe CSS workflow.
   `.beds24-cart__drawer`. Both wrappers use `display: contents` at ≥768px to preserve
   the existing desktop flex layout without structural changes. "Pending catalog sections"
   note for mobile cart classes removed (now documented above).
+- **2026-05-15 (Session 18):** Room card styling applied against the predecessor mockup's
+  visual language. Changes: card hover shadow lift (`transition: box-shadow 0.2s ease`,
+  `0 4px 12px` on hover); name padding tightened (0.75rem top, xs bottom); body padding
+  reduced to `sm md` (8×16px) with gap reduced to `sm` (8px); photo resized to 120×90px
+  desktop / 90×68px mobile; description gets `-webkit-line-clamp: 2` on desktop,
+  unclamped on mobile; tag chips restyled (inline-flex, #f3f4f6 background, border,
+  0.75rem / 500-weight text); tags container moved from inside `__content` to be a sibling
+  of `__body` (structural DOM change in `view.js`) with `padding-left` indent at desktop
+  to align under the description column; mobile layout changed from stacked (column)
+  to compact side-by-side (row) at 90×68px thumbnail; price label changed to muted/
+  small/normal-weight to match "from €X / night" label treatment in mockup.
 - **2026-05-15 (Session 16):** Iframe CSS generator implemented per Decision 5.
   `plugin/includes/iframe-css-generator.php` — `beds24_iframe_css_defaults()`
   returns default token values; `beds24_generate_iframe_css( $tokens )` returns

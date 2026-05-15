@@ -872,11 +872,15 @@
         }
 
         // Amenity chips — render only when terms are present.
+        // tagsEl is appended to card (not contentEl) so it can span the full
+        // card width on mobile as a separate row below the photo+description body.
+        // At desktop, CSS indents it to align under the description column.
         var amenities = ( content && content.amenities && content.amenities.length )
             ? content.amenities
             : [];
+        var tagsEl = null;
         if ( amenities.length > 0 ) {
-            var tagsEl     = document.createElement( 'div' );
+            tagsEl = document.createElement( 'div' );
             tagsEl.className = 'beds24-room-card__tags';
             var j, tagEl;
             for ( j = 0; j < amenities.length; j++ ) {
@@ -885,11 +889,17 @@
                 tagEl.textContent = amenities[ j ];
                 tagsEl.appendChild( tagEl );
             }
-            contentEl.appendChild( tagsEl );
         }
 
         bodyEl.appendChild( contentEl );
         card.appendChild( bodyEl );
+
+        // Tags: sibling of __body, above the offer row.
+        // Desktop: CSS provides padding-left indent to align under the description column.
+        // Mobile: spans full card width naturally.
+        if ( tagsEl ) {
+            card.appendChild( tagsEl );
+        }
 
         // Offer row: price (and cart control for available rooms).
         var offerEl     = document.createElement( 'div' );
