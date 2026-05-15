@@ -264,16 +264,17 @@ with one parameter group per cart item:
 ```
 https://beds24.com/booking3.php
   ?propid={propertyId}
-  &checkin={checkInDate}
-  &checkout={checkOutDate}
-  &sr1-{roomId}=N        # units requested for room
-  &naa1-1-{roomId}=N     # numAdults for room (bed count for dorms)
-  [&sr1-{roomId2}=N ...]  # repeat for each cart item
+  &checkin_hide=YYYY-M-D
+  &checkout_hide=YYYY-M-D
+  &sr1-{roomId}=1
+  &naa1-1-{roomId}=N      # N = beds selected (dorms) or 1 (privates)
+  [&sr1-{roomId2}=1 ...]   # repeat for each cart item
 ```
 
-The exact date parameter format has a known unknown (see below).
+Dates are non-zero-padded (e.g. `2026-8-1`, not `2026-08-01`).
 The `propid` value comes from WordPress plugin settings. Room IDs
-come from the offers API response.
+come from the offers API response. Full parameter semantics verified
+in Session 13: see §"URL construction — confirmed parameter semantics".
 
 ### What the iframe renders
 

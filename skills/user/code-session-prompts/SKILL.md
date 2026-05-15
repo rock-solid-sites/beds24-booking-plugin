@@ -13,46 +13,42 @@ also active.
 Source documents (request when detail beyond this skill is needed):
 - `docs/tooling/claude-code-modes.md` (plugin repo) — full
   phase-to-mode mapping for plugin work
+- `docs/tooling/ddev.md` (plugin repo) — DDEV local dev environment
+  setup, canonical paths, migration notes
 - `OPERATING.md` (each repo) — operator-facing conventions,
   permission modes, recovery patterns
-- `docs/tooling/ddev.md` (plugin repo) — local DDEV/WSL2 environment
-  setup, mount mechanism, recovery patterns
-- `references/environments.md` (this skill) — environment-specific
-  paths and quirks for VPS and local DDEV; consult when drafting
-  prompts for a specific environment
 
 ## Two repos, one VPS, one DDEV — four launch contexts
 
 Code sessions run in one of four contexts:
 
-1. **Plugin repo (local WSL2)** — `beds24-booking-plugin` cloned to
-   `~/projects/beds24-booking-plugin` inside the operator's WSL2
-   Ubuntu distro. Plugin development sessions launch from here.
-   Project presets defined in `.claude-mode.json` at the repo root.
+1. **Plugin repo (WSL2)** — `beds24-booking-plugin` cloned inside
+   WSL2 at `~/projects/beds24-booking-plugin`. Plugin development
+   sessions launch from here. Project presets defined in
+   `.claude-mode.json` at the repo root.
 
-2. **Site-design repo (local Windows or VPS)** — `tripn-sites`
-   cloned to the operator's local Windows machine for design
-   conversations and documentation work, or cloned to the VPS for
-   site-building work that needs the handoff documents. Project
-   presets defined in the repo's own `.claude-mode.json`.
+2. **Site-design repo (local or VPS)** — `tripn-sites` cloned to
+   the operator's local machine for design conversations and
+   documentation work, or cloned to the VPS for site-building work
+   that needs the handoff documents. Project presets defined in
+   the repo's own `.claude-mode.json`.
 
 3. **VPS, outside any repo** — Code running on the VPS as the
    `claude-code` user via Remote-SSH for infrastructure or
    site-building work that doesn't need a repo. Only built-in
    `claude-mode` presets work (no project config available).
 
-4. **DDEV local WordPress (local WSL2)** — Code running against
-   the DDEV-hosted WordPress at `https://chillzone.ddev.site` (and
-   potentially other property sites in the future). Plugin code
-   lives in the plugin repo working tree and is mounted into the
-   DDEV web container via a symlink plus a Docker Compose override;
-   edits become immediately live on the local site. Used for plugin
-   frontend development where iteration speed matters.
+4. **DDEV local WordPress (WSL2)** — Code running against a local
+   WordPress at `https://chillzone.ddev.site`. The DDEV project
+   lives at `~/projects/chillzone`. Plugin code lives in the plugin
+   repo working tree and is symlinked into DDEV's
+   `wp-content/plugins/` directory via a Docker Compose mount
+   override; edits become immediately live on the local site. Used
+   for plugin frontend development where iteration speed matters.
+   Full setup details: `docs/tooling/ddev.md`.
 
 The launch block, mode selection, and any context-specific
-considerations depend on which context the work runs in. For the
-detailed paths, install methods, and quirks per environment, see
-`references/environments.md`.
+considerations depend on which context the work runs in.
 
 ## When to develop locally vs. on the VPS
 
@@ -75,9 +71,9 @@ setups:
   step.
 
 Default to **local DDEV development for plugin sessions** unless
-there's a specific reason to work on the VPS. Default to
-**VPS-direct for site building** unless the deliverable is
-structurally portable (rare).
+there's a specific reason to work on the VPS. Default to **VPS-direct
+for site building** unless the deliverable is structurally portable
+(rare).
 
 ## Output format
 
@@ -96,50 +92,27 @@ If the prompt is a **continuation** of an active session (same
 Code instance, follow-up turn), omit the launch block and mark the
 prompt "continuation — paste into existing session."
 
-### Code block conventions
-
-Two rules apply when fencing the prompt block (and any code block
-quoted inside it):
-
-- **Prompt code blocks use four-backtick fences.** Drafted prompts
-  frequently quote example commands, diffs, or other content inside
-  their own triple-backtick fenced blocks. A surrounding
-  triple-backtick fence terminates at the first inner triple-
-  backtick, which silently splits the prompt block in two and
-  breaks copy-paste. Four backticks on the outer fence prevents
-  this. Use four backticks for the prompt block by default. The
-  launch block rarely has inner triple-backticks, but using four
-  backticks there too is fine for consistency.
-- **Code blocks contain only copyable content.** Inside any code
-  block — launch block, prompt block, or any block quoted inside
-  them — write only what the reader pastes. No `# what this line
-  does` annotations, no `# alternatively, ...` asides, no inline
-  commentary mixed with commands. The operator pastes the block
-  verbatim; mixed-in commentary forces them to pick around it (or
-  worse, paste commentary as a command). Explanation goes in
-  prose around the block, not inside it.
-
 ## Launch block format
 
-**Plugin repo (local WSL2):**
+**Plugin repo (WSL2):**
 
-````bash
+```bash
 cd ~/projects/beds24-booking-plugin
 claude-mode <preset> -- --permission-mode <mode>
-````
+```
 
-**Site-design repo (local Windows):**
+**Site-design repo (local):**
 
-````bash
-cd "C:/Users/Dr. COMPUTER/Desktop/Development/tripn-sites"
+```bash
+cd ~/projects/tripn-sites
 claude-mode <preset> -- --permission-mode <mode>
-````
+```
 
 **VPS (no repo or in a VPS-cloned repo):**
 
-````bash
+```bash
 claude-mode <built-in-preset> --base chill -- --permission-mode <mode>
-````
+```
 
 No `cd` — Code launches from wherever the SSH session lands
 (typically `/home/claude-code/`). Only built-in presets work
@@ -157,9 +130,30 @@ above), pass `--base chill` explicitly if chill base is wanted.
 after `--` sends it to `claude`, which rejects it with
 `unknown option '--base'`. Pattern to remember:
 
-````
+```
 claude-mode <preset> [claude-mode-flags] -- [claude-flags]
-````
+```
+
+## Claude in Chrome — browser verification gates
+
+Sessions that include steps where Code needs to verify behavior in a
+live browser add `--chrome` to the claude flags in the launch block:
+
+```bash
+claude-mode <preset> -- --permission-mode <mode> --chrome
+```
+
+`--chrome` gives Code access to the Claude in Chrome browser extension,
+which provides tools to navigate, click, fill forms, read console
+output, read network requests, take screenshots, and execute JS.
+
+Operator intervention is still required for:
+- Native browser dialogs (alerts, confirms, prompts) — these block the
+  extension until manually dismissed
+- CAPTCHAs
+- Credential entry where the value is a secret
+
+When a session has no browser verification gates, omit `--chrome`.
 
 ## Mode selection
 
@@ -169,22 +163,14 @@ for plugin work. Quick lookup:
 | Work type | Mode | Permission mode |
 |---|---|---|
 | Architecture / design | `architecture` | `auto` |
-| V1 build (net-new, local) | `v1-build` | `bypassPermissions` |
-| Feature extension (local) | `feature` | `bypassPermissions` |
-| Refactor (local) | `refactor` | `bypassPermissions` |
+| V1 build (net-new) | `v1-build` | `auto` |
+| Feature extension | `feature` | `auto` |
+| Refactor | `refactor` | `auto` |
 | Documentation | `docs` | `auto` |
 | Property rollout | `rollout` | `default` |
 | Bug fix (known cause) | `bugfix` | `default` |
 | Bug fix (unknown cause) | `debug --base chill` | `default` |
 | Read-only review | `review` | `default` or `auto` |
-
-`bypassPermissions` is the default for local plugin-build work
-running in the WSL2 + DDEV environment: the working tree is
-isolated from production, edits are high-volume, and per-edit
-prompts add no safety the local isolation doesn't already provide.
-For the same work types running on the VPS, fall back to `auto`
-or `default` per posture — the VPS lacks the local isolation, so
-per-action approval is justified there.
 
 The site-design repo has its own `.claude-mode.json` with presets
 suited to site-design work. When drafting a Code prompt for
@@ -206,11 +192,10 @@ presets:
 | `docs` | `methodical` (closest) or compose with `--quality minimal` |
 | `review` | `explore` |
 
-Permission-mode rationale: `bypassPermissions` removes interrupt
-friction in the trusted local environment; `auto` is the
-middle-ground for low-risk work where some guardrails still help;
-`default` keeps per-action approval for live system work or
-anything touching property data or system configuration.
+Permission-mode rationale: `auto` reduces interrupt friction for
+high-volume low-risk work; `default` keeps per-action approval for
+live system work or anything touching property data or system
+configuration.
 
 ## Work that doesn't fit a row cleanly
 
@@ -231,10 +216,10 @@ change to a working system, narrow scope, explain before acting.
 For prompts that direct Code to work on the local repo, include
 an Expected-state line near the top, after the context section:
 
-````
+```
 Expected HEAD: <commit hash>
 Working tree: <state, e.g. "clean (`.claude/` untracked is expected)">
-````
+```
 
 Code verifies this before starting. If state doesn't match, Code
 halts and the operator updates the prompt before retrying. If
@@ -243,10 +228,10 @@ run, the operator updates the hash before pasting.
 
 **Omit the Expected-state line for sessions that don't touch the
 repo.** VPS-side infrastructure work, WordPress site building on
-property servers, local DDEV/WSL2 environment setup, and any
-other session where Code isn't operating on the local repo has no
-repo state to verify. The convention applies to repo work;
-non-repo sessions skip it.
+property servers, DDEV-environment setup, and any other session
+where Code isn't operating on the local repo has no repo state to
+verify. The convention applies to repo work; non-repo sessions
+skip it.
 
 ## Prompt structure
 
@@ -459,15 +444,73 @@ plugin issue, not a project bug. Mention this in failure modes
 only if the prompt has Code inspecting `debug.log`; otherwise
 it's noise to ignore.
 
-## Environment-specific reference
+## VPS environment notes
 
-VPS-side environment notes (paths, auth pattern, aapanel quirks,
-WP-CLI PHP path) and local DDEV/WSL2 environment notes (paths,
-mount mechanism, tooling install) live in
-`references/environments.md`. When drafting a prompt for one of
-these environments, consult that file for the load-bearing facts.
-The prompt body rarely needs to repeat the full set; surface only
-the ones that gate the work or override a default assumption.
+When drafting prompts for VPS-side work, a few things to keep in
+mind that don't apply to local Code sessions:
+
+- **Code on the VPS is installed at `~/.local/bin/claude` for the
+  `claude-code` user**, with `PATH` configured in `~/.bashrc`.
+  The install used Anthropic's native installer
+  (`curl -fsSL https://claude.ai/install.sh | bash`). Per-user
+  install — root's Code install is separate and not shared.
+  Fresh terminals pick up the PATH automatically; VS Code
+  Remote-SSH sessions may need `source ~/.bashrc` if `.bashrc`
+  isn't auto-sourced.
+- **`claude-mode` on the VPS is installed at
+  `~/.local/bin/claude-mode` for the `claude-code` user**, via
+  the upstream install script
+  (`curl -fsSL https://raw.githubusercontent.com/nklisch/claude-code-modes/main/install.sh | sh`).
+  Same per-user pattern as Code itself.
+- **First-run authentication needed if Code isn't yet
+  authenticated on the VPS.** The OAuth flow uses
+  `localhost:35751` for the callback, which requires SSH local
+  port forwarding from the operator's machine during the auth
+  round-trip: `ssh -L 35751:localhost:35751 tripn-vps`. Once
+  authenticated, credentials persist; only an issue on first run
+  per VPS-user combination.
+- **The `claude-code` Linux user owns site files via ACLs**, not
+  via primary ownership. Files under `/www/wwwroot/` show as
+  `www:www` but `claude-code` has rwX access via POSIX ACLs.
+- **aapanel-specific file protections** — `.user.ini` files are
+  `chattr +i` (immutable). EPERM errors on operations against
+  them are expected aapanel behavior, not failures. Recovery if
+  modification is needed: `chattr -i` (root only) to modify,
+  `chattr +i` to restore.
+- **Per-site `open_basedir` restriction.** aapanel configures a
+  PHP `open_basedir` restriction per site, typically
+  `/tmp/:/www/wwwroot/<site-directory>/`. Symlinks from outside
+  these paths fail at PHP load time even though WP-CLI may
+  report the plugin as registered. Plugin installs from external
+  clones must be directory copies, not symlinks.
+- **WP-CLI uses non-standard PHP path on aapanel.** PHP lives at
+  `/www/server/php/83/bin/php` (or similar versioned path), not
+  the system default. WP-CLI on this VPS needs `WP_CLI_PHP` set
+  to that path in `~/.bashrc`. If `wp` commands fail with PHP
+  errors, this is the first thing to check.
+
+These are stable VPS-environment facts. When drafting prompts
+that touch the VPS, the prompt doesn't need to repeat all of
+them, but should not assume contrary facts.
+
+## DDEV local environment notes
+
+Local development runs on DDEV inside WSL2. Full setup and
+migration documentation: `docs/tooling/ddev.md` (plugin repo).
+
+Key facts for prompt drafting:
+
+- **All paths are WSL2-native.** Plugin repo at
+  `~/projects/beds24-booking-plugin`; chillzone site at
+  `~/projects/chillzone`. The Windows-side paths are stale.
+- **WP-CLI:** `ddev wp <command>` — no full-path invocation needed.
+- **Site URL:** `https://chillzone.ddev.site` (HTTPS, trusted cert).
+- **Plugin mount:** symlink + Docker Compose override. Edits in the
+  repo working tree are immediately live. If the DDEV project is
+  recreated, the `docker-compose.plugin-mount.yaml` override must
+  be regenerated — see `docs/tooling/ddev.md`.
+- **Start/stop:** `ddev start` / `ddev stop` from inside
+  `~/projects/chillzone`.
 
 ## Self-check before handing the prompt to the operator
 
@@ -484,11 +527,8 @@ the ones that gate the work or override a default assumption.
 - Failure modes anticipated for the dangerous steps?
 - No operator-side material inside the prompt block?
 - Both blocks fenced as code blocks?
-- **Prompt block uses a four-backtick outer fence** so any
-  inner triple-backtick examples don't terminate it early?
-- **Code blocks contain only copyable content** — no `#`
-  annotations, no inline commentary, no asides mixed in with
-  commands?
 - Continuation prompts marked as such?
+- Does this session have browser verification gates? If yes, `--chrome`
+  in the launch block?
 
 If any answer is no, fix before handing off.

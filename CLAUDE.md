@@ -161,7 +161,7 @@ porting record: `docs/architecture-pivot-decision.md`. Operator context:
 
 ## Tooling
 
-Two tools shape how sessions run.
+Three tools shape how sessions run.
 
 **Claude Code modes** sets the system prompt for the session. Project
 presets are in `.claude-mode.json`. Phase-to-mode mapping and default
@@ -174,6 +174,11 @@ session start. The session-memory commands (`crosslink session
 start`, `crosslink session action`, `crosslink quick`) are
 opt-in: use them when they help, skip them when they don't.
 Reference: `docs/tooling/crosslink.md`.
+
+**Claude in Chrome** is available for browser testing and verification
+in Code sessions. Sessions that include browser verification gates
+launch with `--chrome` added after the `--` separator in the
+claude-mode invocation.
 
 ## Beds24 dependencies
 

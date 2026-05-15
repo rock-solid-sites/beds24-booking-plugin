@@ -1,7 +1,7 @@
 # V1 Plan — Beds24 Booking Plugin
 
 **Status:** Living document. Updated between phases of work.
-**Last updated:** 2026-05-13 (updated after Session 10 to record data model, JS state management, and Session 11 sequencing)
+**Last updated:** 2026-05-15 (updated after Session 13 to mark cart and confirm handoff complete, resolve URL unknowns)
 **Purpose:** Forward visibility into V1 scope and progress. Not a binding
 schedule — work is sequenced one session at a time per project conventions.
 Read this to orient against the V1 destination; read session handoffs for
@@ -26,15 +26,12 @@ iframe.
 
 ## Current state
 
-- **Session:** 11 complete. Session 12 in planning.
-- **Session 11 scope:** Minimum-viable room seeding (4 `beds24_room` posts
-  matching live Beds24 room IDs) and room card rendering (BEM DOM,
-  available/unavailable states, WordPress content join server-side in
-  REST route). `handleSearchResponse` now renders cards.
-- **Session 12 scope:** Cart accumulator — quantity controls per card,
-  running total, Confirm Booking URL construction.
-- **Most recent handoff:** `docs/session-handoff-11.md`
-- **Repo HEAD at last update:** *(see git log)*
+- **Session:** 13 complete. Session 14 in planning.
+- **Session 13 scope:** Confirm Booking button, URL construction, iframe
+  handoff. All three architecture.md URL unknowns resolved by live
+  browser testing against Beds24's booking3.php.
+- **Most recent handoff:** `docs/session-handoff-13.md`
+- **Repo HEAD at last update:** f5df22f
 
 ---
 
@@ -61,11 +58,13 @@ session at a time. Each area below is a destination, not a session.
   card layout). Tag chips for amenities: deferred. Visual styling target:
   predecessor mockup (structural DOM in place; visual polish is per-property
   theme work).
-- **Cart accumulator ("Your Stay").** Per-card quantity controls; running
-  total; selected-state styling on cards in cart. Desktop layout placement
-  TBD. Mobile placement decided: fixed bottom bar + slide-up drawer.
-- **Confirm Booking handoff.** URL construction; transition to Beds24
-  iframe with pre-populated cart.
+- **Cart accumulator ("Your Stay").** Quantity controls, running total,
+  and selected-state styling: complete (Session 12). Desktop layout
+  placement TBD. Mobile placement decided: fixed bottom bar + slide-up
+  drawer.
+- **Confirm Booking handoff.** Complete (Session 13). URL construction
+  confirmed; iframe loads correctly with pre-populated room selections
+  and dates.
 
 ### Plugin internals
 
@@ -124,15 +123,11 @@ These are known-needed but expected in later sessions or V1.x:
 Things V1 hasn't resolved. Listed so future sessions encountering them know
 they're real questions, not settled decisions.
 
-- **`booking2.php` vs `booking3.php` endpoint.** `docs/architecture.md`
-  specifies `booking3.php`; predecessor's `booking-widget.js` used
-  `booking2.php`. To verify before the Confirm Booking handoff session.
-- **Date parameter format for Beds24 URL.** Two formats observed in the
-  spike (`checkin_hide=YYYY-MM-DD` vs. `checkin=DD+Mon+YYYY`). To verify
-  by implementation. See `docs/architecture.md` Known unknown 1.
-- **Ghost entries for unselected rooms in the booking URL.** May or may
-  not be required. To verify by implementation. See `docs/architecture.md`
-  Known unknown 2.
+Three URL unknowns previously listed here (booking endpoint, date parameter
+format, ghost entries for unselected rooms) were resolved in Session 13 by
+live browser testing. See `docs/architecture.md` §"Resolved unknowns —
+verified Session 13".
+
 - **Auto Actions on URL-prepopulated bookings.** Assumption is they fire
   identically; not tested. Required pre-rollout check, not a V1
   code-completion blocker.
