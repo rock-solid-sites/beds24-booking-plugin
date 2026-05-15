@@ -529,11 +529,46 @@ hide behavior across browsers.
 
 ---
 
+#### Mobile cart — bottom bar and slide-up drawer (added Session 17)
+
+At viewports below 768px, the `.beds24-cart` becomes a fixed viewport-bottom bar
+via a `@media (max-width: 767px)` block. The cart's DOM has two wrappers that change
+behavior across breakpoints:
+
+- **`.beds24-cart__drawer`** — at ≥768px: `display: contents` (transparent to the desktop
+  flex layout). At <768px: a collapsible section that animates from `max-height: 0` to
+  `max-height: 60vh`. DOM order: first child of `.beds24-cart`, so it appears above the bar
+  when the cart expands upward from the viewport bottom.
+- **`.beds24-cart__mobile-bar`** — at ≥768px: `display: contents` (transparent; its
+  `.beds24-cart__actions` child participates as a desktop flex item). At <768px: a 56px
+  flex row that forms the always-visible bar.
+
+The backdrop is a sibling to `.beds24-cart` inside `.beds24-booking-flow`.
+
+| Class | Element | Semantics | State variants |
+|---|---|---|---|
+| `beds24-cart__drawer` | `<div>` | Wrapper for heading, list, and footer. Transparent at desktop via `display: contents`; collapsible at mobile via `max-height` transition. | Collapsed by default at mobile; `max-height: 60vh; overflow-y: auto` when `.beds24-cart--drawer-open` is present on `.beds24-cart`. |
+| `beds24-cart__mobile-bar` | `<div>` | Wrapper for mobile toggle and actions. Transparent at desktop via `display: contents`; 56px flex row at mobile. | — |
+| `beds24-cart__mobile-toggle` | `<button type="button">` | Tap target occupying the left side of the mobile bar. Contains the summary span and chevron. `display: none` at desktop. `min-height: 44px` for WCAG touch target. | `aria-expanded="false"` → `"true"` when drawer is open. |
+| `beds24-cart__mobile-summary` | `<span>` | Summary text inside the toggle. Format: "N room[s] · €X / night". Populated by the `syncMobileBar` JS subscriber on every cart state change. | — |
+| `beds24-cart__mobile-chevron` | `<span>` | ▲ chevron icon inside the toggle. Rotates 180° via CSS transition when `.beds24-cart--drawer-open` is present. `display: inline-block; transition: transform 0.3s ease`. | Rotated 180° when drawer is open. |
+| `beds24-cart--drawer-open` | modifier on `beds24-cart` | Applied by JS when the drawer is open. Drives `max-height: 60vh` on the drawer and 180° rotation on the chevron. Also controls `overflow-y: auto` on the drawer. | Applied/removed by `openDrawer()` / `closeDrawer()` in JS. |
+| `beds24-cart-backdrop` | `<div>` | Semi-transparent overlay (`rgba(0,0,0,0.4)`) behind the drawer when open. Sibling of `.beds24-cart` inside `.beds24-booking-flow`. `position: fixed; inset: 0; z-index: 999` (below cart at 1000). `display: none !important` at ≥768px. | Hidden by default; `hidden` attribute removed when drawer opens, set when drawer closes. |
+
+**Drawer content:** `.beds24-cart__heading`, `.beds24-cart__list` (with `.beds24-cart__item` rows at full width), `.beds24-cart__footer`. All standard classes from the cart block catalog apply within the drawer.
+
+**Confirm Booking button at mobile:** The `.beds24-cart__confirm-button` lives inside `.beds24-cart__actions` which is inside `.beds24-cart__mobile-bar`. It is always visible in the mobile bar. At desktop, the same element participates in the flex bar row because `.beds24-cart__mobile-bar` is `display: contents`.
+
+**Scroll lock:** When the drawer opens, `document.body.style.overflow = 'hidden'` is set to prevent body scrolling. Cleared when the drawer closes, when the Confirm Booking button is pressed, or when the Back to rooms button is pressed.
+
+**Bottom padding:** `syncBottomPadding()` sets `document.body.style.paddingBottom` at both desktop and mobile. At mobile, padding is based on the mobile bar height only (not the drawer height), because the drawer's backdrop prevents interaction with hidden content.
+
+---
+
 #### Pending catalog sections
 
 The following sections will be drafted when their frontend layers are built:
 
-- **Mobile cart classes** — bottom bar and slide-up drawer. (Later session)
 - **State modifier classes** — `--disabled`, `--loading` variants. (Added per block as implemented)
 
 ### Targeting guidance for themes
@@ -849,6 +884,14 @@ principles, the iframe CSS workflow.
   footer bar behavior documented (media-query approach, no BEM modifier).
   `--beds24-shadow-floating` token promoted from contract-only to implemented
   in CSS defaults. Checkout date min-tracking wired in JS.
+- **2026-05-15 (Session 17):** Mobile cart bottom bar and slide-up drawer implemented.
+  New classes: `beds24-cart__drawer`, `beds24-cart__mobile-bar`, `beds24-cart__mobile-toggle`,
+  `beds24-cart__mobile-summary`, `beds24-cart__mobile-chevron`, `beds24-cart--drawer-open`,
+  `beds24-cart-backdrop`. DOM restructure: `.beds24-cart__actions` moved inside
+  `.beds24-cart__mobile-bar`; `.beds24-cart__heading`, `__list`, `__footer` wrapped in
+  `.beds24-cart__drawer`. Both wrappers use `display: contents` at ≥768px to preserve
+  the existing desktop flex layout without structural changes. "Pending catalog sections"
+  note for mobile cart classes removed (now documented above).
 - **2026-05-15 (Session 16):** Iframe CSS generator implemented per Decision 5.
   `plugin/includes/iframe-css-generator.php` — `beds24_iframe_css_defaults()`
   returns default token values; `beds24_generate_iframe_css( $tokens )` returns

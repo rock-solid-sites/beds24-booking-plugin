@@ -656,11 +656,194 @@
 }
 
 /* ==========================================================================
+   Mobile cart backdrop
+   Semi-transparent overlay shown behind the slide-up drawer.
+   z-index: 999 so it sits below the cart bar (z-index: 1000).
+   Never shown at desktop (suppressed via media query).
+   ========================================================================== */
+
+.beds24-cart-backdrop {
+    position:   fixed;
+    inset:      0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index:    999;
+}
+
+@media (min-width: 768px) {
+    .beds24-cart-backdrop {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   Mobile cart — bottom bar + slide-up drawer (< 768px)
+
+   The cart becomes a fixed viewport-bottom bar.  DOM order inside .beds24-cart:
+     1. .beds24-cart__drawer  — collapsible section (heading + list + footer)
+     2. .beds24-cart__mobile-bar — always-visible row (toggle + confirm button)
+
+   With flex-direction: column and position: fixed; bottom: 0, the cart grows
+   upward as the drawer expands.  The bar is always at the bottom; the drawer
+   appears above it.
+
+   JS controls .beds24-cart--drawer-open on the cart root.
+   JS adds padding-bottom to document.body equal to the mobile bar height so
+   no page content is hidden behind the fixed bar.
+   ========================================================================== */
+
+@media (max-width: 767px) {
+    .beds24-cart {
+        position:         fixed;
+        bottom:           0;
+        left:             0;
+        right:            0;
+        z-index:          1000;
+        display:          flex;
+        flex-direction:   column;
+        margin-top:       0;
+        border-radius:    0;
+        border:           none;
+        border-top:       1px solid var(--beds24-color-border);
+        box-shadow:       var(--beds24-shadow-floating);
+        overflow:         hidden;
+    }
+
+    /* Drawer: collapsible section above the bar. */
+    .beds24-cart__drawer {
+        display:    block;
+        max-height: 0;
+        overflow:   hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    /* Drawer open state: cap at 60vh so the bar remains visible on tall content. */
+    .beds24-cart--drawer-open .beds24-cart__drawer {
+        max-height:  60vh;
+        overflow-y:  auto;
+        border-bottom: 1px solid var(--beds24-color-border);
+    }
+
+    /* Heading visible inside the drawer. */
+    .beds24-cart__heading {
+        display:     block;
+        border-bottom: 1px solid var(--beds24-color-border);
+    }
+
+    /* Footer inside the drawer — standard row layout. */
+    .beds24-cart__footer {
+        display:         flex;
+        flex-direction:  row;
+        justify-content: space-between;
+        align-items:     center;
+        padding:         var(--beds24-space-sm) var(--beds24-space-md);
+        border-top:      none;
+    }
+
+    /* Items: restore full-width stack in the drawer. */
+    .beds24-cart__list {
+        display:        block;
+        padding:        0;
+        margin:         0;
+    }
+
+    .beds24-cart__item {
+        display:         flex;
+        border:          none;
+        border-radius:   0;
+        border-bottom:   1px solid var(--beds24-color-border);
+        background:      none;
+        padding:         var(--beds24-space-sm) var(--beds24-space-md);
+    }
+
+    .beds24-cart__item-name {
+        white-space: nowrap;
+        overflow:    hidden;
+        flex:        1;
+    }
+
+    /* Show per-item total in the drawer. */
+    .beds24-cart__item-total {
+        display: inline;
+    }
+
+    /* Remove button: larger touch target in the drawer. */
+    .beds24-cart__item-remove {
+        width:  36px;
+        height: 36px;
+    }
+
+    /* Mobile bar: always-visible row. */
+    .beds24-cart__mobile-bar {
+        display:     flex;
+        align-items: center;
+        min-height:  56px;
+        padding:     0 var(--beds24-space-md);
+        gap:         var(--beds24-space-sm);
+        flex-shrink: 0;
+    }
+
+    /* Toggle button: takes the left side of the bar (flex-1). */
+    .beds24-cart__mobile-toggle {
+        display:     flex;
+        align-items: center;
+        gap:         var(--beds24-space-xs);
+        flex:        1;
+        min-width:   0;
+        min-height:  44px; /* WCAG 2.1 touch target minimum */
+        background:  none;
+        border:      none;
+        padding:     0;
+        text-align:  left;
+        cursor:      pointer;
+        font-family: var(--beds24-font-family-body);
+        font-size:   var(--beds24-font-size-small);
+        color:       var(--beds24-color-surface-text);
+    }
+
+    .beds24-cart__mobile-summary {
+        flex:        1;
+        min-width:   0;
+        overflow:    hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-weight: var(--beds24-font-weight-heading);
+        font-size:   var(--beds24-font-size-small);
+    }
+
+    /* Chevron: rotates 180° when drawer is open. */
+    .beds24-cart__mobile-chevron {
+        display:    inline-block;
+        flex-shrink: 0;
+        font-size:  0.5rem;
+        line-height: 1;
+        transition: transform 0.3s ease;
+    }
+
+    .beds24-cart--drawer-open .beds24-cart__mobile-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* Actions: confirm button at the right of the bar. */
+    .beds24-cart__actions {
+        flex-shrink: 0;
+        padding:     0;
+    }
+
+    .beds24-cart__confirm-button {
+        width:       auto;
+        white-space: nowrap;
+        padding:     var(--beds24-space-xs) var(--beds24-space-sm);
+        font-size:   var(--beds24-font-size-small);
+    }
+}
+
+/* ==========================================================================
    Sticky footer bar — desktop and tablet (≥768px)
 
    The cart region becomes a full-width bar fixed to the viewport bottom
-   whenever it has items.  Mobile (< 768px) keeps the current inline layout;
-   the mobile bottom-bar-with-drawer pattern is a later session.
+   whenever it has items.  The mobile bar and drawer wrappers are made
+   transparent (display:contents) so the heading, list, footer, and actions
+   participate in the flex row as if they were direct children.
 
    No BEM modifier is used: the sticky layout IS the only desktop cart layout
    in V1.  The media query distinguishes desktop from mobile naturally.
@@ -672,25 +855,44 @@
 
 @media (min-width: 768px) {
     .beds24-cart {
-        position:      fixed;
-        bottom:        0;
-        left:          0;
-        right:         0;
-        z-index:       1000;
-        display:       flex;
+        position:       fixed;
+        bottom:         0;
+        left:           0;
+        right:          0;
+        z-index:        1000;
+        display:        flex;
         flex-direction: row;
-        align-items:   center;
-        gap:           var(--beds24-space-md);
-        padding:       var(--beds24-space-sm) var(--beds24-space-md);
-        margin-top:    0;
-        border-radius: 0;
-        border:        none;
-        border-top:    1px solid var(--beds24-color-border);
-        box-shadow:    var(--beds24-shadow-floating);
-        overflow:      visible;
+        align-items:    center;
+        gap:            var(--beds24-space-md);
+        padding:        var(--beds24-space-sm) var(--beds24-space-md);
+        margin-top:     0;
+        border-radius:  0;
+        border:         none;
+        border-top:     1px solid var(--beds24-color-border);
+        box-shadow:     var(--beds24-shadow-floating);
+        overflow:       visible;
     }
 
-    /* Heading is not needed in the compact bar. */
+    /*
+     * Make the drawer and mobile-bar wrappers transparent to the flex layout.
+     * Their children participate as direct flex items in the desktop bar row.
+     * display:contents removes the wrapper from the layout box tree while
+     * keeping children fully accessible in the accessibility tree.
+     */
+    .beds24-cart__drawer {
+        display: contents;
+    }
+
+    .beds24-cart__mobile-bar {
+        display: contents;
+    }
+
+    /* Summary toggle: not needed at desktop — the full item list is inline. */
+    .beds24-cart__mobile-toggle {
+        display: none;
+    }
+
+    /* Heading is not needed in the compact desktop bar. */
     .beds24-cart__heading {
         display: none;
     }

@@ -108,30 +108,78 @@ $min_stay    = beds24_booking_plugin_get_min_stay();
         aria-label="<?php esc_attr_e( 'Room search results', 'beds24-booking-plugin' ); ?>"
     ></div>
 
+    <?php
+    /*
+     * Mobile backdrop — covers page content when the drawer is open.
+     * Hidden by default; JS removes hidden to reveal it. Clicking the backdrop
+     * closes the drawer. Position: fixed, z-index: 999 (below the cart bar at 1000).
+     */
+    ?>
+    <div class="beds24-cart-backdrop" hidden aria-hidden="true"></div>
+
     <div
         class="beds24-cart"
         hidden
         aria-label="<?php esc_attr_e( 'Your booking cart', 'beds24-booking-plugin' ); ?>"
     >
-        <h2 class="beds24-cart__heading">
-            <?php esc_html_e( 'Your Stay', 'beds24-booking-plugin' ); ?>
-        </h2>
-        <ul class="beds24-cart__list" aria-label="<?php esc_attr_e( 'Selected rooms', 'beds24-booking-plugin' ); ?>"></ul>
-        <div class="beds24-cart__footer">
-            <span class="beds24-cart__total-label">
-                <?php esc_html_e( 'Total per night', 'beds24-booking-plugin' ); ?>
-            </span>
-            <span class="beds24-cart__total"></span>
+        <?php
+        /*
+         * Drawer wrapper — contains the full cart item list, heading, and total.
+         *
+         * At ≥768px (desktop): display:contents makes this wrapper transparent
+         * to the flex layout; its children participate as direct flex items.
+         *
+         * At <768px (mobile): this is the slide-up collapsible section.
+         * max-height transitions from 0 → 60vh when .beds24-cart--drawer-open
+         * is present on the parent.
+         */
+        ?>
+        <div class="beds24-cart__drawer">
+            <h2 class="beds24-cart__heading">
+                <?php esc_html_e( 'Your Stay', 'beds24-booking-plugin' ); ?>
+            </h2>
+            <ul class="beds24-cart__list" aria-label="<?php esc_attr_e( 'Selected rooms', 'beds24-booking-plugin' ); ?>"></ul>
+            <div class="beds24-cart__footer">
+                <span class="beds24-cart__total-label">
+                    <?php esc_html_e( 'Total per night', 'beds24-booking-plugin' ); ?>
+                </span>
+                <span class="beds24-cart__total"></span>
+            </div>
         </div>
-        <div class="beds24-cart__actions">
+
+        <?php
+        /*
+         * Mobile bar wrapper — contains the summary toggle and the Confirm Booking
+         * button (actions).
+         *
+         * At ≥768px (desktop): display:contents makes this wrapper transparent;
+         * .beds24-cart__mobile-toggle is display:none and .beds24-cart__actions
+         * participates as a flex item (rightmost column in the bar).
+         *
+         * At <768px (mobile): this renders as a 56px flex row with the summary
+         * toggle on the left and the Confirm Booking button on the right.
+         */
+        ?>
+        <div class="beds24-cart__mobile-bar">
             <button
-                class="beds24-cart__confirm-button"
+                class="beds24-cart__mobile-toggle"
                 type="button"
-                disabled
-                aria-label="<?php esc_attr_e( 'Confirm your booking', 'beds24-booking-plugin' ); ?>"
+                aria-expanded="false"
+                aria-label="<?php esc_attr_e( 'View cart details', 'beds24-booking-plugin' ); ?>"
             >
-                <?php esc_html_e( 'Confirm Booking', 'beds24-booking-plugin' ); ?>
+                <span class="beds24-cart__mobile-summary"></span>
+                <span class="beds24-cart__mobile-chevron" aria-hidden="true">&#9650;</span>
             </button>
+            <div class="beds24-cart__actions">
+                <button
+                    class="beds24-cart__confirm-button"
+                    type="button"
+                    disabled
+                    aria-label="<?php esc_attr_e( 'Confirm your booking', 'beds24-booking-plugin' ); ?>"
+                >
+                    <?php esc_html_e( 'Confirm Booking', 'beds24-booking-plugin' ); ?>
+                </button>
+            </div>
         </div>
     </div>
 

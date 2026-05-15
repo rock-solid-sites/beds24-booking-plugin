@@ -316,6 +316,9 @@
 
         console.log( '[Beds24] Confirm Booking — constructed URL:', url );
 
+        // Close the mobile drawer (and restore body scroll) before hiding the cart.
+        closeDrawer();
+
         // Hide discovery UI (room cards and cart footer bar).
         if ( resultsEl ) {
             resultsEl.setAttribute( 'hidden', '' );
@@ -348,6 +351,9 @@
         var resultsEl = document.querySelector( '.beds24-room-results' );
         var blockEl   = document.querySelector( '.beds24-booking-flow' );
 
+        // Ensure the mobile drawer is closed and body scroll is restored.
+        closeDrawer();
+
         // Unload the iframe safely and hide the wrapper.
         if ( iframe ) {
             iframe.src = 'about:blank';
@@ -374,14 +380,76 @@
     }
 
     // -----------------------------------------------------------------------
-    // Cart bottom-padding sync (desktop sticky footer)
+    // Mobile drawer open / close
+    // -----------------------------------------------------------------------
+
+    /**
+     * Open the mobile slide-up drawer.
+     *
+     * Adds .beds24-cart--drawer-open to the cart, reveals the backdrop,
+     * locks body scroll, and marks the toggle button as expanded.
+     *
+     * No-op at desktop viewports (≥768px): the mobile bar is display:contents
+     * and the toggle is hidden, so this function should never be called there.
+     * Calling it at desktop is safe but has no visible effect.
+     */
+    function openDrawer() {
+        var cartEl     = document.querySelector( '.beds24-cart' );
+        var backdropEl = document.querySelector( '.beds24-cart-backdrop' );
+        var toggleEl   = cartEl ? cartEl.querySelector( '.beds24-cart__mobile-toggle' ) : null;
+
+        if ( ! cartEl ) {
+            return;
+        }
+
+        cartEl.classList.add( 'beds24-cart--drawer-open' );
+        if ( backdropEl ) {
+            backdropEl.removeAttribute( 'hidden' );
+        }
+        document.body.style.overflow = 'hidden';
+        if ( toggleEl ) {
+            toggleEl.setAttribute( 'aria-expanded', 'true' );
+        }
+    }
+
+    /**
+     * Close the mobile slide-up drawer.
+     *
+     * Removes .beds24-cart--drawer-open from the cart, hides the backdrop,
+     * restores body scroll, and marks the toggle button as collapsed.
+     */
+    function closeDrawer() {
+        var cartEl     = document.querySelector( '.beds24-cart' );
+        var backdropEl = document.querySelector( '.beds24-cart-backdrop' );
+        var toggleEl   = cartEl ? cartEl.querySelector( '.beds24-cart__mobile-toggle' ) : null;
+
+        if ( ! cartEl ) {
+            return;
+        }
+
+        cartEl.classList.remove( 'beds24-cart--drawer-open' );
+        if ( backdropEl ) {
+            backdropEl.setAttribute( 'hidden', '' );
+        }
+        document.body.style.overflow = '';
+        if ( toggleEl ) {
+            toggleEl.setAttribute( 'aria-expanded', 'false' );
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Cart bottom-padding sync (both mobile and desktop fixed bar)
     // -----------------------------------------------------------------------
 
     /**
      * Keep the page body's bottom padding equal to the cart bar's rendered
-     * height plus a 16px buffer at desktop widths (≥768px), so the fixed
-     * cart bar never covers page content or the site footer.  Padding is
-     * cleared at mobile widths and when the cart is hidden.
+     * height plus a 16px buffer, so the fixed cart bar never covers page
+     * content or the site footer.  Padding is cleared when the cart is hidden.
+     *
+     * At desktop (≥768px): measures the full bar height.
+     * At mobile (<768px): measures only the mobile bar row height (not the
+     * drawer height), because the drawer overlaps page content and is backed
+     * by a scroll-locking backdrop — only the always-visible bar needs padding.
      *
      * Targets document.body rather than the block wrapper so that content
      * outside the block (e.g. the site footer) is also protected.
@@ -389,13 +457,20 @@
      * @param {HTMLElement} cartEl  The .beds24-cart element.
      */
     function syncBottomPadding( cartEl ) {
-        if ( window.innerWidth < 768 || ! cartEl || cartEl.hasAttribute( 'hidden' ) ) {
+        if ( ! cartEl || cartEl.hasAttribute( 'hidden' ) ) {
             document.body.style.paddingBottom = '';
             return;
         }
         // Measure after the browser has rendered the newly-visible bar.
         setTimeout( function () {
-            var height = cartEl.getBoundingClientRect().height;
+            var height;
+            if ( window.innerWidth < 768 ) {
+                // Mobile: only account for the bar row, not the drawer.
+                var mobileBar = cartEl.querySelector( '.beds24-cart__mobile-bar' );
+                height = mobileBar ? mobileBar.getBoundingClientRect().height : 56;
+            } else {
+                height = cartEl.getBoundingClientRect().height;
+            }
             document.body.style.paddingBottom = ( height + 16 ) + 'px';
         }, 0 );
     }
@@ -572,6 +647,8 @@
         }
 
         if ( roomIds.length === 0 ) {
+            // Close the mobile drawer before hiding the cart (restores body scroll).
+            closeDrawer();
             cartEl.setAttribute( 'hidden', '' );
             syncBottomPadding( cartEl );
             return;
@@ -890,6 +967,49 @@
     }
 
     // -----------------------------------------------------------------------
+    // Mobile bar summary sync
+    // -----------------------------------------------------------------------
+
+    /**
+     * Update the mobile bar's summary line with the current cart state.
+     *
+     * Format: "N room[s] · €X / night"
+     *
+     * Called on every store update via the subscriber list.  No-op when the
+     * mobile summary element is not in the DOM (e.g. at desktop widths where
+     * the element exists but is display:none — textContent assignment is safe).
+     *
+     * @param {Object} state  Current store state.
+     */
+    function syncMobileBar( state ) {
+        var summaryEl = document.querySelector( '.beds24-cart__mobile-summary' );
+        if ( ! summaryEl ) {
+            return;
+        }
+
+        var cart    = state.cart;
+        var roomIds = Object.keys( cart );
+
+        if ( roomIds.length === 0 ) {
+            summaryEl.textContent = '';
+            return;
+        }
+
+        var sym   = state.currencySymbol || '€'; // €
+        var total = 0;
+        var i, id;
+        for ( i = 0; i < roomIds.length; i++ ) {
+            id     = roomIds[ i ];
+            total += cart[ id ].quantity * cart[ id ].unitPrice;
+        }
+
+        var count = roomIds.length;
+        summaryEl.textContent =
+            count + ( count === 1 ? ' room' : ' rooms' ) +
+            ' · ' + sym + total + ' / night'; // · = middle dot (·)
+    }
+
+    // -----------------------------------------------------------------------
     // Cart event handling (document-level delegation)
     // -----------------------------------------------------------------------
 
@@ -902,6 +1022,25 @@
     function onCartClick( e ) {
         var btn  = e.target;
         var card, roomId;
+
+        // Mobile backdrop: tap to close the drawer.
+        if ( btn.classList.contains( 'beds24-cart-backdrop' ) ) {
+            closeDrawer();
+            return;
+        }
+
+        // Mobile toggle button: tap to open or close the drawer.
+        // closestEl handles taps on the summary or chevron children of the button.
+        var toggleEl = closestEl( btn, '.beds24-cart__mobile-toggle' );
+        if ( toggleEl ) {
+            var cartForToggle = document.querySelector( '.beds24-cart' );
+            if ( cartForToggle && cartForToggle.classList.contains( 'beds24-cart--drawer-open' ) ) {
+                closeDrawer();
+            } else {
+                openDrawer();
+            }
+            return;
+        }
 
         // Back to rooms: close the iframe and return to discovery UI.
         if ( btn.classList.contains( 'beds24-booking-iframe-nav__back' ) ) {
@@ -1238,6 +1377,7 @@
         store.subscribe( renderCart );
         store.subscribe( syncCardControls );
         store.subscribe( syncConfirmButton );
+        store.subscribe( syncMobileBar );
     }
 
     // Guard against DOMContentLoaded having already fired (e.g. deferred scripts).
