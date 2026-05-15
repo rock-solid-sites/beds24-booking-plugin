@@ -2,8 +2,10 @@
 
 A living log of failure modes, corrections, and process changes. Each session 
 that identifies a non-trivial failure mode or adopts a new working rule adds 
-an entry. Historical entries are append-only; the top summary is rewritten 
-as needed to reflect current active rules.
+an entry. Historical entries are append-only. The Active Rules section is
+updated when rules are established, revised, or archived. When adding an
+entry that establishes a new rule, add the rule to Active Rules in the same
+commit.
 
 ## How to use this document
 
@@ -66,13 +68,6 @@ and confirm the value persisted before making further changes. Silent
 save failures (character limits, tag stripping) waste all subsequent 
 work built on the assumption the save succeeded. *(Established: 2026-04-20)*
 
-### Rewrite, don't patch
-When making significant layout changes to CSS, start from the current 
-clean file, make all edits, and deploy the complete file. Do not 
-incrementally append patches to an inline field or use string 
-replacement on large text blobs in browser textareas. Each iteration 
-should produce a complete, self-consistent file. *(Established: 2026-04-20)*
-
 ### Read documents before browser state
 At the start of a new session, read all uploaded handoff/project 
 documents before inspecting browser tabs, running tools, or making 
@@ -93,38 +88,12 @@ before implementing individual pieces. Testing pieces in isolation
 then discovering they don't compose wastes more time than upfront 
 flow planning. *(Established: 2026-04-20)*
 
-### One observer, one guard
-Never attach multiple MutationObservers to the same root with 
-`subtree:true` when any callback modifies the DOM. Use a single 
-observer with an `isModifying` guard flag. Two observers create 
-infinite mutation loops that freeze the page. *(Established: 2026-04-20)*
-
 ### Verify the full deployment chain
 After uploading files to the VPS, don't just verify the files are 
 accessible — also verify that every reference to those files is 
 updated. Check the Beds24 admin field, the WordPress HTML block, 
 and the widget CONFIG. A correct file on the VPS is useless if the 
 page still loads the old version. *(Established: 2026-04-20)*
-
-### Hide measurable content with opacity, not display
-When content inside an iframe needs to be hidden from the user but 
-still rendered for measurement (height sync, getBoundingClientRect), 
-use `opacity:0; position:absolute` instead of `display:none`. 
-`display:none` prevents the browser from rendering content entirely, 
-making all measurements return 0. *(Established: 2026-04-20)*
-
-### Inject overrides via JS when CSS load order fails
-When an external CSS file's rules are overridden by platform-generated 
-inline styles (e.g., Beds24's Style panel colors), move those overrides 
-into a JS-injected `<style>` tag. JS-injected styles load last and 
-reliably win specificity battles. *(Established: 2026-04-20)*
-
-### New filenames bypass server cache
-When OpenLiteSpeed (or similar server-side cache) serves stale content 
-despite Cloudflare purges, `.htaccess` directives, and server restarts, 
-the only reliable workaround is uploading with a new versioned filename. 
-Never overwrite an existing file expecting the change to take effect. 
-*(Established: 2026-04-20)*
 
 ### Test CSS against real DOM before deployment
 When developing CSS via a local mockup, verify the mockup's DOM matches 
@@ -150,12 +119,6 @@ it against the real environment before designing a more complex
 architecture. If the simple version works, ship it. Complexity needs 
 justification from a measured failure, not from an assumed one. 
 *(Established: 2026-04-21)*
-
-### Know your actual viewport
-When an iframe embeds your page, your CSS viewport is the iframe's 
-width, not the user's screen width. Identify the actual rendering 
-width early and design for it. A "desktop" layout that never 
-activates is wasted work. *(Established: 2026-04-21)*
 
 ### Mockup-first validation
 Before writing any proposal that would change layout or behavior covered by 
@@ -205,6 +168,100 @@ not the contract. The contract is what verification proves; the
 implementation is one path to that proof, but not the only one. 
 *(Established: 2026-04-24)*
 
+### Claims about third-party platform behavior must be verified in live browser
+Claims about how a third-party platform handles a specific DOM event (AJAX
+firing, field updating, repricing) must be treated as inferences until observed
+in a live browser. For Beds24-specific behavioral questions, open DevTools
+Network panel, trigger the event, and observe the request/response. Do not
+state platform behavior as fact in plans, handoffs, or proposals without live
+observation. *(Established: 2026-04-23)*
+
+### Trace visual order before deploying structural DOM changes
+Before deploying a structural DOM change, trace through the full flex/grid
+visual order for all affected items and verify that selectors downstream of the
+change still resolve to the intended elements. Especially on mobile where
+`order` values actively rearrange items. *(Established: 2026-04-23)*
+
+### Cross-property comparison first, docs second
+When one property throws an error another doesn't, compare admin configs
+side-by-side before searching docs. The cheapest diagnostic is the
+working-vs-non-working contrast. Compare both the admin panel UI and the API
+responses — admin labels are not always the same as what the API sends.
+*(Established: 2026-04-24)*
+
+### Verify cross-document references with grep before closing a session
+When a session moves, renames, or removes referenced files, end with
+`grep -rn` across affected repos before the closing commit. Treat any
+surviving reference as either an in-scope fix or an explicit decision to leave
+it; don't let it slide silently. *(Established: 2026-05-11)*
+
+### Acknowledge and decide on session scope drift, don't slide
+When actual work diverges materially from named scope, pause and explicitly
+decide to rename or defer. Don't let scope drift silently — implicit acceptance
+produces session records that don't match their actual work.
+*(Established: 2026-05-11)*
+
+### Secrets in Code prompts: write up to the gate
+When a Code prompt needs a secret value, write only up to the gating action
+where the secret would appear, and stop. The operator constructs the single
+gating command themselves with the secret substituted directly. The secret
+never appears in chat; there is no template to substitute into.
+*(Established: 2026-05-11)*
+
+### Flag plan deviations explicitly
+When Code's approach diverges from the prompt — even when the deviation is an
+improvement — name the change, the reason, and leave the call with the
+operator. Surface deviations uniformly regardless of whether they are
+technical refinements or procedural changes. *(Established: 2026-05-11)*
+
+---
+
+## Archived rules (predecessor substrate)
+
+These rules were established during the CSS + JS predecessor project (Sessions
+1–20) and applied to that architecture. They do not apply to the current
+plugin. The entries that established them remain in the Entries section as
+historical record.
+
+### Rewrite, don't patch
+When making significant layout changes to CSS, start from the current
+clean file, make all edits, and deploy the complete file. Do not
+incrementally append patches to an inline field or use string
+replacement on large text blobs in browser textareas. Each iteration
+should produce a complete, self-consistent file. *(Established: 2026-04-20)*
+
+### One observer, one guard
+Never attach multiple MutationObservers to the same root with
+`subtree:true` when any callback modifies the DOM. Use a single
+observer with an `isModifying` guard flag. Two observers create
+infinite mutation loops that freeze the page. *(Established: 2026-04-20)*
+
+### Hide measurable content with opacity, not display
+When content inside an iframe needs to be hidden from the user but
+still rendered for measurement (height sync, getBoundingClientRect),
+use `opacity:0; position:absolute` instead of `display:none`.
+`display:none` prevents the browser from rendering content entirely,
+making all measurements return 0. *(Established: 2026-04-20)*
+
+### Inject overrides via JS when CSS load order fails
+When an external CSS file's rules are overridden by platform-generated
+inline styles (e.g., Beds24's Style panel colors), move those overrides
+into a JS-injected `<style>` tag. JS-injected styles load last and
+reliably win specificity battles. *(Established: 2026-04-20)*
+
+### New filenames bypass server cache
+When OpenLiteSpeed (or similar server-side cache) serves stale content
+despite Cloudflare purges, `.htaccess` directives, and server restarts,
+the only reliable workaround is uploading with a new versioned filename.
+Never overwrite an existing file expecting the change to take effect.
+*(Established: 2026-04-20)*
+
+### Know your actual viewport
+When an iframe embeds your page, your CSS viewport is the iframe's
+width, not the user's screen width. Identify the actual rendering
+width early and design for it. A "desktop" layout that never
+activates is wasted work. *(Established: 2026-04-21)*
+
 ---
 
 ## Entry template
@@ -214,21 +271,12 @@ When adding a new entry, use this structure:
 ```
 ### YYYY-MM-DD — Short title
 
-**Context:** What was being worked on, what the setup was.
+**What happened:** The failure mode, briefly. Include enough detail
+that a future session can recognize the same pattern.
 
-**What happened:** The failure mode, narrated briefly. Include enough 
-detail that a future session can recognize the same pattern.
-
-**Root causes:** Numbered list. Be specific about mechanisms, not just 
-outcomes.
-
-**Rules established:** New active rules, or links to existing ones 
-this entry reinforces.
-
-**Concrete cost:** Time, rework, or other measurable impact. Optional 
-but helpful for calibrating future decisions.
-
-**Resolution:** What fixed it, where the fix lives.
+**Rule established:** The new active rule, or a note that this entry
+reinforces an existing rule. If a new rule, also add it to the
+Active Rules section above.
 ```
 
 ---

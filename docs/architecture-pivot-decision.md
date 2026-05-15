@@ -1,3 +1,8 @@
+> **Reading guidance:** This document is the historical record of why
+> this project exists. Read it once for context; it is not in any
+> recurring session reading path. The architectural decisions it
+> describes are now maintained in `docs/architecture.md`.
+
 # Architecture Pivot Decision
 
 **Date:** 2026-05-06
@@ -178,7 +183,7 @@ into the new project's CLAUDE.md as guidance for future sessions:
 
 ## What carries forward
 
-To the new project's repository:
+The following items were ported to the new project's repository:
 
 - `docs/retrospective.md` — institutional memory. The 27 active rules
   apply unchanged. Historical entries port as background context.
@@ -192,7 +197,7 @@ To the new project's repository:
   is now Beds24-rendered, but the intent informs how the plugin
   should style the iframe via injected CSS).
 
-What does not carry forward:
+The following items from the predecessor project were not ported:
 
 - `CSS-base.css`, `beds24-iframe-helper.js`, `booking-widget.js` — the
   rendering substrate has changed.
@@ -205,7 +210,7 @@ What does not carry forward:
   was scoped against the old project's rollout. A fresh decision on
   Crosslink is part of the new project's tooling setup.
 
-## What does not carry forward but is worth noting
+## The following items were not ported but their context informed the new project
 
 - The Layout 6 module configuration (Offer Select only, in the new
   architecture) becomes property setup documentation. Each property

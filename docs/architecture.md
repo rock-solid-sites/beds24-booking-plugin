@@ -36,36 +36,18 @@ defer to these answers unless a principle is explicitly revisited.
 
 ## The discovery-transaction boundary
 
-The architectural decision is Option 2 from the pivot decision
-document: the plugin renders everything before the transaction, and
-Beds24's iframe renders everything during and after. The boundary is
-the Confirm Booking button.
+The plugin renders everything before the booking transaction; Beds24's
+iframe renders everything during and after. The boundary is the Confirm
+Booking button. This is Option 2 from the pivot decision document
+(`docs/architecture-pivot-decision.md`), chosen for risk management
+(payment processing stays in Beds24's battle-tested infrastructure),
+operator workflow (content management moves to WordPress where operators
+already work), and scope honesty (custom payment would introduce PCI,
+Stripe, refund, and webhook scope the hostel use case doesn't require).
 
-This split was chosen over:
-
-- **Option 1 (plugin wraps iframe):** The original scope. Rejected
-  because it doesn't solve the content management problem — operators
-  would still manage room descriptions and photos in Beds24, which is
-  friction they don't want.
-- **Option 3 (plugin owns full flow including payment):** Tempting for
-  architectural cleanliness. Rejected because it introduces PCI scope,
-  Stripe integration, refund flows, booking-payment desynchronization
-  handling, and webhook orchestration. The hostel use case doesn't
-  require that level of control.
-
-The Option 2 boundary is clean because it places the transaction
-exactly at the point where the risk profile changes: once a guest
-clicks Confirm Booking, they need payment processing, booking
-creation, and confirmation emails — all things Beds24 has a
-battle-tested implementation of. The plugin reuses that rather than
-replacing it.
-
-**Multi-room support** is what makes this boundary viable: the
-Beds24 booking page natively renders a multi-item cart (single guest
-form, single payment) when loaded with the right URL parameters.
-This was verified by inspecting a live multi-room booking session URL.
-The plugin composes the multi-room URL; Beds24 renders the composed
-cart.
+Multi-room support makes this boundary viable: Beds24's booking page
+natively renders a multi-item cart when loaded with the right URL
+parameters. The plugin composes the URL; Beds24 renders the cart.
 
 ---
 
