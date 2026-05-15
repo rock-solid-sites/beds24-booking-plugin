@@ -53,6 +53,11 @@ evidence points that way.
   surfaced or a new rule was established. The retrospective uses
   `### YYYY-MM-DD — Title` headers for entries. New entries append
   to the existing file.
+- Session handoffs do not assert HEAD commit hashes in the body text.
+  The "Session N+1 start checks" section at the bottom of each handoff
+  uses `git log --oneline -1` to verify HEAD at session start against
+  live state, not against a hash written at handoff time. This prevents
+  staleness when commits land between sessions.
 
 ## One kind of work per session
 
@@ -110,8 +115,9 @@ principles".
 - `docs/mockup.html` — the approved design (ported from predecessor)
 
 *Tooling reference:*
-- `docs/tooling/crosslink.md` — Crosslink command reference and opt-in
-  workflow (hooks run automatically; session-memory commands are opt-in)
+- `docs/tooling/crosslink.md` — Crosslink adoption decision, opt-in status,
+  and Windows setup notes (hooks run automatically; session-memory commands
+  are opt-in)
 - `docs/tooling/claude-code-modes.md` — Claude Code modes project guide
   (phase-to-mode mapping, default invocation, operational notes)
 
@@ -160,7 +166,7 @@ Two tools shape how sessions run.
 **Claude Code modes** sets the system prompt for the session. Project
 presets are in `.claude-mode.json`. Phase-to-mode mapping and default
 invocation: `docs/tooling/claude-code-modes.md`. Upstream reference:
-`docs/tooling/claude-code-modes-reference.md`.
+https://github.com/nklisch/claude-code-modes
 
 **Crosslink** is installed and runs in the background — hooks
 fire on tool calls, prompt-guard injects project rules at

@@ -2,8 +2,7 @@
 
 **Read every session.** Short by design; use the reference doc for detail.
 
-Reference doc: `docs/tooling/claude-code-modes-reference.md`
-Upstream: `https://github.com/nklisch/claude-code-modes`
+Upstream reference: `https://github.com/nklisch/claude-code-modes`
 Config file: `.claude-mode.json` at repo root
 
 ---
