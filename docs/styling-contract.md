@@ -849,3 +849,14 @@ principles, the iframe CSS workflow.
   footer bar behavior documented (media-query approach, no BEM modifier).
   `--beds24-shadow-floating` token promoted from contract-only to implemented
   in CSS defaults. Checkout date min-tracking wired in JS.
+- **2026-05-15 (Session 16):** Iframe CSS generator implemented per Decision 5.
+  `plugin/includes/iframe-css-generator.php` — `beds24_iframe_css_defaults()`
+  returns default token values; `beds24_generate_iframe_css( $tokens )` returns
+  the complete CSS string. Default values use px units for iframe predictability.
+  Five internal defaults (prefixed `_`) added for values with no public contract
+  token: `_page-bg`, `_shadow-hover`, `_transition`, `_tag-bg`, `_tag-border`.
+  Plugin admin menu registered (`plugin/includes/beds24-admin-page.php`) — top-level
+  "Beds24 Booking" menu with "Property Setup" submenu page displaying the generated
+  CSS in a copyable textarea. CSS-base.css source located at `docs/reference/CSS-base.css`
+  (not `docs/CSS-base.css` as referenced in v1-plan — path difference only, content
+  unchanged).
