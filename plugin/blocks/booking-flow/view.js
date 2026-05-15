@@ -162,6 +162,21 @@
     // -----------------------------------------------------------------------
 
     /**
+     * Format a Date object as a YYYY-MM-DD string (zero-padded).
+     * Used for setting the min attribute on the check-out input.
+     *
+     * @param  {Date}   d
+     * @return {string}
+     */
+    function formatDateAttr( d ) {
+        var m   = d.getMonth() + 1;
+        var day = d.getDate();
+        return d.getFullYear() + '-' +
+               ( m < 10 ? '0' : '' ) + m + '-' +
+               ( day < 10 ? '0' : '' ) + day;
+    }
+
+    /**
      * Parse a YYYY-MM-DD date string into a Date at midnight local time.
      *
      * The Date constructor treats bare ISO-format strings (YYYY-MM-DD) as
@@ -302,8 +317,50 @@
     }
 
     // -----------------------------------------------------------------------
+    // Cart bottom-padding sync (desktop sticky footer)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Keep the block wrapper's bottom padding equal to the cart bar's rendered
+     * height at desktop widths (≥768px), so the fixed cart bar never covers
+     * page content.  Padding is cleared at mobile widths and when the cart is
+     * hidden.
+     *
+     * @param {HTMLElement} cartEl  The .beds24-cart element.
+     */
+    function syncBottomPadding( cartEl ) {
+        var blockEl = document.querySelector( '.beds24-booking-flow' );
+        if ( ! blockEl ) {
+            return;
+        }
+        if ( window.innerWidth < 768 || ! cartEl || cartEl.hasAttribute( 'hidden' ) ) {
+            blockEl.style.paddingBottom = '';
+            return;
+        }
+        // Measure after the browser has rendered the newly-visible bar.
+        setTimeout( function () {
+            var height = cartEl.getBoundingClientRect().height;
+            blockEl.style.paddingBottom = height + 'px';
+        }, 0 );
+    }
+
+    // -----------------------------------------------------------------------
     // Cart state operations
     // -----------------------------------------------------------------------
+
+    /**
+     * Remove a room entirely from the cart (quantity → 0).
+     * Triggers all store subscribers: card loses selected state, running total
+     * updates, cart bar hides if now empty.
+     *
+     * @param {string} roomId  Beds24 room ID string.
+     */
+    function removeCartItem( roomId ) {
+        var state   = store.get();
+        var newCart = shallowCopy( state.cart );
+        delete newCart[ roomId ];
+        store.set( { cart: newCart } );
+    }
 
     /**
      * Add one dorm bed (or increment existing qty) for roomId.
@@ -398,11 +455,12 @@
      * @param  {string} currencySymbol  Currency symbol.
      * @return {HTMLElement}
      */
-    function buildCartListItem( item, currencySymbol ) {
+    function buildCartListItem( item, currencySymbol, roomId ) {
         var sym = currencySymbol || '€';
 
         var li     = document.createElement( 'li' );
         li.className = 'beds24-cart__item';
+        li.setAttribute( 'data-room-id', roomId );
 
         var nameEl       = document.createElement( 'span' );
         nameEl.className = 'beds24-cart__item-name';
@@ -422,9 +480,16 @@
         totalEl.className = 'beds24-cart__item-total';
         totalEl.textContent = sym + ( item.quantity * item.unitPrice ) + ' / night';
 
+        var removeBtn       = document.createElement( 'button' );
+        removeBtn.type      = 'button';
+        removeBtn.className = 'beds24-cart__item-remove';
+        removeBtn.setAttribute( 'aria-label', 'Remove ' + item.name + ' from cart' );
+        removeBtn.textContent = '×'; // MULTIPLICATION SIGN
+
         li.appendChild( nameEl );
         li.appendChild( detailEl );
         li.appendChild( totalEl );
+        li.appendChild( removeBtn );
         return li;
     }
 
@@ -452,6 +517,7 @@
 
         if ( roomIds.length === 0 ) {
             cartEl.setAttribute( 'hidden', '' );
+            syncBottomPadding( cartEl );
             return;
         }
 
@@ -463,7 +529,7 @@
             item = items[ id ];
             total += item.quantity * item.unitPrice;
             if ( listEl ) {
-                listEl.appendChild( buildCartListItem( item, sym ) );
+                listEl.appendChild( buildCartListItem( item, sym, id ) );
             }
         }
 
@@ -472,6 +538,7 @@
         }
 
         cartEl.removeAttribute( 'hidden' );
+        syncBottomPadding( cartEl );
     }
 
     // -----------------------------------------------------------------------
@@ -780,6 +847,16 @@
         var btn  = e.target;
         var card, roomId;
 
+        // Cart item remove: clear this room from the cart entirely.
+        if ( btn.classList.contains( 'beds24-cart__item-remove' ) ) {
+            var itemEl  = closestEl( btn, '.beds24-cart__item' );
+            var itemRoomId = itemEl && itemEl.dataset.roomId;
+            if ( itemRoomId ) {
+                removeCartItem( itemRoomId );
+            }
+            return;
+        }
+
         // Confirm Booking: build URL and load iframe.
         if ( btn.classList.contains( 'beds24-cart__confirm-button' ) ) {
             var confirmState = store.get();
@@ -827,6 +904,50 @@
                 togglePrivateRoom( roomId, card );
             }
             return;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Check-in date change handler
+    // -----------------------------------------------------------------------
+
+    /**
+     * When the check-in date changes, update the check-out input's min attribute
+     * to (check-in + min_stay) so the browser's native date picker blocks
+     * invalid dates.  If the current check-out value is before the new minimum,
+     * clear it so the user must pick a valid date.
+     *
+     * @param {Event} e  change event on the check-in input.
+     */
+    function onCheckInChange( e ) {
+        var form       = formEl;
+        var checkInEl  = e.target;
+        var checkOutEl = form ? form.querySelector( '.beds24-search-form__check-out' ) : null;
+
+        if ( ! checkOutEl ) {
+            return;
+        }
+
+        var checkInValue = checkInEl.value;
+        if ( ! checkInValue ) {
+            checkOutEl.removeAttribute( 'min' );
+            return;
+        }
+
+        var minStay     = parseInt( ( form ? form.dataset.minStay : null ) || '1', 10 );
+        var checkIn     = parseLocalDate( checkInValue );
+        var minCheckOut = new Date(
+            checkIn.getFullYear(),
+            checkIn.getMonth(),
+            checkIn.getDate() + minStay
+        );
+        var minStr = formatDateAttr( minCheckOut );
+
+        checkOutEl.setAttribute( 'min', minStr );
+
+        // Reset checkout if its current value is now before the new minimum.
+        if ( checkOutEl.value && checkOutEl.value < minStr ) {
+            checkOutEl.value = '';
         }
     }
 
@@ -1033,8 +1154,23 @@
 
         form.addEventListener( 'submit', onSubmit );
 
+        // Track check-in changes to keep check-out's min constraint current.
+        var checkInEl = form.querySelector( '.beds24-search-form__check-in' );
+        if ( checkInEl ) {
+            checkInEl.addEventListener( 'change', onCheckInChange );
+        }
+
         // Document-level delegation for cart control clicks and confirm button.
         document.addEventListener( 'click', onCartClick );
+
+        // Keep bottom padding in sync when the viewport is resized (desktop
+        // breakpoint changes while the cart is visible).
+        window.addEventListener( 'resize', function () {
+            var cartEl = document.querySelector( '.beds24-cart' );
+            if ( cartEl ) {
+                syncBottomPadding( cartEl );
+            }
+        } );
 
         // Store subscribers — fire on every state change.
         store.subscribe( renderCart );

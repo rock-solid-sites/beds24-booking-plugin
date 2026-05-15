@@ -459,6 +459,32 @@ total without it.
 | `beds24-cart__total-label` | `<span>` | "Total per night" label. | — |
 | `beds24-cart__total` | `<span>` | Running per-night total across all cart items. Text content updated by JS. | — |
 
+#### Cart item remove control (added Session 14)
+
+A remove button appended to every `<li class="beds24-cart__item">`. Clicking it removes the room entirely from the cart (quantity → 0), which triggers all store subscribers: the card loses its selected state, the running total updates, and the bar hides if the cart is now empty.
+
+For dorm rooms, remove clears the entire bed count (not minus-one). The dorm card's quantity widget resets to 0.
+
+| Class | Element | Semantics | State variants |
+|---|---|---|---|
+| `beds24-cart__item-remove` | `<button type="button">` | Remove control (×) inside each cart item. Minimal — no background, no border, small muted ×. | Hover state applies error color to signal destructive intent. |
+
+**`data-room-id` on `<li>`:** Each `.beds24-cart__item` carries a `data-room-id` attribute (added Session 14) so the document-level click delegator can identify which room to remove without walking up to a card element.
+
+---
+
+#### Cart sticky footer bar (added Session 14)
+
+At ≥768px viewport width, `.beds24-cart` is positioned `fixed; bottom: 0; left: 0; right: 0` — a full-width bar anchored to the viewport bottom. At < 768px, the cart remains inline (mobile bottom-bar-with-drawer is a later session).
+
+**No BEM modifier class.** The sticky layout is the only desktop cart layout in V1. A media query on the base `.beds24-cart` class distinguishes desktop from mobile naturally. When the mobile drawer session ships it will use its own modifier or block variant.
+
+**Shadow:** The bar uses `--beds24-shadow-floating` (`0 -2px 8px rgba(0,0,0,0.1)`) — an upward-directed shadow to visually separate the bar from page content above it. This token is now defined in the token defaults on `.beds24-booking-flow`.
+
+**Bottom padding:** JS adds `padding-bottom` equal to the bar's rendered height to `.beds24-booking-flow` when the cart is visible (measuring after render via `setTimeout(0)`), so no page content is hidden behind the fixed bar. Padding is cleared when the cart is hidden or at mobile widths.
+
+**Internal layout (desktop):** Horizontal flex row: `[items list scrollable, flex-1] [footer: total label + value] [actions: Confirm Booking button]`. The cart heading ("Your Stay") is hidden. The per-item total column is hidden (running total is in the footer). Items list is horizontally scrollable if many items are added.
+
 ---
 
 #### Cart confirm button and iframe (added Session 13)
@@ -795,3 +821,8 @@ principles, the iframe CSS workflow.
   `beds24-booking-iframe-wrapper`, `beds24-booking-iframe`). Cart confirm
   button marked as implemented (was pending). Iframe height fixed at 900px
   in V1.
+- **2026-05-15 (Session 14):** Cart item remove control (`beds24-cart__item-remove`)
+  added. `data-room-id` attribute added to `.beds24-cart__item`. Sticky
+  footer bar behavior documented (media-query approach, no BEM modifier).
+  `--beds24-shadow-floating` token promoted from contract-only to implemented
+  in CSS defaults. Checkout date min-tracking wired in JS.

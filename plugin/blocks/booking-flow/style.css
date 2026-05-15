@@ -42,6 +42,7 @@
     --beds24-border-radius:       0.5rem;
     --beds24-border-radius-small: 0.25rem;
     --beds24-shadow-card:         0 1px 3px rgba(0, 0, 0, 0.1);
+    --beds24-shadow-floating:     0 -2px 8px rgba(0, 0, 0, 0.1);
 
     --beds24-font-family-body:    system-ui, -apple-system, sans-serif;
     --beds24-font-family-heading: system-ui, -apple-system, sans-serif;
@@ -585,4 +586,126 @@
     width:      100%;
     height:     900px;
     border:     none;
+}
+
+/* ==========================================================================
+   Cart item remove button
+   Minimal × control, visible on every cart item in both inline (mobile)
+   and sticky-bar (desktop) contexts.
+   ========================================================================== */
+
+.beds24-cart__item-remove {
+    flex-shrink:      0;
+    background:       none;
+    border:           none;
+    padding:          0 0 0 var(--beds24-space-xs);
+    cursor:           pointer;
+    font-size:        1rem;
+    line-height:      1;
+    color:            var(--beds24-color-surface-muted);
+    font-family:      var(--beds24-font-family-body);
+}
+
+.beds24-cart__item-remove:hover {
+    color: var(--beds24-color-error);
+}
+
+/* ==========================================================================
+   Sticky footer bar — desktop and tablet (≥768px)
+
+   The cart region becomes a full-width bar fixed to the viewport bottom
+   whenever it has items.  Mobile (< 768px) keeps the current inline layout;
+   the mobile bottom-bar-with-drawer pattern is a later session.
+
+   No BEM modifier is used: the sticky layout IS the only desktop cart layout
+   in V1.  The media query distinguishes desktop from mobile naturally.
+
+   JS adds padding-bottom to .beds24-booking-flow equal to the bar height
+   (measured after render) so page content is never hidden behind the bar.
+   ========================================================================== */
+
+@media (min-width: 768px) {
+    .beds24-cart {
+        position:      fixed;
+        bottom:        0;
+        left:          0;
+        right:         0;
+        z-index:       1000;
+        display:       flex;
+        flex-direction: row;
+        align-items:   center;
+        gap:           var(--beds24-space-md);
+        padding:       var(--beds24-space-sm) var(--beds24-space-md);
+        margin-top:    0;
+        border-radius: 0;
+        border:        none;
+        border-top:    1px solid var(--beds24-color-border);
+        box-shadow:    var(--beds24-shadow-floating);
+        overflow:      visible;
+    }
+
+    /* Heading is not needed in the compact bar. */
+    .beds24-cart__heading {
+        display: none;
+    }
+
+    /* Items list: horizontal scrolling row of compact chips. */
+    .beds24-cart__list {
+        display:        flex;
+        flex-direction: row;
+        flex-wrap:      nowrap;
+        gap:            var(--beds24-space-sm);
+        align-items:    center;
+        flex:           1;
+        min-width:      0;
+        overflow-x:     auto;
+        padding:        0;
+        margin:         0;
+    }
+
+    /* Each item becomes a compact bordered chip. */
+    .beds24-cart__item {
+        display:          inline-flex;
+        align-items:      center;
+        gap:              var(--beds24-space-xs);
+        flex-shrink:      0;
+        padding:          var(--beds24-space-xs) var(--beds24-space-sm);
+        border:           1px solid var(--beds24-color-border);
+        border-radius:    var(--beds24-border-radius-small);
+        background-color: var(--beds24-color-surface);
+    }
+
+    /* Name: no truncation inside the scrollable chip area. */
+    .beds24-cart__item-name {
+        overflow:    visible;
+        white-space: nowrap;
+        flex:        none;
+    }
+
+    /* Per-item total is redundant — the running total is shown in the footer. */
+    .beds24-cart__item-total {
+        display: none;
+    }
+
+    /* Footer column: total label + value, stacked, right-aligned. */
+    .beds24-cart__footer {
+        flex-shrink:     0;
+        display:         flex;
+        flex-direction:  column;
+        align-items:     flex-end;
+        justify-content: center;
+        padding:         0;
+        border-top:      none;
+    }
+
+    /* Actions column: confirm button, auto-width (not full-width in the bar). */
+    .beds24-cart__actions {
+        flex-shrink: 0;
+        padding:     0;
+    }
+
+    .beds24-cart__confirm-button {
+        width:       auto;
+        white-space: nowrap;
+    }
 }
