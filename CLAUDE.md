@@ -8,94 +8,31 @@ iframe-rendered booking page for transactions.
 
 Every session, in this order, before doing anything else:
 
-1. **The Conversational defaults section in this file** (just below).
-   These shape how the session is run. They take precedence over
-   default conversational patterns and apply to every response.
-2. **`docs/retrospective.md`** — the Active Rules section. These are
-   process constraints, ported from the predecessor project and
-   extended as new rules emerge. They take precedence over any
-   instruction that contradicts them.
-3. **`docs/session-handoff-{N}.md`** (latest) — current project state.
-4. **`docs/architecture.md`** — the architecture and design principles.
-   Read before making any decision that affects how the plugin is
-   structured or what it owns vs. delegates to Beds24. (Drafted in
-   Session 4.)
-5. **Current plan doc** if one exists (e.g., `docs/v1-plan.md` during
-   active build phases).
+1. **`docs/retrospective.md`** — the Active Rules section. Process
+   constraints that take precedence over any instruction that
+   contradicts them.
+2. **`docs/session-handoff-{N}.md`** (latest) — current project state.
+3. **`docs/architecture.md`** — architecture, design principles, and
+   settled decisions. Read before making any decision that affects
+   plugin structure.
 
 Read the documents before inspecting code, running tools, or making
-claims about prior work.
+claims about prior work. The conversational defaults (below) also
+apply to every session.
 
 ## Conversational defaults
 
-These describe how Claude communicates in this project. They exist
-because the most useful collaboration on architectural and design
-work comes from independent assessment and direct disagreement,
-not from validation and accommodation. The rules below set up the
-working dynamic that makes that collaboration possible.
+This project uses a specific set of conversational rules: independent
+assessment first, no premise validation, independent estimates, explicit
+confidence levels, named assumptions, verification against primary
+sources, accuracy over agreeableness, document access before discussion.
 
-**Independent assessment first.** When the user proposes a direction
-or framing, Claude generates an independent take on whether the
-direction is correct before analyzing its implications. The
-independent take may agree with the user's framing, refine it, or
-push back on it — all three are useful contributions. Skipping
-this step and analyzing the implications of a possibly-wrong frame
-produces work that defends the wrong shape of the problem.
-
-**No premise validation.** Claude does not open responses with
-"good question," "you're absolutely right," "fascinating point,"
-or similar phrases. These create social pressure to defend the
-premise rather than evaluate it. When Claude does agree with a
-premise, it states the agreement as part of the substantive
-response, not as a preamble.
-
-**Independent estimates.** When the user provides a number, an
-estimate, or a framing of scope, Claude generates its own version
-independently before comparing. If the two differ, Claude surfaces
-the difference. If they match, Claude says so explicitly rather
-than letting the user's number pass without confirmation.
-
-**Explicit confidence levels.** Claims are marked high / moderate /
-low / unknown confidence, with the basis stated: documentation
-read, code inspected, prior session evidence, primary source
-verified, inference, or assumption. "I think" and "probably" are
-acceptable but should be paired with the level of confidence behind
-them.
-
-**Named assumptions.** When a claim depends on something not
-verified in the current session, Claude states the assumption
-rather than letting it pass as fact. This is particularly important
-for claims about tool behavior, API capabilities, library
-conventions, or platform specifics, where the assumption is often
-based on training data that may be outdated.
-
-**Verification against primary sources.** When a claim depends on
-outside facts, Claude refers to documentation or live verification
-rather than memory. When verification hasn't been done but should
-be, Claude says so before continuing.
-
-**Accuracy over agreeableness.** Direct disagreement and explicit
-uncertainty are more useful than smooth alignment. Pushback that
-turns out to be wrong is better than agreement that turns out to
-be wrong, because pushback gets corrected in the next exchange
-and agreement compounds.
-
-**Document access before discussion.** When a document's content
-matters to a response, Claude verifies it has access before
-reasoning about the content. If the document hasn't been shared,
-isn't fetchable, or a fetch fails, Claude requests upload rather
-than speculating about content.
-
-**Direct asks for missing documents.** When Claude needs a
-document it doesn't have, the request names the file and asks
-for upload. Not "could you describe it" or "let me work from
-what I remember" — a direct ask: "I need to see `<filename>`.
-Could you upload it?"
-
-These are working agreements, not constraints to be policed. The
-goal is sessions that produce better thinking faster, by removing
-the conversational patterns that subtly reward going along with
-the user's first framing rather than examining it.
+These are defined in full in the project skill
+`skills/beds24-booking-plugin-context/SKILL.md` and apply to every
+session. Summary: generate an independent take before analyzing
+implications; mark confidence levels on claims; state assumptions
+rather than letting them pass as fact; disagree directly when the
+evidence points that way.
 
 ## Project conventions
 
@@ -120,11 +57,11 @@ the user's first framing rather than examining it.
 ## One kind of work per session
 
 Architecture, code, admin configuration through Chrome, WordPress
-admin through MCP, code review, and refactor are different kinds
-of sessions even when they share a Claude Code mode. Mixing two
-kinds in a single session surfaces unrelated risks against each
-other and forces context-switching mid-session. Sessions are split
-by kind of work, not just by mode.
+admin through MCP, code review, and refactor are different kinds of
+sessions even when they share a Claude Code mode. Mixing two kinds in
+a single session surfaces unrelated risks against each other and forces
+context-switching mid-session. Sessions are split by kind of work, not
+just by mode.
 
 Exception: when two kinds of work are tightly coupled and splitting
 them would introduce coordination costs that outweigh the focus
@@ -144,30 +81,18 @@ guest form and one payment. Full architectural reasoning lives in
 
 ## Three design principles
 
-These answer recurring questions; future sessions encountering them
-defer to these answers unless the principle is explicitly revisited.
-
-1. **Search filters by date only.** Capacity is communicated per
-   card and chosen per card. The search form is two date pickers
-   plus a Search button. No guest picker.
+1. **Search filters by date only.**
 2. **The plugin handles discovery; Beds24 handles transactions.**
-   The boundary is the Confirm Booking button. Future scope-up
-   pressure to own the form, the payment, or the booking creation
-   defers to this principle.
-3. **Content lives in WordPress.** Room descriptions, photos, and
-   amenity labels are managed in the WordPress plugin admin.
-   Beds24 is the property management backend; WordPress is the
-   content management frontend.
+3. **Content lives in WordPress.**
+
+Full statements and reasoning: `docs/architecture.md` §"Three design
+principles".
 
 ## Project file map
 
 **Read every session:**
 - `docs/retrospective.md` — Active Rules and failure-mode log
 - `docs/session-handoff-{N}.md` — current state
-- `docs/architecture.md` — architecture and design principles (drafted
-  in Session 4)
-- `docs/tooling/claude-code-modes.md` — Claude Code modes project guide
-  (phase-to-mode mapping, default invocation, operational notes)
 
 **Read when the task requires it:**
 
@@ -187,6 +112,8 @@ defer to these answers unless the principle is explicitly revisited.
 *Tooling reference:*
 - `docs/tooling/crosslink.md` — Crosslink command reference and opt-in
   workflow (hooks run automatically; session-memory commands are opt-in)
+- `docs/tooling/claude-code-modes.md` — Claude Code modes project guide
+  (phase-to-mode mapping, default invocation, operational notes)
 
 **Operator reference (not read by default):**
 - `OPERATING.md` — launch commands, permission-mode guidance, session
@@ -201,9 +128,9 @@ defer to these answers unless the principle is explicitly revisited.
 Three skills at `skills/` capture project-specific procedural knowledge
 that activates when relevant during Code sessions:
 
-- `beds24-booking-plugin-context` — foundational project context
-  (conversational defaults, design principles, conventions, architecture
-  summary, active rules)
+- `beds24-booking-plugin-context` — conversational defaults (canonical),
+  design principles (names + pointers), architecture summary, active
+  rules summary
 - `beds24-api-work` — Beds24 v2 API client patterns, auth flow, method
   signatures, response shape quirks
 - `beds24-property-rollout` — Beds24 property configuration and onboarding
@@ -256,14 +183,7 @@ Reference: `docs/tooling/crosslink.md`.
 
 ## What this plugin does NOT do
 
-- Process payments
-- Store credit card data
-- Create bookings via the API (Beds24's iframe creates them when the
-  user submits the form)
-- Sync bookings out of Beds24 (operator manages bookings in Beds24
-  admin as today)
-- Handle refunds, cancellations, or booking modifications
-- Send confirmation emails (Beds24's Auto Actions handle this)
-
-These boundaries are deliberate. See `docs/architecture-pivot-decision.md`
-for the reasoning.
+No payment processing, no card data, no booking creation via API, no
+booking sync, no refunds, no confirmation emails. These boundaries are
+permanent per the discovery-transaction boundary. Full list and
+reasoning: `docs/architecture.md` §"What the plugin does not do".

@@ -40,40 +40,8 @@ iframe.
 
 ## Resolved foundations
 
-These decisions are settled. Future sessions defer to them unless
-explicitly revisited.
-
-- **Architecture:** discovery-transaction boundary at the Confirm Booking
-  button. See `docs/architecture.md` and `docs/architecture-pivot-decision.md`.
-- **Three design principles:** date-only search; plugin owns discovery,
-  Beds24 owns transactions; content lives in WordPress. See
-  `docs/architecture.md` §"Three design principles" and `CLAUDE.md`.
-- **Per-property config sourcing:** WordPress options, propid-suffixed
-  (e.g., `beds24_booking_plugin_refresh_token_{propid}`). Each WordPress
-  install serves one property. See `docs/architecture.md` §"Data sources".
-- **Styling contract:** plugin emits BEM DOM with `beds24-` namespace prefix;
-  CSS custom properties under `--beds24-*`; low-specificity selectors with no
-  `!important`. See `docs/styling-contract.md`.
-- **Room content data model:** custom post type `beds24_room` (registered by
-  the plugin); room name = post title; description = post content; primary
-  photo = featured image; Beds24 room ID = post meta `_beds24_room_id`;
-  custom amenities = terms in a taxonomy registered on the CPT. Beds24 OTA
-  featureCodes are mapped at render time by a built-in table and not stored
-  in WordPress. See `docs/architecture.md` §"WordPress — content".
-- **Frontend JS state management:** plain-JS state store with subscribe/notify
-  mechanism; no framework; no web components. Render functions subscribe to
-  state; event handlers call set. Implementation shape settled when card and
-  cart layers are built. See `docs/architecture.md` §"Frontend JS state
-  management".
-- **Pricing model:** `numAdults=1` on all offers queries; "from €X / night"
-  display; per-occupancy pricing flagged as known edge case for rollout. See
-  `docs/architecture.md` §"Pricing display".
-- **Multi-room cart composition:** single Beds24 URL with `sr1-` and `naa1-`
-  parameter pairs per room. See `docs/architecture.md` §"Multi-room cart and
-  URL construction".
-- **Visual language:** ports forward from predecessor mockup
-  (`docs/mockup.html`) — typography, palette, density. Plugin emits its own
-  DOM so the mockup's CSS doesn't port directly; the visual decisions do.
+Settled architectural decisions live in `docs/architecture.md`. This
+document tracks V1 status against them, not the decisions themselves.
 
 ---
 
@@ -179,17 +147,9 @@ they're real questions, not settled decisions.
 
 ## What V1 does NOT do
 
-These constraints are permanent per the discovery-transaction boundary:
-
-- No code that touches credit card data
-- No `POST /bookings` calls; no booking creation
-- No payment gateway integration
-- No refund or cancellation flows
-- No booking sync from Beds24
-- No confirmation emails
-
-See `docs/architecture.md` §"What the plugin does not do" for the full list
-and reasoning.
+These constraints are permanent per the discovery-transaction boundary.
+See `docs/architecture.md` §"What the plugin does not do" for the full
+list and reasoning.
 
 ---
 

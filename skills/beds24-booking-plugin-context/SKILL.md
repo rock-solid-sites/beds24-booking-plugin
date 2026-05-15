@@ -60,85 +60,30 @@ If the document isn't accessible, ask for it by name: "I need to see
 
 ## Three design principles
 
-These answer recurring questions. Future sessions defer to these unless a
-principle is explicitly revisited.
+1. **Search filters by date only.**
+2. **The plugin handles discovery; Beds24 handles transactions.**
+3. **Content lives in WordPress.**
 
-1. **Search filters by date only.** The search form is two date pickers
-   and a Search button. No guest picker. Capacity is communicated per
-   room card and chosen per card.
-
-2. **The plugin handles discovery; Beds24 handles transactions.** The
-   boundary is the Confirm Booking button. Everything before it is
-   WordPress-rendered; everything after (guest details form, payment,
-   booking creation) is Beds24-rendered inside an iframe.
-
-3. **Content lives in WordPress.** Room descriptions, photos, and amenity
-   labels are managed in the WordPress plugin admin. Beds24 is the
-   property management backend; WordPress is the content management
-   frontend.
+Full statements and reasoning: `docs/architecture.md` §"Three design
+principles".
 
 ---
 
 ## Project conventions
 
-- **American spelling** throughout.
-- **No time estimates** in plans or handoffs. Coding assistant work
-  doesn't map cleanly to human-hour estimates.
-- **Use Beds24 admin field names** when communicating about Beds24
-  configuration (e.g., "Insert in HTML \<HEAD\> bottom", not `customhead`).
-- **Booking page design target:** Hostelworld-like density, not
-  minimalist. Marketing site design is per-property and theme-driven —
-  density framing applies to the booking page specifically (room cards,
-  dates, prices), not the wider site. The mockup at `docs/mockup.html`
-  is the canonical visual reference for the booking-page DOM structure
-  and layout — what the plugin emits. Layout and functionality carry
-  across properties; visual presentation (colors, typography, accent
-  treatments) is per-property and is captured in the tripn-sites repo's
-  per-property handoff documents.
-- **Fail loud during dev** — no graceful degradation fallbacks that hide
-  bugs.
-- **At session end:** add a retrospective entry if a failure mode was
-  surfaced or a new rule was established. Use `### YYYY-MM-DD — Title`
-  headers; append to `docs/retrospective.md`.
+See `CLAUDE.md` §"Project conventions" and §"One kind of work per
+session". Key points: American spelling, no time estimates, Beds24 admin
+field names, Hostelworld-like density for booking pages, fail loud
+during dev, retrospective entries at session end.
 
 ---
 
-## One kind of work per session
+## Architecture
 
-Architecture, code, admin configuration through Chrome, WordPress admin
-through MCP, code review, and refactor are different kinds of sessions
-even when they share a Claude Code mode. Mixing two kinds surfaces
-unrelated risks and forces context-switching mid-session.
-
-**Exception:** when two kinds are tightly coupled and splitting them would
-introduce coordination costs that outweigh the focus benefit.
-
----
-
-## Architecture summary
-
-The plugin owns:
-- **Search form** — two date pickers, Search button, date validation
-- **Room results** — one card per room, rendered from WordPress content
-  plus live API data (availability, pricing)
-- **Cart accumulator** ("Your Stay") — accumulates room selections;
-  dorm beds use quantity input, private rooms use Add/Remove toggle
-- **Confirm Booking button** — constructs a multi-room URL and opens
-  Beds24's iframe
-
-Beds24 owns (inside the iframe): guest details form, payment, booking
-creation, confirmation emails, booking management.
-
-**Multi-room URL pattern:**
-```
-https://beds24.com/booking3.php?propid={id}&checkin={date}&checkout={date}
-  &sr1-{roomId}=N&naa1-1-{roomId}=N  [repeat per cart item]
-```
-
-**Data sources:**
-- Beds24 v2 API — live availability and pricing (`GET /properties`,
-  `GET /inventory/rooms/offers`)
-- WordPress plugin admin — room descriptions, photos, amenity labels
+The plugin owns discovery (search form, room results, cart accumulation)
+and hands off to Beds24's iframe at the Confirm Booking button for
+transactions. Full component specs, data sources, and design decisions:
+`docs/architecture.md`.
 
 ---
 
@@ -167,20 +112,16 @@ into the wrong repo's concerns.
 
 ## What the plugin does NOT do
 
-- Process payments or store credit card data
-- Call `POST /bookings` (Beds24's iframe creates bookings)
-- Sync bookings out of Beds24
-- Handle refunds, cancellations, or modifications
-- Send confirmation emails (Beds24 Auto Actions handle this)
-
-These constraints follow from the discovery-transaction boundary.
-Future scope-up pressure defers to design principle 2.
+No payment processing, no booking creation, no booking sync, no refunds,
+no confirmation emails. These constraints follow from design principle 2.
+Full list and reasoning: `docs/architecture.md` §"What the plugin does
+not do".
 
 ---
 
 ## Active rules (summary)
 
-The retrospective (`docs/retrospective.md`) maintains ~27 active process
+The retrospective (`docs/retrospective.md`) maintains active process
 rules. The most frequently relevant:
 
 - **Measurements vs inferences** — verify inferences from prior sessions
@@ -192,20 +133,17 @@ rules. The most frequently relevant:
 - **Read documents before browser state** — handoff docs are authoritative;
   browser tabs from prior sessions are leftover state
 
-Full active rules: `references/retrospective-active-rules.md`
-
 ---
 
 ## References
 
-When questions go beyond this summary:
+For content beyond this skill's summary:
 
-| File | When to read |
+| Topic | File |
 |---|---|
-| `references/architecture.md` | Full architectural reasoning, component specs, design decisions, known unknowns |
-| `references/architecture-pivot-decision.md` | Why this project exists; what the predecessor project was; what ported forward |
-| `references/retrospective-active-rules.md` | All active process rules with establishment dates |
-
-For current project state, check `docs/session-handoff-{N}.md` (latest).
-For API client details, use the `beds24-api-work` skill.
-For property rollout, use the `beds24-property-rollout` skill.
+| Full architecture, component specs, design decisions | `docs/architecture.md` |
+| Why this project exists, predecessor pivot | `docs/architecture-pivot-decision.md` |
+| Active process rules | `docs/retrospective.md` §"Active Rules" |
+| Current project state | `docs/session-handoff-{N}.md` (latest) |
+| API client patterns | `beds24-api-work` skill |
+| Property rollout | `beds24-property-rollout` skill |
