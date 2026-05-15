@@ -23,7 +23,19 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+add_action( 'after_setup_theme', 'beds24_register_image_sizes' );
 add_action( 'init', 'beds24_register_room_post_type', 0 );
+
+/**
+ * Register custom image sizes for the plugin.
+ *
+ * beds24-card: 280×210px, hard crop. Used for room card photos (rendered at
+ * 140×105px on desktop, 2× for retina). Registered on after_setup_theme so
+ * WordPress generates the crop when new media is uploaded.
+ */
+function beds24_register_image_sizes(): void {
+    add_image_size( 'beds24-card', 280, 210, true );
+}
 
 /**
  * Register the `beds24_room` custom post type and `beds24_amenity` taxonomy.
@@ -137,6 +149,29 @@ function beds24_register_room_post_type(): void {
 // ---------------------------------------------------------------------------
 // Room content lookup
 // ---------------------------------------------------------------------------
+
+/**
+ * Get the amenity term names for a beds24_room post.
+ *
+ * Returns an array of term name strings for the post's assigned beds24_amenity
+ * terms. Returns an empty array when no terms are assigned or the post has no
+ * taxonomy terms — callers render nothing for an empty array.
+ *
+ * @param  int    $post_id  Post ID of a beds24_room post.
+ * @return array            Array of amenity name strings (may be empty).
+ */
+function beds24_get_room_amenities( int $post_id ): array {
+    $terms = get_the_terms( $post_id, 'beds24_amenity' );
+    if ( ! $terms || is_wp_error( $terms ) ) {
+        return [];
+    }
+    return array_map(
+        function ( \WP_Term $term ): string {
+            return $term->name;
+        },
+        $terms
+    );
+}
 
 /**
  * Get a published beds24_room post by its Beds24 room ID.

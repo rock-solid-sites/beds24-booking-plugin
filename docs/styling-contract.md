@@ -386,14 +386,78 @@ are not omitted.
 | `beds24-room-card__unavailable-notice` | `<p>` | "Not available for selected dates" text for unavailable rooms. | — | Present on unavailable cards only. |
 | `beds24-room-card--unavailable` | modifier on `beds24-room-card` | Applied when the room has no offers for the selected dates (`room.offers` is absent or empty). Reduces opacity and mutes the room name color. | — | Co-occurs with `beds24-room-card`. |
 
-**Note on tag chips:** The architecture specifies tag chips for amenities
-(featureCodes + custom taxonomy). These are deferred to a later session.
-The `beds24-room-card__tags` and `beds24-room-card__tag` elements are
-reserved but not yet in the catalog.
-
 **Note on cart controls:** Quantity inputs, running total, and the
-"Add to cart" / "Book" action elements are cart accumulator scope
-(a later session). Their classes will be added to this catalog when built.
+Add/Remove action elements are documented in the cart-controls section below.
+The `beds24-room-card__cart-btn` and `beds24-room-card__qty-control` classes
+are public and stable.
+
+---
+
+#### Room card tag chips (added Session 12)
+
+Amenity chips render from the room's `beds24_amenity` taxonomy terms. Tags
+are user-defined content — Beds24 featureCodes are **not** included here
+(featureCodes are a future addition resolved at render time; taxonomy chips
+are the only implemented chip source in V1).
+
+The chip container is omitted entirely when a room has no assigned terms.
+No empty container, no error.
+
+| Class | Element | Semantics | State variants |
+|---|---|---|---|
+| `beds24-room-card__tags` | `<div>` | Chip container inside `.beds24-room-card__content`. Flex-row, wrapping. Present only when the room has at least one amenity term. | — |
+| `beds24-room-card__tag` | `<span>` | Individual chip. One per amenity term. Small text on a border-radius-small background. | — |
+
+---
+
+#### Room card cart controls (added Session 12)
+
+Per-card controls for adding rooms to the cart. Two variants based on room type:
+- **Dorm rooms** (`roomType: "bedInDormitory"`): quantity [−] [N] [+] widget.
+- **Private rooms** (all other roomTypes): Add/Remove toggle button.
+
+Controls are rendered only on available rooms. Unavailable cards have no controls.
+
+| Class | Element | Semantics | State variants |
+|---|---|---|---|
+| `beds24-room-card__qty-control` | `<div>` | Dorm quantity widget wrapper. Carries `data-max-qty` attribute with the maximum selectable bed count (= `offer.unitsAvailable`). | — |
+| `beds24-room-card__qty-btn` | `<button type="button">` | Shared class for decrement and increment buttons. Square, 28px. | `:disabled` state styled (opacity 0.4, not-allowed cursor). |
+| `beds24-room-card__qty-btn--dec` | modifier on `beds24-room-card__qty-btn` | Decrement (−) button. Starts disabled (qty=0). | Disabled when qty ≤ 0. |
+| `beds24-room-card__qty-btn--inc` | modifier on `beds24-room-card__qty-btn` | Increment (+) button. | Disabled when qty ≥ maxQty. |
+| `beds24-room-card__qty-value` | `<span>` | Current quantity display. Text content updated by JS on state change. Carries `aria-live="polite"`. | — |
+| `beds24-room-card__cart-btn` | `<button type="button">` | Private room Add/Remove toggle. Text toggles between "Add" and "Remove". Primary color background when in Add state. | `beds24-room-card__cart-btn--in-cart` when the room is in the cart. |
+| `beds24-room-card__cart-btn--in-cart` | modifier on `beds24-room-card__cart-btn` | Applied when the private room is in the cart. Muted style; hover treatment signals destructive intent (error color). | Co-occurs with `beds24-room-card__cart-btn`. |
+
+**Selected state on card root:**
+
+| Class | Element | Semantics | State variants |
+|---|---|---|---|
+| `beds24-room-card--selected` | modifier on `beds24-room-card` | Applied when any quantity > 0 is in the cart for this room. Primary-color border highlight. | Co-occurs with `beds24-room-card`. Never co-occurs with `beds24-room-card--unavailable` (unavailable rooms cannot be added to cart). |
+
+---
+
+#### Cart region — `beds24-cart` block (added Session 12)
+
+The cart region is a sibling of `.beds24-room-results` inside `.beds24-booking-flow`.
+Hidden (HTML `hidden` attribute) when the cart is empty; revealed by JS when at
+least one room is added.
+
+The Confirm Booking button is deferred to the next session — it requires URL
+construction logic not yet built. The cart region renders items and a running
+total without it.
+
+| Class | Element | Semantics | State variants |
+|---|---|---|---|
+| `beds24-cart` | `<div>` | Cart region root. Hidden by default; `hidden` attribute removed by JS when cart is non-empty. | Hidden by default; revealed by JS. |
+| `beds24-cart__heading` | `<h2>` | "Your Stay" section heading. | — |
+| `beds24-cart__list` | `<ul>` | List of selected room items. Populated by JS on state change. | — |
+| `beds24-cart__item` | `<li>` | One row per selected room. Three columns: name, detail, per-night total. | — |
+| `beds24-cart__item-name` | `<span>` | Room name. Truncates with ellipsis on overflow. | — |
+| `beds24-cart__item-detail` | `<span>` | Dorms: "N beds × €X / night". Privates: "€X / night". | — |
+| `beds24-cart__item-total` | `<span>` | Per-item running contribution: "€X / night". | — |
+| `beds24-cart__footer` | `<div>` | Footer row: total label + total value. Space-between flex. | — |
+| `beds24-cart__total-label` | `<span>` | "Total per night" label. | — |
+| `beds24-cart__total` | `<span>` | Running per-night total across all cart items. Text content updated by JS. | — |
 
 ---
 
@@ -401,12 +465,10 @@ reserved but not yet in the catalog.
 
 The following sections will be drafted when their frontend layers are built:
 
-- **Room card tag chip classes** — `.beds24-room-card__tags`, `.beds24-room-card__tag`, and `--unavailable` variant. (Cart accumulator session+)
-- **Cart classes** — `.beds24-cart` block: container, item list, individual
-  items, running total, Confirm Booking button. (Later session)
+- **Cart confirm button** — `beds24-cart__confirm-button`. URL construction
+  and Beds24 iframe handoff are deferred to the next session.
 - **Mobile cart classes** — bottom bar and slide-up drawer. (Later session)
-- **State modifier classes** — `--selected`, `--disabled`, `--loading`
-  variants across blocks. (Added per block as implemented)
+- **State modifier classes** — `--disabled`, `--loading` variants. (Added per block as implemented)
 
 ### Targeting guidance for themes
 
@@ -704,3 +766,10 @@ principles, the iframe CSS workflow.
 - **2026-05-15 (Session 11):** Room results container (`beds24-room-results`)
   and room card block (`beds24-room-card`) class catalog drafted. Tag chips
   and cart controls reserved in catalog notes, not yet implemented.
+- **2026-05-15 (Session 12):** Cart accumulator added. Tag chip classes
+  (`beds24-room-card__tags`, `beds24-room-card__tag`) drafted — taxonomy
+  terms only, featureCodes deferred. Cart control classes
+  (`beds24-room-card__qty-control`, `beds24-room-card__qty-btn`,
+  `beds24-room-card__cart-btn`, `beds24-room-card--selected`) drafted.
+  Cart region block (`beds24-cart`) drafted. Chip note corrected to remove
+  featureCodes reference (taxonomy-only in V1).

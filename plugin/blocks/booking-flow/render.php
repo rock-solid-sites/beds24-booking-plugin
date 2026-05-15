@@ -107,4 +107,21 @@ $min_stay    = beds24_booking_plugin_get_min_stay();
         aria-live="polite"
         aria-label="<?php esc_attr_e( 'Room search results', 'beds24-booking-plugin' ); ?>"
     ></div>
+
+    <div
+        class="beds24-cart"
+        hidden
+        aria-label="<?php esc_attr_e( 'Your booking cart', 'beds24-booking-plugin' ); ?>"
+    >
+        <h2 class="beds24-cart__heading">
+            <?php esc_html_e( 'Your Stay', 'beds24-booking-plugin' ); ?>
+        </h2>
+        <ul class="beds24-cart__list" aria-label="<?php esc_attr_e( 'Selected rooms', 'beds24-booking-plugin' ); ?>"></ul>
+        <div class="beds24-cart__footer">
+            <span class="beds24-cart__total-label">
+                <?php esc_html_e( 'Total per night', 'beds24-booking-plugin' ); ?>
+            </span>
+            <span class="beds24-cart__total"></span>
+        </div>
+    </div>
 </div>

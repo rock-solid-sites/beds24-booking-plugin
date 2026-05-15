@@ -162,13 +162,23 @@ class Beds24_Offers_Route {
             );
         }
 
+        // Join roomType from get_properties() (cached 1 hour) so the client
+        // can render the correct cart control (dorm qty vs. private Add/Remove).
+        // The offers endpoint does not carry roomType — only get_properties() does.
+        $room_types = self::get_cached_room_types( $property_id );
+
         // Enrich each room item with WordPress content (title, description,
-        // image) joined by _beds24_room_id. When no matching post exists,
-        // wpContent is null — the client renders a fallback and logs clearly.
+        // image, amenity chips) joined by _beds24_room_id. When no matching
+        // post exists, wpContent is null — the client renders a fallback and
+        // logs clearly.
         $rooms = isset( $result['data'] ) ? $result['data'] : [];
         foreach ( $rooms as &$room ) {
             $room_id = isset( $room['roomId'] ) ? (int) $room['roomId'] : 0;
-            $post    = beds24_get_room_post_by_room_id( $room_id );
+
+            // roomType from properties cache; null when the cache call failed.
+            $room['roomType'] = $room_types[ $room_id ] ?? null;
+
+            $post = beds24_get_room_post_by_room_id( $room_id );
             if ( $post ) {
                 $room['wpContent'] = [
                     'title'       => $post->post_title,
@@ -177,8 +187,9 @@ class Beds24_Offers_Route {
                         40,
                         '…'
                     ),
-                    'imageUrl'    => get_the_post_thumbnail_url( $post->ID, 'medium' ) ?: '',
+                    'imageUrl'    => get_the_post_thumbnail_url( $post->ID, 'beds24-card' ) ?: '',
                     'imageAlt'    => $post->post_title,
+                    'amenities'   => beds24_get_room_amenities( $post->ID ),
                 ];
             } else {
                 // Null signals to the client that this room ID has no
@@ -197,6 +208,50 @@ class Beds24_Offers_Route {
         $result['currencySymbol'] = $currency_symbol_map[ $currency_code ] ?? $currency_code;
 
         return new \WP_REST_Response( $result, 200 );
+    }
+
+    /**
+     * Return a map of roomId => roomType for a property, using a 1-hour transient.
+     *
+     * Calls GET /properties and extracts roomType from roomTypes[]. The result is
+     * cached so that each search request does not incur an extra API call. The
+     * cache key is scoped to the property so multi-property installs don't cross.
+     *
+     * Returns an empty array on API failure — callers treat a missing roomType
+     * as a non-dorm (private) for a safe default, and the client logs a warning.
+     *
+     * @param  int    $property_id  Beds24 property ID.
+     * @return array                Map of [ roomId (int) => roomType (string) ].
+     */
+    private static function get_cached_room_types( int $property_id ): array {
+        $transient_key = 'beds24_bkp_room_types_' . $property_id;
+        $cached        = get_transient( $transient_key );
+
+        if ( $cached !== false ) {
+            return $cached;
+        }
+
+        $client = new Beds24_API_Client( $property_id );
+        $result = $client->get_properties();
+
+        if ( is_wp_error( $result ) ) {
+            // Don't cache failures — allow a retry on the next request.
+            return [];
+        }
+
+        $room_types  = [];
+        $properties  = isset( $result['data'] ) ? $result['data'] : [];
+        foreach ( $properties as $property ) {
+            $room_type_list = isset( $property['roomTypes'] ) ? $property['roomTypes'] : [];
+            foreach ( $room_type_list as $rt ) {
+                if ( isset( $rt['id'] ) ) {
+                    $room_types[ (int) $rt['id'] ] = $rt['roomType'] ?? 'double';
+                }
+            }
+        }
+
+        set_transient( $transient_key, $room_types, HOUR_IN_SECONDS );
+        return $room_types;
     }
 
     /**

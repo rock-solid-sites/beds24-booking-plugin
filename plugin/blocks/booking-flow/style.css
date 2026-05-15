@@ -322,6 +322,115 @@
 }
 
 /* ==========================================================================
+   Selected state modifier (card is in the cart)
+   ========================================================================== */
+
+.beds24-room-card--selected {
+    border-color: var(--beds24-color-primary);
+    box-shadow:   0 0 0 2px var(--beds24-color-primary), var(--beds24-shadow-card);
+}
+
+/* ==========================================================================
+   Amenity chips
+   ========================================================================== */
+
+.beds24-room-card__tags {
+    display:    flex;
+    flex-wrap:  wrap;
+    gap:        var(--beds24-space-xs);
+    margin-top: var(--beds24-space-xs);
+}
+
+.beds24-room-card__tag {
+    display:          inline-block;
+    padding:          2px var(--beds24-space-xs);
+    background-color: var(--beds24-color-border);
+    border-radius:    var(--beds24-border-radius-small);
+    font-size:        var(--beds24-font-size-small);
+    color:            var(--beds24-color-surface-muted);
+    line-height:      1.4;
+    white-space:      nowrap;
+}
+
+/* ==========================================================================
+   Dorm quantity [−] [N] [+] control
+   ========================================================================== */
+
+.beds24-room-card__qty-control {
+    display:     flex;
+    align-items: center;
+    gap:         var(--beds24-space-xs);
+}
+
+.beds24-room-card__qty-btn {
+    display:          flex;
+    align-items:      center;
+    justify-content:  center;
+    width:            28px;
+    height:           28px;
+    background-color: var(--beds24-color-surface);
+    border:           1px solid var(--beds24-color-border);
+    border-radius:    var(--beds24-border-radius-small);
+    font-size:        1rem;
+    line-height:      1;
+    cursor:           pointer;
+    color:            var(--beds24-color-surface-text);
+    box-sizing:       border-box;
+}
+
+.beds24-room-card__qty-btn:hover:not(:disabled) {
+    background-color: var(--beds24-color-border);
+}
+
+.beds24-room-card__qty-btn:disabled {
+    opacity: 0.4;
+    cursor:  not-allowed;
+}
+
+.beds24-room-card__qty-value {
+    min-width:   1.5rem;
+    text-align:  center;
+    font-weight: var(--beds24-font-weight-heading);
+    font-size:   var(--beds24-font-size-base);
+    color:       var(--beds24-color-surface-text);
+}
+
+/* ==========================================================================
+   Private room Add/Remove toggle button
+   ========================================================================== */
+
+.beds24-room-card__cart-btn {
+    padding:          var(--beds24-space-xs) var(--beds24-space-sm);
+    background-color: var(--beds24-color-primary);
+    color:            var(--beds24-color-primary-text);
+    border:           none;
+    border-radius:    var(--beds24-border-radius-small);
+    font-family:      var(--beds24-font-family-body);
+    font-size:        var(--beds24-font-size-small);
+    font-weight:      var(--beds24-font-weight-heading);
+    cursor:           pointer;
+    white-space:      nowrap;
+    box-sizing:       border-box;
+}
+
+.beds24-room-card__cart-btn:hover {
+    opacity: 0.88;
+}
+
+.beds24-room-card__cart-btn--in-cart {
+    background-color: var(--beds24-color-surface);
+    color:            var(--beds24-color-surface-muted);
+    border:           1px solid var(--beds24-color-border);
+}
+
+.beds24-room-card__cart-btn--in-cart:hover {
+    opacity: 1;
+    background-color: var(--beds24-color-error-bg);
+    border-color:     var(--beds24-color-error-border);
+    color:            var(--beds24-color-error);
+}
+
+/* ==========================================================================
    Mobile: stack photo above description at 767px
    ========================================================================== */
 
@@ -337,4 +446,85 @@
     .beds24-room-card__photo img {
         height: 180px;
     }
+}
+
+/* ==========================================================================
+   Cart region — beds24-cart block
+   Hidden (HTML hidden attribute) until at least one room is in the cart.
+   ========================================================================== */
+
+.beds24-cart {
+    margin-top:       var(--beds24-space-lg);
+    background-color: var(--beds24-color-surface);
+    border:           1px solid var(--beds24-color-border);
+    border-radius:    var(--beds24-border-radius);
+    box-shadow:       var(--beds24-shadow-card);
+    font-family:      var(--beds24-font-family-body);
+    font-size:        var(--beds24-font-size-base);
+    color:            var(--beds24-color-surface-text);
+    overflow:         hidden;
+}
+
+.beds24-cart__heading {
+    margin:      0;
+    padding:     var(--beds24-space-md);
+    font-family: var(--beds24-font-family-heading);
+    font-size:   1.125rem;
+    font-weight: var(--beds24-font-weight-heading);
+    line-height: var(--beds24-line-height-heading);
+    border-bottom: 1px solid var(--beds24-color-border);
+}
+
+.beds24-cart__list {
+    list-style: none;
+    margin:     0;
+    padding:    0;
+}
+
+.beds24-cart__item {
+    display:        flex;
+    align-items:    center;
+    gap:            var(--beds24-space-sm);
+    padding:        var(--beds24-space-sm) var(--beds24-space-md);
+    border-bottom:  1px solid var(--beds24-color-border);
+}
+
+.beds24-cart__item-name {
+    flex:        1;
+    min-width:   0;
+    font-size:   var(--beds24-font-size-small);
+    font-weight: var(--beds24-font-weight-heading);
+    overflow:    hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.beds24-cart__item-detail {
+    font-size: var(--beds24-font-size-small);
+    color:     var(--beds24-color-surface-muted);
+    white-space: nowrap;
+}
+
+.beds24-cart__item-total {
+    font-size:   var(--beds24-font-size-small);
+    font-weight: var(--beds24-font-weight-heading);
+    white-space: nowrap;
+}
+
+.beds24-cart__footer {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     center;
+    padding:         var(--beds24-space-md);
+}
+
+.beds24-cart__total-label {
+    font-size: var(--beds24-font-size-small);
+    color:     var(--beds24-color-surface-muted);
+}
+
+.beds24-cart__total {
+    font-size:   1.125rem;
+    font-weight: var(--beds24-font-weight-heading);
+    color:       var(--beds24-color-surface-text);
 }
