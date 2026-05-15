@@ -85,6 +85,10 @@
         };
     }() );
 
+    // Module-level reference to the search form. Set in init(); consumed by
+    // buildBookingUrl() to read data-property-id without a DOM query per call.
+    var formEl = null;
+
     // -----------------------------------------------------------------------
     // DOM helpers
     // -----------------------------------------------------------------------
@@ -187,6 +191,114 @@
     function countNights( checkIn, checkOut ) {
         var ms = checkOut.getTime() - checkIn.getTime();
         return Math.round( ms / ( 1000 * 60 * 60 * 24 ) );
+    }
+
+    // -----------------------------------------------------------------------
+    // Booking URL helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * Convert a YYYY-MM-DD date string to Beds24's checkin_hide format (YYYY-M-D).
+     *
+     * Beds24's checkin_hide / checkout_hide parameters use non-zero-padded
+     * month and day values (observed in the feasibility spike: 2026-5-6, not
+     * 2026-05-06). The browser date input always produces zero-padded ISO
+     * strings; this strips the padding.
+     *
+     * @param  {string} yyyymmdd  Date string from <input type="date">.
+     * @return {string}           Date in YYYY-M-D format.
+     */
+    function formatCheckinHide( yyyymmdd ) {
+        var parts = yyyymmdd.split( '-' );
+        return parts[ 0 ] + '-' +
+               parseInt( parts[ 1 ], 10 ) + '-' +
+               parseInt( parts[ 2 ], 10 );
+    }
+
+    /**
+     * Build the Beds24 booking3.php URL from current store state.
+     *
+     * URL template (per docs/architecture.md §"URL construction"):
+     *   https://beds24.com/booking3.php
+     *     ?propid={propertyId}
+     *     &checkin_hide={YYYY-M-D}
+     *     &checkout_hide={YYYY-M-D}
+     *     &sr1-{roomId}=1
+     *     &naa1-1-{roomId}=N  (N = bed count for dorms; 1 for privates)
+     *     [repeat sr1 / naa1 for each cart item]
+     *
+     * Three unknowns from docs/architecture.md are resolved by the end-to-end
+     * browser test that follows this build:
+     *
+     *   1. Date format: checkin_hide=YYYY-M-D (non-zero-padded) is tried first.
+     *      If dates do not pre-populate in the iframe, add checkin= alongside.
+     *
+     *   2. Ghost entries: only selected rooms are included. If the iframe renders
+     *      an incomplete cart, add sr1-{roomId}=1&naa1-1-{roomId}=0 ghost
+     *      entries for all rooms returned by the offers API.
+     *
+     *   3. Endpoint: booking3.php. Fall back to booking2.php if blank/error.
+     *
+     * The URL is logged to the console before iframe load so it can be tested
+     * in a standalone tab to isolate iframe-embedding issues from URL issues.
+     *
+     * @param  {Object} state  Current store state.
+     * @return {string}        Fully-formed URL, or '' if required inputs are absent.
+     */
+    function buildBookingUrl( state ) {
+        var propertyId = formEl ? ( formEl.dataset.propertyId || '' ) : '';
+        var dates      = state.searchDates;
+        var cart       = state.cart;
+
+        if ( ! propertyId || ! dates.checkIn || ! dates.checkOut ) {
+            return '';
+        }
+
+        var url = 'https://beds24.com/booking3.php' +
+            '?propid='        + propertyId +
+            '&checkin_hide='  + formatCheckinHide( dates.checkIn ) +
+            '&checkout_hide=' + formatCheckinHide( dates.checkOut );
+
+        var roomIds = Object.keys( cart );
+        var i, roomId, item, isDorm;
+        for ( i = 0; i < roomIds.length; i++ ) {
+            roomId = roomIds[ i ];
+            item   = cart[ roomId ];
+            isDorm = item.roomType === 'bedInDormitory';
+
+            // sr1: unit count (1 room unit per entry regardless of bed count).
+            // naa1-1: numAdults for this room — bed count for dorms, 1 for privates.
+            url += '&sr1-'    + roomId + '=1';
+            url += '&naa1-1-' + roomId + '=' + ( isDorm ? item.quantity : 1 );
+        }
+
+        return url;
+    }
+
+    /**
+     * Reveal the booking iframe and load the given URL into it.
+     *
+     * The wrapper is shown, the iframe src is set, and the wrapper is scrolled
+     * into view. The URL is logged to the console before load so the operator
+     * can copy it and test it in a standalone browser tab to isolate
+     * iframe-embedding issues (e.g. X-Frame-Options) from URL parameter issues.
+     *
+     * @param {string} url  Fully-formed Beds24 booking URL.
+     */
+    function openBookingIframe( url ) {
+        var wrapper = document.querySelector( '.beds24-booking-iframe-wrapper' );
+        var iframe  = wrapper ? wrapper.querySelector( '.beds24-booking-iframe' ) : null;
+
+        if ( ! iframe ) {
+            console.error( '[Beds24] Iframe element (.beds24-booking-iframe) not found.' );
+            return;
+        }
+
+        console.log( '[Beds24] Confirm Booking — constructed URL:', url );
+
+        iframe.src = url;
+        wrapper.removeAttribute( 'hidden' );
+        wrapper.scrollIntoView( { behavior: 'smooth', block: 'start' } );
     }
 
     // -----------------------------------------------------------------------
@@ -633,6 +745,28 @@
     }
 
     // -----------------------------------------------------------------------
+    // Confirm button sync
+    // -----------------------------------------------------------------------
+
+    /**
+     * Enable the Confirm Booking button when the cart has at least one item;
+     * disable it when the cart is empty.
+     *
+     * Called on every store update. The button is rendered in the PHP template
+     * as disabled; this subscriber manages its enabled state throughout the
+     * session.
+     *
+     * @param {Object} state  Current store state.
+     */
+    function syncConfirmButton( state ) {
+        var btn = document.querySelector( '.beds24-cart__confirm-button' );
+        if ( ! btn ) {
+            return;
+        }
+        btn.disabled = ( Object.keys( state.cart ).length === 0 );
+    }
+
+    // -----------------------------------------------------------------------
     // Cart event handling (document-level delegation)
     // -----------------------------------------------------------------------
 
@@ -645,6 +779,25 @@
     function onCartClick( e ) {
         var btn  = e.target;
         var card, roomId;
+
+        // Confirm Booking: build URL and load iframe.
+        if ( btn.classList.contains( 'beds24-cart__confirm-button' ) ) {
+            var confirmState = store.get();
+            if ( Object.keys( confirmState.cart ).length === 0 ) {
+                return; // button should be disabled, but guard anyway
+            }
+            var bookingUrl = buildBookingUrl( confirmState );
+            if ( ! bookingUrl ) {
+                console.error(
+                    '[Beds24] Cannot build booking URL — property ID or search dates missing.' +
+                    ' data-property-id=' + ( formEl ? formEl.dataset.propertyId : 'null' ) +
+                    ' searchDates=' + JSON.stringify( confirmState.searchDates )
+                );
+                return;
+            }
+            openBookingIframe( bookingUrl );
+            return;
+        }
 
         // Dorm: increment bed count.
         if ( btn.classList.contains( 'beds24-room-card__qty-btn--inc' ) ) {
@@ -875,14 +1028,18 @@
             return;
         }
 
+        // Store for URL construction (property ID is on data-property-id).
+        formEl = form;
+
         form.addEventListener( 'submit', onSubmit );
 
-        // Document-level delegation for all cart control clicks.
+        // Document-level delegation for cart control clicks and confirm button.
         document.addEventListener( 'click', onCartClick );
 
         // Store subscribers — fire on every state change.
         store.subscribe( renderCart );
         store.subscribe( syncCardControls );
+        store.subscribe( syncConfirmButton );
     }
 
     // Guard against DOMContentLoaded having already fired (e.g. deferred scripts).

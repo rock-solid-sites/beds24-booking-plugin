@@ -461,12 +461,29 @@ total without it.
 
 ---
 
+#### Cart confirm button and iframe (added Session 13)
+
+The Confirm Booking button sits inside a `.beds24-cart__actions` wrapper at the
+bottom of the cart region. Clicking it constructs the multi-room Beds24 URL from
+cart state and loads the Beds24 booking page in an inline iframe.
+
+The iframe is a sibling of `.beds24-cart` inside `.beds24-booking-flow`. It is
+hidden (HTML `hidden` attribute) until the button is clicked; JS removes `hidden`
+and sets the iframe `src`. Height is fixed at 900px in V1.
+
+| Class | Element | Semantics | State variants |
+|---|---|---|---|
+| `beds24-cart__actions` | `<div>` | Wrapper for the confirm button inside `.beds24-cart`. Provides bottom padding. | — |
+| `beds24-cart__confirm-button` | `<button type="button">` | "Confirm Booking" primary CTA. Full-width, primary color background. | `disabled` when the cart is empty (HTML attribute; styled with unavailable color and `not-allowed` cursor). Enabled when at least one room is in the cart. |
+| `beds24-booking-iframe-wrapper` | `<div>` | Wrapper for the Beds24 booking iframe. Sibling of `.beds24-cart`. Hidden by default; JS removes `hidden` on confirm. | Hidden by default; revealed by JS. |
+| `beds24-booking-iframe` | `<iframe>` | Loads the Beds24 booking3.php page with pre-populated room selections, dates, and adult counts. `src` is set by JS at confirm time. Fixed 900px height in V1. | — |
+
+---
+
 #### Pending catalog sections
 
 The following sections will be drafted when their frontend layers are built:
 
-- **Cart confirm button** — `beds24-cart__confirm-button`. URL construction
-  and Beds24 iframe handoff are deferred to the next session.
 - **Mobile cart classes** — bottom bar and slide-up drawer. (Later session)
 - **State modifier classes** — `--disabled`, `--loading` variants. (Added per block as implemented)
 
@@ -773,3 +790,8 @@ principles, the iframe CSS workflow.
   `beds24-room-card__cart-btn`, `beds24-room-card--selected`) drafted.
   Cart region block (`beds24-cart`) drafted. Chip note corrected to remove
   featureCodes reference (taxonomy-only in V1).
+- **2026-05-15 (Session 13):** Confirm Booking button and iframe classes
+  added (`beds24-cart__actions`, `beds24-cart__confirm-button`,
+  `beds24-booking-iframe-wrapper`, `beds24-booking-iframe`). Cart confirm
+  button marked as implemented (was pending). Iframe height fixed at 900px
+  in V1.

@@ -123,5 +123,28 @@ $min_stay    = beds24_booking_plugin_get_min_stay();
             </span>
             <span class="beds24-cart__total"></span>
         </div>
+        <div class="beds24-cart__actions">
+            <button
+                class="beds24-cart__confirm-button"
+                type="button"
+                disabled
+                aria-label="<?php esc_attr_e( 'Confirm your booking', 'beds24-booking-plugin' ); ?>"
+            >
+                <?php esc_html_e( 'Confirm Booking', 'beds24-booking-plugin' ); ?>
+            </button>
+        </div>
+    </div>
+
+    <div
+        class="beds24-booking-iframe-wrapper"
+        hidden
+        aria-label="<?php esc_attr_e( 'Beds24 booking form', 'beds24-booking-plugin' ); ?>"
+    >
+        <iframe
+            class="beds24-booking-iframe"
+            src=""
+            title="<?php esc_attr_e( 'Confirm your booking', 'beds24-booking-plugin' ); ?>"
+            referrerpolicy="origin"
+        ></iframe>
     </div>
 </div>

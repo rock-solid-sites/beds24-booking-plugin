@@ -528,3 +528,61 @@
     font-weight: var(--beds24-font-weight-heading);
     color:       var(--beds24-color-surface-text);
 }
+
+/* ==========================================================================
+   Cart confirm button area
+   ========================================================================== */
+
+.beds24-cart__actions {
+    padding: 0 var(--beds24-space-md) var(--beds24-space-md);
+}
+
+.beds24-cart__confirm-button {
+    display:          block;
+    width:            100%;
+    padding:          var(--beds24-space-sm) var(--beds24-space-md);
+    background-color: var(--beds24-color-primary);
+    color:            var(--beds24-color-primary-text);
+    border:           none;
+    border-radius:    var(--beds24-border-radius);
+    font-family:      var(--beds24-font-family-body);
+    font-size:        var(--beds24-font-size-base);
+    font-weight:      var(--beds24-font-weight-heading);
+    line-height:      var(--beds24-line-height-body);
+    cursor:           pointer;
+    box-sizing:       border-box;
+    text-align:       center;
+}
+
+.beds24-cart__confirm-button:hover:not(:disabled) {
+    opacity: 0.88;
+}
+
+.beds24-cart__confirm-button:focus:not(:disabled) {
+    outline:        2px solid var(--beds24-color-primary);
+    outline-offset: 2px;
+}
+
+.beds24-cart__confirm-button:disabled {
+    background-color: var(--beds24-color-unavailable);
+    cursor:           not-allowed;
+    opacity:          1;
+}
+
+/* ==========================================================================
+   Beds24 booking iframe
+   Revealed by JS after Confirm Booking is clicked.
+   Height is fixed in V1 — the Beds24 booking page scrolls internally
+   for content taller than this value. Revisit in the iframe CSS session.
+   ========================================================================== */
+
+.beds24-booking-iframe-wrapper {
+    margin-top: var(--beds24-space-lg);
+}
+
+.beds24-booking-iframe {
+    display:    block;
+    width:      100%;
+    height:     900px;
+    border:     none;
+}

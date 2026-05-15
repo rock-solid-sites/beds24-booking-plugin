@@ -460,50 +460,68 @@ the plugin.
 
 ---
 
-## Known unknowns — verify at implementation
+## Resolved unknowns — verified Session 13
 
-These technical details were not resolved by the feasibility spike.
-They must be verified when implementation reaches them. Do not
-assume either direction without testing.
+These were unknowns at the feasibility spike. All three were
+resolved by live browser testing against Beds24's booking3.php
+on 2026-05-15 (Session 13).
 
-### 1. Date parameter format in the booking URL
+### 1. Date parameter format — RESOLVED
 
-The multi-room URL scheme uses date parameters to pre-populate
-check-in and check-out. The spike observed two formats in a live
-booking session URL:
+**Resolution:** `checkin_hide=YYYY-M-D` alone is sufficient.
+The month and day must be non-zero-padded (e.g. `2026-8-1`, not
+`2026-08-01`). The human-readable `checkin=` parameter is not
+needed.
 
-- `checkin=We+6+May+2026` — human-readable, URL-encoded
-- `checkin_hide=2026-5-6` — machine-parseable, ISO-ish
+Verified: check-in 2026-08-01 → `checkin_hide=2026-8-1` produced
+"Sa 1 Aug 2026" in the Beds24 booking page date strip, both inside
+the plugin iframe and in a standalone tab.
 
-It is not known whether:
-- `checkin_hide` alone is sufficient
-- `checkin` in YYYYMMDD format alone is sufficient
-- Both must be sent together
+The URL constructor in `view.js` (`formatCheckinHide()`) strips
+leading zeros from month and day via `parseInt(..., 10)`.
 
-**Verify at implementation:** Try `checkin_hide` alone first. Fall
-back to both parameters if the iframe doesn't render the pre-filled
-dates correctly.
+### 2. Ghost entries for unselected rooms — RESOLVED
 
-### 2. Ghost entries for unselected rooms
+**Resolution:** Ghost entries are NOT required. Sending only the
+rooms actually selected produces correct cart pre-population.
 
-The live booking session URL contained entries for rooms that were
-NOT in the cart:
+Verified: single-room URL (dorm only) and multi-room URL
+(dorm + private) both rendered correctly in Beds24's booking page
+without entries for unselected rooms. Beds24 shows all available
+rooms in a browseable list regardless; the URL parameters control
+which rooms have their quantity dropdowns pre-set.
 
-```
-sr1-{roomId}=1&naa1-1-{roomId}=0
-```
+The ghost entries observed in the feasibility spike (`sr1-{id}=1&
+naa1-1-{id}=0`) were likely a side-effect of how the user's native
+Beds24 session state was serialized into the URL at that time.
 
-These are present for every room on the property, not just selected
-ones. It is not known whether:
-- These "ghost" entries are required for correct cart rendering
-- Sending only the rooms actually selected is sufficient
+### 3. booking3.php vs booking2.php — RESOLVED
 
-**Verify at implementation:** Try sending only active selections
-first. If the Beds24 iframe renders an incomplete or incorrect cart,
-add ghost entries for all rooms returned by the offers API for that
-search.
+**Resolution:** `booking3.php` works. Not tested as an iframe
+embedding issue — the page loaded correctly in both a standalone
+tab and inside the plugin's inline iframe with no X-Frame-Options
+or CSP errors.
 
-### 3. Auto Actions on URL-prepopulated bookings
+---
+
+## URL construction — confirmed parameter semantics
+
+Verified Session 13 against live Beds24 booking page:
+
+- `sr1-{roomId}=1` — always 1 regardless of bed count. Represents
+  one room unit entry in the URL.
+- `naa1-1-{roomId}=N` — controls the pre-selected quantity.
+  For dorms: N = beds selected (e.g. `naa1-1-567219=2` → "2 Beds"
+  dropdown pre-set). For private rooms: N = 1 always.
+
+The plugin's URL constructor sends `sr1=1` and `naa1-1=quantity`
+for every cart item.
+
+---
+
+## Remaining unknown — requires rollout test
+
+### Auto Actions on URL-prepopulated bookings
 
 Beds24 Auto Actions (confirmation emails, owner notifications, etc.)
 fire on booking creation events. The assumption is that they fire
