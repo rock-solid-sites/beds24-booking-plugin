@@ -1,7 +1,7 @@
 # V1 Plan — Beds24 Booking Plugin
 
 **Status:** Living document. Updated between phases of work.
-**Last updated:** 2026-05-15 (updated after Session 13 to mark cart and confirm handoff complete, resolve URL unknowns)
+**Last updated:** 2026-05-15 (updated after Session 15: sticky bar UX fixes, session sequencing)
 **Purpose:** Forward visibility into V1 scope and progress. Not a binding
 schedule — work is sequenced one session at a time per project conventions.
 Read this to orient against the V1 destination; read session handoffs for
@@ -26,12 +26,21 @@ iframe.
 
 ## Current state
 
-- **Session:** 13 complete. Session 14 in planning.
-- **Session 13 scope:** Confirm Booking button, URL construction, iframe
-  handoff. All three architecture.md URL unknowns resolved by live
-  browser testing against Beds24's booking3.php.
-- **Most recent handoff:** `docs/session-handoff-13.md`
-- **Repo HEAD at last update:** f5df22f
+- **Session:** 15 complete. Session 16 in planning.
+- **Session 15 scope:** Iframe Chrome load fix, sticky bar Chrome hide fix,
+  Confirm Booking transition (room results + cart hide, iframe reveal,
+  back-to-rooms flow).
+- **Most recent handoff:** `docs/session-handoff-15.md`
+- **Repo HEAD at last update:** 1c492dc
+
+- **Next sessions:**
+  - Session 16: Iframe CSS generator (paste-ready CSS for Beds24
+    "Insert in HTML &lt;HEAD&gt; bottom" field, making the iframe visually
+    match the property theme).
+  - Session 17: Mobile cart (fixed bottom bar + slide-up drawer below
+    768px breakpoint).
+  - Session 18: Card styling against the mockup (visual language from
+    `docs/mockup.html`).
 
 ---
 
@@ -59,12 +68,13 @@ session at a time. Each area below is a destination, not a session.
   predecessor mockup (structural DOM in place; visual polish is per-property
   theme work).
 - **Cart accumulator ("Your Stay").** Quantity controls, running total,
-  and selected-state styling: complete (Session 12). Desktop layout
-  placement TBD. Mobile placement decided: fixed bottom bar + slide-up
-  drawer.
+  and selected-state styling: complete (Session 12). Sticky footer bar
+  (desktop ≥768px) and per-item remove controls added (Session 14).
+  Mobile bottom-bar-with-drawer: planned (Session 17).
 - **Confirm Booking handoff.** Complete (Session 13). URL construction
-  confirmed; iframe loads correctly with pre-populated room selections
-  and dates.
+  confirmed; three URL unknowns resolved. Inline iframe transition
+  (room results + cart hide, iframe + back button reveal, back-to-rooms
+  reset) added (Session 15).
 
 ### Plugin internals
 

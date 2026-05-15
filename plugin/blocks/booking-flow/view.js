@@ -308,7 +308,6 @@
         var iframe    = wrapper ? wrapper.querySelector( '.beds24-booking-iframe' ) : null;
         var resultsEl = document.querySelector( '.beds24-room-results' );
         var cartEl    = document.querySelector( '.beds24-cart' );
-        var blockEl   = document.querySelector( '.beds24-booking-flow' );
 
         if ( ! iframe ) {
             console.error( '[Beds24] Iframe element (.beds24-booking-iframe) not found.' );
@@ -324,10 +323,8 @@
         if ( cartEl ) {
             cartEl.setAttribute( 'hidden', '' );
         }
-        // Clear the sticky padding — the cart bar is now hidden.
-        if ( blockEl ) {
-            blockEl.style.paddingBottom = '';
-        }
+        // Clear the body sticky padding — the cart bar is now hidden.
+        document.body.style.paddingBottom = '';
 
         // Set URL and reveal the iframe.
         iframe.src = url;
@@ -381,26 +378,25 @@
     // -----------------------------------------------------------------------
 
     /**
-     * Keep the block wrapper's bottom padding equal to the cart bar's rendered
-     * height at desktop widths (≥768px), so the fixed cart bar never covers
-     * page content.  Padding is cleared at mobile widths and when the cart is
-     * hidden.
+     * Keep the page body's bottom padding equal to the cart bar's rendered
+     * height plus a 16px buffer at desktop widths (≥768px), so the fixed
+     * cart bar never covers page content or the site footer.  Padding is
+     * cleared at mobile widths and when the cart is hidden.
+     *
+     * Targets document.body rather than the block wrapper so that content
+     * outside the block (e.g. the site footer) is also protected.
      *
      * @param {HTMLElement} cartEl  The .beds24-cart element.
      */
     function syncBottomPadding( cartEl ) {
-        var blockEl = document.querySelector( '.beds24-booking-flow' );
-        if ( ! blockEl ) {
-            return;
-        }
         if ( window.innerWidth < 768 || ! cartEl || cartEl.hasAttribute( 'hidden' ) ) {
-            blockEl.style.paddingBottom = '';
+            document.body.style.paddingBottom = '';
             return;
         }
         // Measure after the browser has rendered the newly-visible bar.
         setTimeout( function () {
             var height = cartEl.getBoundingClientRect().height;
-            blockEl.style.paddingBottom = height + 'px';
+            document.body.style.paddingBottom = ( height + 16 ) + 'px';
         }, 0 );
     }
 

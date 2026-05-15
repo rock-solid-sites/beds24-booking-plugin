@@ -626,24 +626,33 @@
 
 /* ==========================================================================
    Cart item remove button
-   Minimal × control, visible on every cart item in both inline (mobile)
-   and sticky-bar (desktop) contexts.
+   Clearly tappable circular × pill. Visible on every cart item in both
+   the inline (mobile) and sticky-bar (desktop) cart layouts. Sized to
+   read as an explicit remove action rather than a subtle edge character.
    ========================================================================== */
 
 .beds24-cart__item-remove {
     flex-shrink:      0;
-    background:       none;
-    border:           none;
-    padding:          0 0 0 var(--beds24-space-xs);
+    display:          flex;
+    align-items:      center;
+    justify-content:  center;
+    width:            22px;
+    height:           22px;
+    background-color: var(--beds24-color-border);
+    border:           1px solid transparent;
+    border-radius:    50%;
+    padding:          0;
     cursor:           pointer;
-    font-size:        1rem;
+    font-size:        0.875rem;
     line-height:      1;
     color:            var(--beds24-color-surface-muted);
     font-family:      var(--beds24-font-family-body);
 }
 
 .beds24-cart__item-remove:hover {
-    color: var(--beds24-color-error);
+    background-color: var(--beds24-color-error-bg);
+    border-color:     var(--beds24-color-error-border);
+    color:            var(--beds24-color-error);
 }
 
 /* ==========================================================================
@@ -656,8 +665,9 @@
    No BEM modifier is used: the sticky layout IS the only desktop cart layout
    in V1.  The media query distinguishes desktop from mobile naturally.
 
-   JS adds padding-bottom to .beds24-booking-flow equal to the bar height
-   (measured after render) so page content is never hidden behind the bar.
+   JS adds padding-bottom to document.body equal to the bar height plus a
+   16px buffer so no page content (including the site footer) is hidden
+   behind the bar.
    ========================================================================== */
 
 @media (min-width: 768px) {
