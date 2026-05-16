@@ -1594,3 +1594,44 @@ OAuth credentials, private keys — secrets. Configuration paths,
 usernames, port numbers, file paths — not secrets; handle via the
 normal no-blanks rule (request the value or write up to the point it
 becomes available).
+
+---
+
+### 2026-05-16 — Third-party platform class names must be verified, not assumed
+
+**What happened:** Session 22's `$extended` CSS block was written using Bootstrap 3
+error/alert class names (`.has-error`, `.help-block`, `.alert-danger`,
+`.alert-success`) on the assumption that Beds24's booking form pages use
+Bootstrap 3's standard form validation patterns. Session 23 browser-inspected
+the live Beds24 booking form (guest details page) and found none of these
+classes exist. Beds24 uses its own class system: `.booktexterror`,
+`.booktexterrordiv`, `.b24-guestdetails`, `.questionrow-*`, etc. The entire
+`$extended` block produces no visual effect on any currently-observed Beds24
+page.
+
+**Root causes:**
+1. The `$extended` selectors were labeled "best-guess" in comments, which was
+   accurate — but the guesses were never tested before shipping.
+2. The Session 22 prompt's confidence note ("Bootstrap 3 form error patterns are
+   very likely to match — Beds24 uses Bootstrap 3 throughout Layout 6") was an
+   inference, not a measurement. Beds24 does include Bootstrap 3, but uses it
+   selectively — the booking form's error states use Beds24's own class
+   conventions, not Bootstrap's `.has-error` pattern.
+3. No verification step was included in Session 22 because the form page
+   selectors were flagged as "verify before first rollout" rather than
+   "verify this session." Session 23 completed that verification.
+
+**Rule established:** The existing rule "Claims about third-party platform
+behavior must be verified in live browser" (established 2026-04-23) covers this
+case. This entry reinforces it with a specific instance: **third-party platform
+class names are as unverifiable as behavioral claims**. A platform that uses
+Bootstrap may still not use Bootstrap's semantic class patterns. Assume nothing
+about a third-party's internal class conventions without DOM inspection.
+
+**Concrete cost:** The `$extended` block (error colors, form spacing, shadow)
+produces zero CSS effect until rewritten with verified selectors. Low-stakes
+because the rules are harmless misses, but the intent is entirely unmet.
+
+**Resolution path:** Rewrite `$extended` in a code session using the verified
+class inventory from Session 23: `.booktexterror`, `.b24-guestdetails`,
+`.b24-bookingdetails`. Remove all Bootstrap 3 pattern guesses.

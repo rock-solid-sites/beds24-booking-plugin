@@ -72,15 +72,6 @@ function beds24_iframe_css_defaults(): array {
 		// _page-bg: iframe body background; no public token distinguishes
 		// page bg from card surface bg.
 		'_page-bg'            => '#f7fafc',
-		// _shadow-hover: card hover elevation; contract has shadow-card but
-		// no hover variant.
-		'_shadow-hover'       => '0 4px 12px rgba(0,0,0,0.08)',
-		// _transition: CSS transition shorthand; no contract token.
-		'_transition'         => '0.2s ease',
-		// _tag-bg / _tag-border: tag chip surface; no public token for this
-		// sub-surface layer.
-		'_tag-bg'             => '#f0f4f0',
-		'_tag-border'         => '#d0dcd0',
 	];
 }
 
@@ -285,22 +276,18 @@ function beds24_generate_iframe_css( array $tokens = [], array $font_sources = [
 	$root .= "  --b24-space-xl:            {$t['space-xl']};\n";
 	$root .= "  --b24-shadow-float:        {$t['shadow-floating']};\n";
 	$root .= "  --b24-color-bg:            {$t['_page-bg']};\n";
-	$root .= "  --b24-shadow-md:           {$t['_shadow-hover']};\n";
-	$root .= "  --b24-transition:          {$t['_transition']};\n";
-	$root .= "  --b24-color-tag-bg:        {$t['_tag-bg']};\n";
-	$root .= "  --b24-color-tag-border:    {$t['_tag-border']};\n";
 	$root .= "}\n\n";
 
-	// Static CSS rules targeting Beds24's Layout 6 / Offer Select DOM.
-	// Selectors are verbatim from docs/reference/CSS-base.css.
+	// Static CSS rules targeting Beds24's booking flow DOM.
 	// !important declarations are required: Beds24's Bootstrap base styles
 	// have high specificity and must be overridden.
 	//
-	// Rules omitted vs. CSS-base.css:
-	//   - .dev-bar rules (development tooling, not production)
-	//   - .b24-room-106 hide rule (Chill Zone-specific room ID)
-	//   - Hardcoded 'Lexend' / 'Lexend Giga' font rules at end of file
-	//     (replaced by var(--b24-font-*) references throughout)
+	// Room-list selectors (.at_roomnametext, .b24room, .b24panel-room,
+	// .tnh-room-tags, .b24-room-slider, grid layout) were removed in
+	// Session 24. The current plugin architecture hands off to Beds24's
+	// iframe for transactions (guest form, payment) — not for room
+	// discovery. The offer-area and body selectors below apply during
+	// the booking flow and are retained.
 	$static = <<<'CSSBLOCK'
 /* ----------------------------------------------------------------
    Beds24 Booking Page Styles
@@ -317,48 +304,6 @@ function beds24_generate_iframe_css( array $tokens = [], array $font_sources = [
 
 /* Body */
 .colorbody{font-family:var(--b24-font-body)!important;color:var(--b24-color-text)!important;line-height:var(--b24-line-height-body)!important;background:var(--b24-color-bg)!important}
-
-/* Room card spacing */
-.b24room{margin-bottom:var(--b24-space-lg)!important}
-
-/* Room card panel */
-.b24panel-room{background:var(--b24-color-bg-white)!important;border:1px solid var(--b24-color-border)!important;border-radius:var(--b24-radius-md)!important;box-shadow:var(--b24-shadow-sm)!important;overflow:hidden}
-.b24panel-room:hover{box-shadow:var(--b24-shadow-md)!important;transition:box-shadow var(--b24-transition)}
-
-/* Room heading */
-.b24-roompanel-heading{font-family:var(--b24-font-heading)!important;font-weight:var(--b24-font-weight-heading)!important;line-height:var(--b24-line-height-heading)!important;border:none!important;background:var(--b24-color-bg-white)!important;padding:12px 16px 4px 16px!important;border-bottom:none!important}
-.at_roomnametext{font-family:var(--b24-font-heading)!important;font-size:var(--b24-font-size-xl)!important;font-weight:700!important;line-height:var(--b24-line-height-heading)!important;color:var(--b24-color-text)!important}
-
-/* Kill Bootstrap column floats inside room panels */
-.b24panel-room .b24panel .row{margin-left:0!important;margin-right:0!important}
-.b24panel-room .b24panel [class*="col-"]{width:auto!important;max-width:100%!important;float:none!important;padding-left:0!important;padding-right:0!important}
-
-/* Desktop: CSS Grid layout */
-.b24panel-room > .b24panel{display:grid!important;grid-template-columns:120px 1fr!important;gap:0 var(--b24-space-md)!important;padding:8px 16px 12px 16px!important;align-items:stretch!important}
-.b24panel-room > .b24panel > .row:has(.b24-room-slider){grid-column:1!important;grid-row:1!important;margin:0!important;padding:0!important}
-.b24panel-room > .b24panel > .row:has(.b24-room-desc){grid-column:2!important;grid-row:1!important;margin:0!important;padding:0!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important}
-.b24panel-room > .b24panel > .offer{grid-column:1/-1!important;grid-row:3!important;padding:8px 0 0 0!important;margin:8px 0 0 0!important;border-top:1px solid var(--b24-color-border)!important}
-.b24panel-room > .b24panel > .clearfix{display:none!important}
-.tnh-room-tags-mobile{display:none!important}
-
-/* Description text */
-.tnh-desc-text{font-size:var(--b24-font-size-sm)!important;color:var(--b24-color-text-light)!important;line-height:1.4!important;margin:0 0 6px 0!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important;text-overflow:ellipsis!important}
-
-/* Room photo thumbnail */
-.b24-room-slider{width:120px!important;max-width:120px!important;padding:0!important;float:none!important}
-.b24-room-slider .carousel,.carousel.slide{border-radius:var(--b24-radius-sm)!important;overflow:hidden!important;height:90px!important;max-height:90px!important;min-height:90px!important;width:120px!important}
-.carousel .item{display:none}.carousel .item.active{display:block!important}
-.b24-room-slider .carousel .item.active img,[id^="collapseslider"] .carousel .item.active img,.carousel img,.carousel .item img{width:120px!important;height:90px!important;object-fit:cover!important}
-.carousel-control{display:none!important}.carousel-indicators{display:none!important}
-
-/* Description module */
-.b24-room-desc{width:100%!important;max-width:100%!important;padding:0!important;float:none!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;height:100%!important}
-[id^="collapsedesc"]{display:block!important;height:auto!important}
-[id^="collapseslider"]{display:block!important;height:auto!important}
-
-/* Tag chips */
-.tnh-room-tags{display:flex!important;flex-wrap:wrap!important;gap:var(--b24-space-xs)!important;margin:0!important}
-.tnh-tag{display:inline-flex!important;align-items:center!important;gap:3px!important;font-size:12px!important;font-weight:500!important;color:var(--b24-color-text)!important;background:var(--b24-color-tag-bg)!important;border:1px solid var(--b24-color-tag-border)!important;border-radius:4px!important;padding:var(--b24-space-xs) var(--b24-space-sm)!important;white-space:nowrap!important;line-height:1.4!important}
 
 /* Offer area */
 .b24-offer-pricetable{display:none!important}
@@ -397,61 +342,30 @@ select[id^="sr1-"],select[id^="naa"]{border:1.5px solid var(--b24-color-border)!
 
 /* Mobile (<=767px) */
 @media(max-width:767px){
-  .b24-roompanel-heading{padding:10px 12px 2px 12px!important}
-  .at_roomnametext{font-size:15px!important}
-  .b24panel-room > .b24panel{display:grid!important;grid-template-columns:90px 1fr!important;padding:10px 12px 14px 12px!important;gap:0 10px!important}
-  .b24-room-slider{width:90px!important;max-width:90px!important}
-  .b24-room-slider .carousel,.carousel.slide{width:90px!important;height:68px!important;max-height:68px!important;min-height:68px!important}
-  .b24-room-slider .carousel .item.active img,[id^="collapseslider"] .carousel .item.active img,.carousel img,.carousel .item img{width:90px!important;height:68px!important}
-  .b24panel-room > .b24panel > .row:has(.b24-room-slider){grid-column:1!important;grid-row:1!important;margin:0!important;padding:0!important}
-  .b24panel-room > .b24panel > .row:has(.b24-room-desc){grid-column:2!important;grid-row:1!important;margin:0!important;padding:0!important;display:block!important}
-  .b24panel-room > .b24panel > .clearfix{display:none!important}
-  .tnh-room-tags-mobile{display:flex!important;flex-wrap:wrap!important;gap:6px!important;grid-column:1/-1!important;grid-row:2!important;padding:8px 0!important;margin:6px 0 0 0!important}
-  .b24panel-room > .b24panel > .offer{grid-column:1/-1!important;grid-row:3!important;padding:10px 0 0 0!important;margin:0!important;border-top:1px solid var(--b24-color-border)!important}
-  .b24-room-desc{height:auto!important;justify-content:flex-start!important}
-  .tnh-desc-text{-webkit-line-clamp:unset!important;display:block!important;font-size:12px!important;margin:0!important}
-  .b24-room-desc .tnh-room-tags{display:none!important}
   .b24-offer-select .b24-multipricebox{flex-wrap:wrap!important;gap:8px!important}
   .b24-offer-select .b24-multipricebox [id^="from-"],
   .b24-offer-select .b24-multipricebox .at_offerfromdiv{display:block!important;width:100%!important;order:-1!important;margin-bottom:4px!important;flex-grow:0!important;text-align:left!important}
   .tnh-price-pernight-main{font-size:12px!important}
-  .tnh-tag{font-size:11px!important;padding:1px 6px!important}
   .tnh-total-price{font-size:14px!important;margin-left:auto!important}
   .tnh-book-btn{margin-left:0!important}
   .b24fullcontainer-rooms{padding:16px 0!important}
-  .b24room{margin-left:16px!important;margin-right:16px!important}
 }
 CSSBLOCK;
 
-	// Rules that consume the newly-added token variables.
-	//
-	// Two selector categories:
-	//   (a) Confirmed: room list selectors already present in $static, referenced
-	//       by new variables that replaced formerly-hardcoded values.
-	//   (b) Best-guess: Beds24 booking form pages (guest details, payment,
-	//       confirmation) use Bootstrap 3 and Beds24's .at_* class conventions.
-	//       Selectors below are plausible but unverified against the live form DOM.
-	//       Unmatched selectors are harmless — they produce no visual effect.
-	//       Verify against live form DOM before first property rollout.
-	$extended  = "\n/* === Error / success / unavailable: booking form color rules === */\n";
-	$extended .= "/* Validation error text — Bootstrap 3 .has-error form pattern (best-guess) */\n";
-	$extended .= ".has-error .help-block,.has-error .control-label,.has-error .form-control-feedback,.text-danger{color:var(--b24-color-error)!important}\n";
-	$extended .= ".has-error .form-control{border-color:var(--b24-color-error-border)!important}\n";
-	$extended .= "/* Error alert block — Bootstrap 3 .alert-danger (best-guess) */\n";
-	$extended .= ".alert-danger{background-color:var(--b24-color-error-bg)!important;border-color:var(--b24-color-error-border)!important;color:var(--b24-color-error)!important}\n";
-	$extended .= "/* Success states — Bootstrap 3 .alert-success / .text-success (best-guess) */\n";
-	$extended .= ".alert-success{border-color:var(--b24-color-success)!important;color:var(--b24-color-success)!important}\n";
-	$extended .= ".text-success{color:var(--b24-color-success)!important}\n";
-	$extended .= "/* Unavailable room state — Beds24 .at_offerunavailable (best-guess) */\n";
+	// Rules targeting Beds24's booking form pages (guest details, payment,
+	// confirmation). Selectors verified against the live Beds24 DOM via
+	// Session 23 Pass 2 browser inspection unless marked UNVERIFIED.
+	$extended  = "\n/* === Booking form: error states === */\n";
+	$extended .= "/* .booktexterror — verified: error message text on guest details page */\n";
+	$extended .= ".booktexterror{color:var(--b24-color-error)!important}\n";
+	$extended .= "/* .booktexterrordiv — verified: wrapper div around error text */\n";
+	$extended .= ".booktexterrordiv{border-color:var(--b24-color-error-border)!important;background:var(--b24-color-error-bg)!important}\n";
+	$extended .= "\n/* === Booking form: section spacing === */\n";
+	$extended .= "/* .b24-guestdetails / .b24-bookingdetails — verified on guest details page */\n";
+	$extended .= ".b24-guestdetails{margin-bottom:var(--b24-space-xl)!important}\n";
+	$extended .= ".b24-bookingdetails{margin-bottom:var(--b24-space-lg)!important}\n";
+	$extended .= "\n/* === Unavailable room state — UNVERIFIED (could not trigger in Session 23) === */\n";
 	$extended .= ".at_offerunavailable,.b24-room-unavailable{color:var(--b24-color-unavailable)!important}\n";
-	$extended .= "\n/* === Spacing: booking form section gaps === */\n";
-	$extended .= "/* space-xl: major section breaks on booking form pages (best-guess selectors) */\n";
-	$extended .= ".b24fullcontainer-booking>.container{margin-bottom:var(--b24-space-xl)!important}\n";
-	$extended .= "/* space-lg: subsection heading gaps on booking form (best-guess selectors) */\n";
-	$extended .= ".b24-form-section-heading,.b24-step-heading{margin-bottom:var(--b24-space-lg)!important}\n";
-	$extended .= "\n/* === Shadow: floating / sticky elements on booking form === */\n";
-	$extended .= "/* Best-guess selectors — verify against live form DOM */\n";
-	$extended .= ".b24-sticky-bar,.b24-booking-summary-fixed{box-shadow:var(--b24-shadow-float)!important}\n";
 
 	return $font_import . $root . $static . $extended;
 }

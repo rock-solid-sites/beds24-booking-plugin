@@ -7,16 +7,20 @@ sessions, not how Claude should behave within them.
 
 ---
 
+## Local dev credentials (DDEV only)
+
+WordPress admin — `chillzone.ddev.site`
+- Username: `astrongpresencebiz_kixfumj4`
+- Password: `DevSession23!`  ← reset 2026-05-16 (Session 23); update here when changed again
+
+---
+
 ## Launch command pattern
 
 ```bash
 cd ~/projects/beds24-booking-plugin
 claude-mode <preset>
 ```
-
-Local development runs inside WSL2 (Ubuntu 24.04) with DDEV providing
-the WordPress site at `https://chillzone.ddev.site`. Full environment
-setup: `docs/tooling/ddev.md`.
 
 The `.claude-mode.json` at the repo root sets `defaultBase: "chill"` and
 defines project presets. Built-in presets also use the chill base from
@@ -25,7 +29,7 @@ this directory. No `--base chill` flag needed.
 **Passing flags to Claude Code** — use the `--` separator:
 
 ```bash
-claude-mode v1-build -- --permission-mode bypassPermissions
+claude-mode v1-build -- --permission-mode auto
 claude-mode rollout -- --permission-mode default
 ```
 
@@ -34,8 +38,8 @@ claude-mode rollout -- --permission-mode default
 | Session type | `--permission-mode` | Why |
 |---|---|---|
 | Documentation, architecture | `auto` | Classifier-gated auto-accept; less interrupt for low-risk writes |
-| V1 build, feature extension (local) | `bypassPermissions` | High-volume edits in a trusted local tree (WSL2 + DDEV, isolated from production); per-edit prompts add no safety in this context and slow iteration |
-| Refactor (local) | `bypassPermissions` | Same rationale as local build |
+| V1 build, feature extension | `auto` | High-volume file creation; auto-accept reduces friction |
+| Refactor | `auto` | Same rationale as build |
 | Property rollouts | `default` | Per-action approval; live property data, deliberate |
 | Bug fixes (deployed plugin) | `default` | Same as rollout |
 | Read-only investigation | `default` or `auto` | Low stakes; either works |
@@ -47,8 +51,8 @@ claude-mode rollout -- --permission-mode default
 ## VPS-side Code launch pattern
 
 Claude Code sessions running on the VPS (via SSH) differ from the
-local developer-machine pattern above. No `.claude-mode.json` is
-available unless the tripn-sites repo is cloned on the VPS.
+local WSL2 pattern above. No `.claude-mode.json` is available unless
+the tripn-sites repo is cloned on the VPS.
 
 ```bash
 # From wherever the SSH session lands (typically /home/claude-code/)
@@ -77,14 +81,41 @@ claude-mode methodical -- --base chill --permission-mode default
 
 ---
 
+## Local development environment
+
+Local development runs on DDEV inside WSL2. Full setup, canonical
+paths, and migration notes: `docs/tooling/ddev.md`.
+
+Key paths:
+- Plugin repo: `~/projects/beds24-booking-plugin`
+- Chillzone WordPress site: `~/projects/chillzone`
+- Site URL: `https://chillzone.ddev.site`
+
+The Windows-side paths (under `C:\Users\Dr. COMPUTER\Desktop\Development\`)
+are stale after the WSL2 migration and should not be used.
+
+Common operations:
+- Start/stop DDEV: `ddev start` / `ddev stop` (from inside `~/projects/chillzone`)
+- WP-CLI: `ddev wp <command>`
+- Project status: `ddev describe`
+
+---
+
 ## Session prompt conventions
 
 Session prompts are pasted as the first user message. They live in session
 files (`docs/session-{N}-prompt.md` by convention if tracked) or directly
 in the chat.
 
-**Expected-state lines** in session prompts specify the HEAD commit hash
-and working tree state Code should verify before starting. Example:
+**Session handoffs do not assert HEAD commit hashes in the body text.**
+The "Session N+1 start checks" section at the bottom of each handoff
+uses `git log --oneline -1` to verify HEAD at session start against
+live state, not against a hash written at handoff time. This prevents
+staleness when commits land between sessions.
+
+**Expected-state lines** in session prompts are optional. When included,
+they specify the HEAD commit hash and working tree state Code should
+verify before starting:
 
 ```
 Expected HEAD: b563bc1
@@ -93,8 +124,10 @@ Working tree: clean (`.claude/` untracked is expected)
 
 If commits accumulate between when the session prompt was drafted and when
 it is actually run, update the expected-state line to the new HEAD before
-pasting. The commit hash in a stale session prompt causes a state-check halt
-that requires re-reading and correcting the prompt before work begins.
+pasting. A stale commit hash causes a state-check halt that requires
+re-reading and correcting the prompt before work begins. For this reason,
+many prompts omit the expected-state line and rely on the start-check
+pattern instead (`git log --oneline -1` and `git status` as Step 1).
 
 **Continuation prompts.** When a Code session continues (same instance,
 follow-up prompt), no launch command is needed — just paste the continuation
@@ -135,10 +168,11 @@ the built WordPress sites are not in any repo.
 
 **Predecessor project.** This plugin supersedes `TripN-Chill-Zone/booking-page`
 (archived tag `archived-2026-05-07`). The pivot decision and reasoning are in
-`docs/architecture-pivot-decision.md`. What ported forward: retrospective
-rules, design language and mockup, Beds24 admin learnings, Beds24 v2 API spike
-findings. What did not port: the CSS/JS/helper files that styled Beds24's
-iframe, the GitHub Actions deployment chain, the astrongpresence.com hosting.
+`docs/architecture-pivot-decision.md` (historical record, read-once). What
+ported forward: retrospective rules, design language and mockup, Beds24 admin
+learnings, Beds24 v2 API spike findings. What did not port: the CSS/JS/helper
+files that styled Beds24's iframe, the GitHub Actions deployment chain, the
+astrongpresence.com hosting.
 
 **Repository.**
 - Repo: `https://github.com/rock-solid-sites/beds24-booking-plugin`
