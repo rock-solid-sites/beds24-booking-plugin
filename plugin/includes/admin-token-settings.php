@@ -14,13 +14,8 @@
  * Key pattern: beds24_token_{role} where {role} is the contract role name
  * with hyphens converted to underscores (e.g. beds24_token_primary_text).
  *
- * Note: not all token roles are yet consumed by beds24_generate_iframe_css().
- * The following are stored but do not yet affect the CSS textarea:
- *   Colors: success, unavailable, error, error-bg, error-border.
- *   Typography: font-size-large, line-height-body, line-height-heading.
- *   Spacing: space-xs, space-lg, space-xl.
- *   Layout: shadow-floating.
- * These will affect CSS output when the generator is extended in a future session.
+ * All 30 token roles are consumed by beds24_generate_iframe_css() as of Session 22.
+ * Color, typography, spacing, and layout tokens all produce CSS output.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

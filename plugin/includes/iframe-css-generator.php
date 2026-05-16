@@ -49,6 +49,25 @@ function beds24_iframe_css_defaults(): array {
 		'border-radius'       => '8px',
 		'border-radius-small' => '6px',
 		'shadow-card'         => '0 1px 3px rgba(0,0,0,0.1)',
+		// Color tokens (contract roles not previously in defaults)
+		'success'             => '#10b981',
+		'unavailable'         => '#9ca3af',
+		'error'               => '#dc2626',
+		'error-bg'            => '#fef2f2',
+		'error-border'        => '#fecaca',
+		// Typography tokens (contract roles not previously in defaults)
+		// font-size-large: 1.25rem → px; rem inside a cross-origin iframe depends
+		// on Beds24's root font size (uncontrolled), so px is the safe unit.
+		'font-size-large'     => '20px',
+		'line-height-body'    => '1.5',
+		'line-height-heading' => '1.2',
+		// Spacing tokens (contract roles not previously in defaults)
+		// Rem values converted to px for the same iframe-predictability reason.
+		'space-xs'            => '4px',   // 0.25rem
+		'space-lg'            => '24px',  // 1.5rem
+		'space-xl'            => '32px',  // 2rem
+		// Layout tokens (contract roles not previously in defaults)
+		'shadow-floating'     => '0 -2px 8px rgba(0,0,0,0.1)',
 		// --- Internal defaults (not public contract tokens) ---
 		// _page-bg: iframe body background; no public token distinguishes
 		// page bg from card surface bg.
@@ -253,6 +272,18 @@ function beds24_generate_iframe_css( array $tokens = [], array $font_sources = [
 	$root .= "  --b24-radius-sm:           {$t['border-radius-small']};\n";
 	$root .= "  --b24-radius-md:           {$t['border-radius']};\n";
 	$root .= "  --b24-shadow-sm:           {$t['shadow-card']};\n";
+	$root .= "  --b24-color-success:       {$t['success']};\n";
+	$root .= "  --b24-color-unavailable:   {$t['unavailable']};\n";
+	$root .= "  --b24-color-error:         {$t['error']};\n";
+	$root .= "  --b24-color-error-bg:      {$t['error-bg']};\n";
+	$root .= "  --b24-color-error-border:  {$t['error-border']};\n";
+	$root .= "  --b24-font-size-xl:        {$t['font-size-large']};\n";
+	$root .= "  --b24-line-height-body:    {$t['line-height-body']};\n";
+	$root .= "  --b24-line-height-heading: {$t['line-height-heading']};\n";
+	$root .= "  --b24-space-xs:            {$t['space-xs']};\n";
+	$root .= "  --b24-space-lg:            {$t['space-lg']};\n";
+	$root .= "  --b24-space-xl:            {$t['space-xl']};\n";
+	$root .= "  --b24-shadow-float:        {$t['shadow-floating']};\n";
 	$root .= "  --b24-color-bg:            {$t['_page-bg']};\n";
 	$root .= "  --b24-shadow-md:           {$t['_shadow-hover']};\n";
 	$root .= "  --b24-transition:          {$t['_transition']};\n";
@@ -285,18 +316,18 @@ function beds24_generate_iframe_css( array $tokens = [], array $font_sources = [
 .b24fullcontainer-rooms .container{width:100%!important;max-width:100%!important;padding:0!important}
 
 /* Body */
-.colorbody{font-family:var(--b24-font-body)!important;color:var(--b24-color-text)!important;line-height:1.6;background:var(--b24-color-bg)!important}
+.colorbody{font-family:var(--b24-font-body)!important;color:var(--b24-color-text)!important;line-height:var(--b24-line-height-body)!important;background:var(--b24-color-bg)!important}
 
 /* Room card spacing */
-.b24room{margin-bottom:var(--b24-space-md)!important}
+.b24room{margin-bottom:var(--b24-space-lg)!important}
 
 /* Room card panel */
 .b24panel-room{background:var(--b24-color-bg-white)!important;border:1px solid var(--b24-color-border)!important;border-radius:var(--b24-radius-md)!important;box-shadow:var(--b24-shadow-sm)!important;overflow:hidden}
 .b24panel-room:hover{box-shadow:var(--b24-shadow-md)!important;transition:box-shadow var(--b24-transition)}
 
 /* Room heading */
-.b24-roompanel-heading{font-family:var(--b24-font-heading)!important;font-weight:var(--b24-font-weight-heading)!important;border:none!important;background:var(--b24-color-bg-white)!important;padding:12px 16px 4px 16px!important;border-bottom:none!important}
-.at_roomnametext{font-family:var(--b24-font-heading)!important;font-size:var(--b24-font-size-lg)!important;font-weight:700!important;color:var(--b24-color-text)!important}
+.b24-roompanel-heading{font-family:var(--b24-font-heading)!important;font-weight:var(--b24-font-weight-heading)!important;line-height:var(--b24-line-height-heading)!important;border:none!important;background:var(--b24-color-bg-white)!important;padding:12px 16px 4px 16px!important;border-bottom:none!important}
+.at_roomnametext{font-family:var(--b24-font-heading)!important;font-size:var(--b24-font-size-xl)!important;font-weight:700!important;line-height:var(--b24-line-height-heading)!important;color:var(--b24-color-text)!important}
 
 /* Kill Bootstrap column floats inside room panels */
 .b24panel-room .b24panel .row{margin-left:0!important;margin-right:0!important}
@@ -326,8 +357,8 @@ function beds24_generate_iframe_css( array $tokens = [], array $font_sources = [
 [id^="collapseslider"]{display:block!important;height:auto!important}
 
 /* Tag chips */
-.tnh-room-tags{display:flex!important;flex-wrap:wrap!important;gap:6px!important;margin:0!important}
-.tnh-tag{display:inline-flex!important;align-items:center!important;gap:3px!important;font-size:12px!important;font-weight:500!important;color:var(--b24-color-text)!important;background:var(--b24-color-tag-bg)!important;border:1px solid var(--b24-color-tag-border)!important;border-radius:4px!important;padding:2px 8px!important;white-space:nowrap!important;line-height:1.4!important}
+.tnh-room-tags{display:flex!important;flex-wrap:wrap!important;gap:var(--b24-space-xs)!important;margin:0!important}
+.tnh-tag{display:inline-flex!important;align-items:center!important;gap:3px!important;font-size:12px!important;font-weight:500!important;color:var(--b24-color-text)!important;background:var(--b24-color-tag-bg)!important;border:1px solid var(--b24-color-tag-border)!important;border-radius:4px!important;padding:var(--b24-space-xs) var(--b24-space-sm)!important;white-space:nowrap!important;line-height:1.4!important}
 
 /* Offer area */
 .b24-offer-pricetable{display:none!important}
@@ -392,5 +423,35 @@ select[id^="sr1-"],select[id^="naa"]{border:1.5px solid var(--b24-color-border)!
 }
 CSSBLOCK;
 
-	return $font_import . $root . $static;
+	// Rules that consume the newly-added token variables.
+	//
+	// Two selector categories:
+	//   (a) Confirmed: room list selectors already present in $static, referenced
+	//       by new variables that replaced formerly-hardcoded values.
+	//   (b) Best-guess: Beds24 booking form pages (guest details, payment,
+	//       confirmation) use Bootstrap 3 and Beds24's .at_* class conventions.
+	//       Selectors below are plausible but unverified against the live form DOM.
+	//       Unmatched selectors are harmless — they produce no visual effect.
+	//       Verify against live form DOM before first property rollout.
+	$extended  = "\n/* === Error / success / unavailable: booking form color rules === */\n";
+	$extended .= "/* Validation error text — Bootstrap 3 .has-error form pattern (best-guess) */\n";
+	$extended .= ".has-error .help-block,.has-error .control-label,.has-error .form-control-feedback,.text-danger{color:var(--b24-color-error)!important}\n";
+	$extended .= ".has-error .form-control{border-color:var(--b24-color-error-border)!important}\n";
+	$extended .= "/* Error alert block — Bootstrap 3 .alert-danger (best-guess) */\n";
+	$extended .= ".alert-danger{background-color:var(--b24-color-error-bg)!important;border-color:var(--b24-color-error-border)!important;color:var(--b24-color-error)!important}\n";
+	$extended .= "/* Success states — Bootstrap 3 .alert-success / .text-success (best-guess) */\n";
+	$extended .= ".alert-success{border-color:var(--b24-color-success)!important;color:var(--b24-color-success)!important}\n";
+	$extended .= ".text-success{color:var(--b24-color-success)!important}\n";
+	$extended .= "/* Unavailable room state — Beds24 .at_offerunavailable (best-guess) */\n";
+	$extended .= ".at_offerunavailable,.b24-room-unavailable{color:var(--b24-color-unavailable)!important}\n";
+	$extended .= "\n/* === Spacing: booking form section gaps === */\n";
+	$extended .= "/* space-xl: major section breaks on booking form pages (best-guess selectors) */\n";
+	$extended .= ".b24fullcontainer-booking>.container{margin-bottom:var(--b24-space-xl)!important}\n";
+	$extended .= "/* space-lg: subsection heading gaps on booking form (best-guess selectors) */\n";
+	$extended .= ".b24-form-section-heading,.b24-step-heading{margin-bottom:var(--b24-space-lg)!important}\n";
+	$extended .= "\n/* === Shadow: floating / sticky elements on booking form === */\n";
+	$extended .= "/* Best-guess selectors — verify against live form DOM */\n";
+	$extended .= ".b24-sticky-bar,.b24-booking-summary-fixed{box-shadow:var(--b24-shadow-float)!important}\n";
+
+	return $font_import . $root . $static . $extended;
 }
