@@ -3,12 +3,22 @@
  * Beds24 Booking Plugin admin pages.
  *
  * Registers a top-level "Beds24 Booking" admin menu and the
- * "Property Setup" submenu page. The setup page displays the
- * generated iframe CSS for the operator to copy into Beds24's
- * "Insert in HTML <HEAD> bottom" admin field.
+ * "Property Setup" submenu page. The setup page displays:
  *
- * See docs/styling-contract.md Decision 5 and §"Iframe CSS generation"
- * for the workflow this page supports.
+ *   1. The generated iframe CSS for the operator to copy into Beds24's
+ *      "Insert in HTML <HEAD> bottom" admin field.
+ *   2. A token settings form where operators configure design token values
+ *      for themes that don't supply them via theme.json.
+ *
+ * CSS generation pipeline (Session 21):
+ *   beds24_read_theme_tokens()          → theme.json-derived values (takes precedence)
+ *   beds24_token_get_all_admin_tokens() → operator-configured fallback values
+ *   array_merge(admin, theme)           → merged set; theme overrides admin
+ *   beds24_read_theme_font_sources()    → Google Fonts URLs from theme.json fontFace
+ *   beds24_generate_iframe_css(merged, sources) → CSS with @import prepended when needed
+ *
+ * See docs/styling-contract.md Decision 2 (admin settings as fallback) and
+ * Decision 5 (CSS is generated programmatically) for the workflow this page supports.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -53,25 +63,45 @@ function beds24_booking_register_admin_menu(): void {
 /**
  * Render the Property Setup admin page.
  *
- * Reads design tokens from the active theme's theme.json (via
- * beds24_read_theme_tokens()), then generates the iframe CSS with those
- * theme-derived values overriding the defaults. On non-block themes that
- * provide no theme.json, beds24_read_theme_tokens() returns an empty array
- * and the generator falls back to its built-in defaults — no error.
- *
- * When a token settings page lands in a later session, theme-derived tokens
- * will be further merged with operator-configured values from wp_options.
+ * Processing order:
+ *   1. Handle any pending token settings form submission (nonce-verified).
+ *   2. Build the combined token set: theme.json values override admin settings.
+ *   3. Resolve font sources from theme.json fontFace data.
+ *   4. Generate the iframe CSS from the combined tokens + font sources.
+ *   5. Render the CSS textarea (copy affordance).
+ *   6. Render the token settings form below the textarea.
  */
 function beds24_booking_admin_setup_page(): void {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( esc_html__( 'You do not have permission to access this page.', 'beds24-booking-plugin' ) );
 	}
 
-	$theme_tokens = beds24_read_theme_tokens();
-	$css          = beds24_generate_iframe_css( $theme_tokens );
+	// Step 1: Handle token settings save (if this is a form submission).
+	$settings_saved = beds24_token_save_settings();
+
+	// Step 2: Build the combined token set.
+	// Admin settings are the base; theme.json values override them.
+	$theme_tokens  = beds24_read_theme_tokens();
+	$admin_tokens  = beds24_token_get_all_admin_tokens();
+	$merged_tokens = array_merge( $admin_tokens, $theme_tokens );
+
+	// Step 3: Resolve font sources from theme.json fontFace data.
+	// Used by the CSS generator to emit @import rules for web fonts.
+	$font_sources = beds24_read_theme_font_sources();
+
+	// Step 4: Generate the iframe CSS.
+	$css = beds24_generate_iframe_css( $merged_tokens, $font_sources );
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Beds24 Property Setup', 'beds24-booking-plugin' ); ?></h1>
+
+		<?php if ( $settings_saved ) : ?>
+			<div class="notice notice-success is-dismissible">
+				<p><?php esc_html_e( 'Token settings saved.', 'beds24-booking-plugin' ); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<h2><?php esc_html_e( 'Iframe CSS', 'beds24-booking-plugin' ); ?></h2>
 
 		<p>
 			<?php esc_html_e( 'Copy the CSS below and paste it into the', 'beds24-booking-plugin' ); ?>
@@ -95,42 +125,48 @@ function beds24_booking_admin_setup_page(): void {
 			readonly
 			style="font-family:monospace;font-size:12px;resize:vertical;"
 		><?php echo esc_textarea( $css ); ?></textarea>
-	</div>
 
-	<script>
-	( function () {
-		var btn = document.getElementById( 'beds24-copy-css' );
-		var ta  = document.getElementById( 'beds24-iframe-css' );
+		<script>
+		( function () {
+			var btn = document.getElementById( 'beds24-copy-css' );
+			var ta  = document.getElementById( 'beds24-iframe-css' );
 
-		if ( ! btn || ! ta ) {
-			return;
-		}
-
-		btn.addEventListener( 'click', function () {
-			var originalText = btn.textContent;
-
-			function onSuccess() {
-				btn.textContent = '<?php echo esc_js( __( 'Copied!', 'beds24-booking-plugin' ) ); ?>';
-				setTimeout( function () {
-					btn.textContent = originalText;
-				}, 2000 );
+			if ( ! btn || ! ta ) {
+				return;
 			}
 
-			if ( navigator.clipboard && navigator.clipboard.writeText ) {
-				navigator.clipboard.writeText( ta.value ).then( onSuccess ).catch( function () {
-					// Clipboard API failed — fall back to execCommand.
+			btn.addEventListener( 'click', function () {
+				var originalText = btn.textContent;
+
+				function onSuccess() {
+					btn.textContent = '<?php echo esc_js( __( 'Copied!', 'beds24-booking-plugin' ) ); ?>';
+					setTimeout( function () {
+						btn.textContent = originalText;
+					}, 2000 );
+				}
+
+				if ( navigator.clipboard && navigator.clipboard.writeText ) {
+					navigator.clipboard.writeText( ta.value ).then( onSuccess ).catch( function () {
+						// Clipboard API failed — fall back to execCommand.
+						ta.select();
+						document.execCommand( 'copy' );
+						onSuccess();
+					} );
+				} else {
+					// execCommand fallback for environments without Clipboard API.
 					ta.select();
 					document.execCommand( 'copy' );
 					onSuccess();
-				} );
-			} else {
-				// execCommand fallback for environments without Clipboard API.
-				ta.select();
-				document.execCommand( 'copy' );
-				onSuccess();
-			}
-		} );
-	}() );
-	</script>
+				}
+			} );
+		}() );
+		</script>
+
+		<?php
+		// Step 6: Render the token settings form below the CSS textarea.
+		// Pass theme_tokens so the form marks roles that are already covered.
+		beds24_token_render_settings_section( $theme_tokens );
+		?>
+	</div>
 	<?php
 }

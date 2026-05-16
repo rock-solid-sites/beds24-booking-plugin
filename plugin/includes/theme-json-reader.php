@@ -242,3 +242,124 @@ function beds24_read_theme_tokens(): array {
 
 	return $tokens;
 }
+
+/**
+ * Read font source information from the active theme's fontFace data.
+ *
+ * Parallel to beds24_read_theme_tokens() but returns source metadata
+ * (Google Fonts URL, local file flag) rather than CSS values. Used by
+ * beds24_generate_iframe_css() to determine whether to emit @import rules
+ * for the resolved font-family tokens.
+ *
+ * Mapping follows the same slug logic as beds24_read_theme_tokens():
+ * - 'body' slug → font-family-body role.
+ * - 'heading' slug → font-family-heading role.
+ * - First entry fallback when 'body' is not found.
+ *
+ * Source type values:
+ *   'google' — a Google Fonts CSS URL was found in the fontFace src array.
+ *              The 'url' key holds the URL.
+ *   'local'  — fontFace data is present but only local file sources were found.
+ *              @font-face for self-hosted theme fonts is out of scope for V1
+ *              (see Track B notes in docs/session-handoff-21.md).
+ *   'none'   — no fontFace data was present for the entry; treated as
+ *              "source unknown" and the CSS generator falls back to the
+ *              family-name heuristic.
+ *
+ * @return array<string, array{type: string, url?: string}>
+ *   Keys: 'font-family-body', 'font-family-heading'. Absent when no theme.json
+ *   or no font families found.
+ */
+function beds24_read_theme_font_sources(): array {
+	if ( ! function_exists( 'wp_get_global_settings' ) ) {
+		return [];
+	}
+
+	$settings = wp_get_global_settings();
+	if ( ! is_array( $settings ) || empty( $settings ) ) {
+		return [];
+	}
+
+	// Same font family path as beds24_read_theme_tokens().
+	$font_families_theme = $settings['typography']['fontFamilies']['theme'] ?? [];
+	$font_families_flat  = $settings['typography']['fontFamilies'] ?? [];
+
+	if ( empty( $font_families_theme ) && is_array( $font_families_flat ) ) {
+		if ( isset( $font_families_flat[0] ) && isset( $font_families_flat[0]['slug'] ) ) {
+			$font_families_theme = $font_families_flat;
+		}
+	}
+
+	if ( empty( $font_families_theme ) || ! is_array( $font_families_theme ) ) {
+		return [];
+	}
+
+	// Build slug → source-info lookup.
+	$sources_by_slug = [];
+
+	foreach ( $font_families_theme as $entry ) {
+		if ( ! isset( $entry['slug'] ) ) {
+			continue;
+		}
+
+		$slug      = $entry['slug'];
+		$font_face = $entry['fontFace'] ?? [];
+
+		if ( empty( $font_face ) || ! is_array( $font_face ) ) {
+			$sources_by_slug[ $slug ] = [ 'type' => 'none' ];
+			continue;
+		}
+
+		$google_url = null;
+		$has_local  = false;
+
+		foreach ( $font_face as $face ) {
+			$src_list = $face['src'] ?? [];
+			if ( is_string( $src_list ) ) {
+				$src_list = [ $src_list ];
+			}
+			foreach ( (array) $src_list as $src ) {
+				if ( is_string( $src ) && str_starts_with( $src, 'https://fonts.googleapis.com/' ) ) {
+					// Prefer the first Google Fonts URL found.
+					if ( null === $google_url ) {
+						$google_url = $src;
+					}
+				} else {
+					$has_local = true;
+				}
+			}
+		}
+
+		if ( null !== $google_url ) {
+			$sources_by_slug[ $slug ] = [ 'type' => 'google', 'url' => $google_url ];
+		} elseif ( $has_local ) {
+			$sources_by_slug[ $slug ] = [ 'type' => 'local' ];
+		} else {
+			$sources_by_slug[ $slug ] = [ 'type' => 'none' ];
+		}
+	}
+
+	if ( empty( $sources_by_slug ) ) {
+		return [];
+	}
+
+	// Map slug sources to token roles, mirroring beds24_read_theme_tokens() fallback logic.
+	$role_sources = [];
+
+	$body_source = $sources_by_slug['body'] ?? null;
+	if ( null === $body_source && ! empty( $sources_by_slug ) ) {
+		// First-entry fallback (matches beds24_read_theme_tokens()).
+		$body_source = reset( $sources_by_slug );
+	}
+	if ( null !== $body_source ) {
+		$role_sources['font-family-body']    = $body_source;
+		$role_sources['font-family-heading'] = $body_source; // Heading inherits body source as fallback.
+	}
+
+	// 'heading' slug overrides the body fallback for the heading role.
+	if ( isset( $sources_by_slug['heading'] ) ) {
+		$role_sources['font-family-heading'] = $sources_by_slug['heading'];
+	}
+
+	return $role_sources;
+}

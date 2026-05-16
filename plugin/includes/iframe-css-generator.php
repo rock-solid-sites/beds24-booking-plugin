@@ -66,23 +66,160 @@ function beds24_iframe_css_defaults(): array {
 }
 
 /**
+ * Determine whether a CSS font-family value requires a Google Fonts @import rule.
+ *
+ * Returns false for system font stacks and well-known platform-bundled fonts —
+ * these are pre-installed on the browser's OS and need no external load.
+ * Returns true for named web fonts (Google Fonts, custom web fonts) where
+ * the browser will not have the font pre-installed.
+ *
+ * Only the first token in the font-family stack (the primary, non-fallback
+ * font) is examined. Fallback fonts like "sans-serif" or "Arial" do not
+ * trigger an import when they appear after a primary named font.
+ *
+ * @param string $font_family CSS font-family value (may be a comma-separated stack).
+ * @return bool True if an @import is needed; false for system/platform fonts.
+ */
+function beds24_font_needs_import( string $font_family ): bool {
+	static $system_fonts = [
+		// CSS generic families (always resolved by the browser without loading).
+		'sans-serif', 'serif', 'monospace', 'cursive', 'fantasy',
+		'math', 'emoji', 'fangsong',
+		// System keyword families (CSS Level 4).
+		'system-ui', '-apple-system', 'BlinkMacSystemFont',
+		'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded',
+		// Common platform-bundled fonts that need no @import.
+		'Arial', 'Helvetica', 'Helvetica Neue', 'Georgia', 'Verdana', 'Tahoma',
+		'Trebuchet MS', 'Times New Roman', 'Times', 'Courier New', 'Courier',
+		'Impact', 'Comic Sans MS', 'Comic Sans', 'Palatino', 'Garamond',
+		'Bookman', 'Arial Black', 'Arial Narrow',
+		'Segoe UI', 'Segoe UI Emoji', 'Segoe UI Symbol',
+		'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Console',
+		'Ubuntu', 'Cantarell', 'DejaVu Sans', 'Liberation Sans',
+	];
+
+	$font_family = trim( $font_family );
+	if ( '' === $font_family ) {
+		return false;
+	}
+
+	// Extract the first font in the stack (before the first comma).
+	$parts = explode( ',', $font_family );
+	$first = trim( $parts[0], " \t\n\r\0\x0B\"'" );
+
+	if ( '' === $first ) {
+		return false;
+	}
+
+	foreach ( $system_fonts as $system ) {
+		if ( 0 === strcasecmp( $first, $system ) ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Generate @import rules for web fonts referenced by the resolved token set.
+ *
+ * For each font-family token (body, heading) that references a non-system font,
+ * generates an appropriate @import rule:
+ *
+ *   - If $font_sources provides a 'google' type entry for the role, that URL
+ *     is used directly (the URL comes from the theme's fontFace src array).
+ *   - If $font_sources marks the role as 'local', no @import is generated
+ *     (@font-face for self-hosted theme fonts is out of scope for V1).
+ *   - If no source is known (empty $font_sources or 'none' type), the font
+ *     name is used to construct a Google Fonts URL. This is the path for
+ *     fonts entered in admin settings and for theme.json fonts without fontFace
+ *     Google Fonts URLs.
+ *
+ * Duplicate imports (body and heading resolve to the same font name) are
+ * deduplicated so the output contains each @import at most once.
+ *
+ * @param array<string, string> $tokens      Resolved token values (after merging defaults + overrides).
+ * @param array<string, array>  $font_sources Source info from beds24_read_theme_font_sources().
+ * @return string @import rules (with trailing newlines) or empty string.
+ */
+function beds24_generate_font_imports( array $tokens, array $font_sources = [] ): string {
+	$font_roles = [
+		'font-family-body'    => $tokens['font-family-body']    ?? '',
+		'font-family-heading' => $tokens['font-family-heading'] ?? '',
+	];
+
+	$imports = [];
+
+	foreach ( $font_roles as $role => $font_family ) {
+		if ( ! beds24_font_needs_import( $font_family ) ) {
+			continue;
+		}
+
+		$source = $font_sources[ $role ] ?? null;
+
+		if ( null !== $source && 'google' === $source['type'] && ! empty( $source['url'] ) ) {
+			// Use the Google Fonts CSS URL from the theme's fontFace data.
+			$imports[] = "@import url('" . esc_url_raw( $source['url'] ) . "');";
+			continue;
+		}
+
+		if ( null !== $source && 'local' === $source['type'] ) {
+			// Self-hosted font — @font-face is out of scope for V1.
+			// Fall through to family-name heuristic: if the theme uses a
+			// local copy of a Google Font, generate the import from the name.
+			// This ensures the iframe can render the font even without resolving
+			// local file paths across origin boundaries.
+		}
+
+		// No Google Fonts URL known: derive the @import URL from the family name.
+		// This handles admin-settings entries (plain family name, no URL) and
+		// theme.json fonts with only local file sources.
+		$parts          = explode( ',', $font_family );
+		$family         = trim( $parts[0], " \t\n\r\0\x0B\"'" );
+
+		if ( '' === $family ) {
+			continue;
+		}
+
+		// URL-encode the family name: spaces → '+' per Google Fonts v2 API convention.
+		$family_encoded = rawurlencode( $family );
+		$imports[]      = "@import url('https://fonts.googleapis.com/css2?family={$family_encoded}:wght@400;600&display=swap');";
+	}
+
+	$imports = array_unique( $imports );
+
+	if ( empty( $imports ) ) {
+		return '';
+	}
+
+	return implode( "\n", $imports ) . "\n\n";
+}
+
+/**
  * Generate a complete CSS string for Beds24's iframe admin field.
  *
  * Calls beds24_iframe_css_defaults() for baseline values, then merges
  * the supplied $tokens array on top. Each token value is sanitized to
  * strip characters that would break a CSS declaration block.
  *
- * The output is a self-contained CSS string suitable for direct paste
- * into Beds24's "Insert in HTML <HEAD> bottom" field. If the property
- * uses a custom web font, the operator must prepend a @import rule for
- * that font above the generated block — see the comment in the output.
+ * When the resolved font-family tokens reference web fonts, @import rules
+ * are prepended automatically. For Google Fonts: if $font_sources provides
+ * a URL, it is used; otherwise the font name is used to construct the URL.
+ * System font stacks (system-ui, -apple-system, sans-serif, etc.) produce
+ * no @import. See beds24_generate_font_imports() for full logic.
  *
- * @param array<string, string> $tokens Token overrides. Keys are role names
- *                                       from beds24_iframe_css_defaults().
- *                                       Missing keys use defaults.
- * @return string Complete CSS string.
+ * The output is a self-contained CSS string suitable for direct paste into
+ * Beds24's "Insert in HTML <HEAD> bottom" field.
+ *
+ * @param array<string, string> $tokens      Token overrides. Keys are role names
+ *                                            from beds24_iframe_css_defaults().
+ *                                            Missing keys use defaults.
+ * @param array<string, array>  $font_sources Font source info from
+ *                                            beds24_read_theme_font_sources().
+ *                                            Empty array when no theme.json data.
+ * @return string Complete CSS string, with @import rules prepended when needed.
  */
-function beds24_generate_iframe_css( array $tokens = [] ): string {
+function beds24_generate_iframe_css( array $tokens = [], array $font_sources = [] ): string {
 	$t = array_merge( beds24_iframe_css_defaults(), $tokens );
 
 	// Strip characters that would escape a CSS value or terminate a
@@ -90,6 +227,9 @@ function beds24_generate_iframe_css( array $tokens = [] ): string {
 	foreach ( $t as $key => $value ) {
 		$t[ $key ] = preg_replace( '/[{};\x00-\x1f]/', '', (string) $value );
 	}
+
+	// Prepend @import rules for any web fonts the resolved tokens reference.
+	$font_import = beds24_generate_font_imports( $t, $font_sources );
 
 	// Build the :root variable block. CSS custom property names follow the
 	// --b24-* namespace used in the predecessor stylesheet so the static CSS
@@ -130,11 +270,6 @@ function beds24_generate_iframe_css( array $tokens = [] ): string {
 	//   - .b24-room-106 hide rule (Chill Zone-specific room ID)
 	//   - Hardcoded 'Lexend' / 'Lexend Giga' font rules at end of file
 	//     (replaced by var(--b24-font-*) references throughout)
-	//
-	// Font loading note: the system-ui default requires no @import.
-	// If a property token sets font-family-body or font-family-heading to
-	// a web font, the operator must prepend a @import for that font above
-	// this block in the Beds24 admin field. This is a V1 limitation.
 	$static = <<<'CSSBLOCK'
 /* ----------------------------------------------------------------
    Beds24 Booking Page Styles
@@ -257,5 +392,5 @@ select[id^="sr1-"],select[id^="naa"]{border:1.5px solid var(--b24-color-border)!
 }
 CSSBLOCK;
 
-	return $root . $static;
+	return $font_import . $root . $static;
 }

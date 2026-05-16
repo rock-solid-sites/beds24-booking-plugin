@@ -29,6 +29,7 @@ require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/beds24-room-cpt.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/beds24-room-meta-box.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/iframe-css-generator.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/theme-json-reader.php';
+require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/admin-token-settings.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/beds24-admin-page.php';
 
 // ---------------------------------------------------------------------------
