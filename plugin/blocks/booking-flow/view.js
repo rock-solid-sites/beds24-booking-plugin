@@ -1176,14 +1176,15 @@
      * @param {string}      checkIn   Validated check-in date (YYYY-MM-DD).
      * @param {string}      checkOut  Validated check-out date (YYYY-MM-DD).
      * @param {HTMLElement} form      The search form (passed through to response/error handlers).
+     * @param {HTMLElement} btn       The search submit button (passed through to restore handlers).
      */
-    function searchOffers( checkIn, checkOut, form ) {
+    function searchOffers( checkIn, checkOut, form, btn ) {
         var config  = window.beds24BookingPlugin || {};
         var nonce   = config.nonce   || '';
         var restUrl = config.restUrl || '';
 
         if ( ! restUrl ) {
-            handleSearchError( form, 'Search is temporarily unavailable. Please reload the page and try again.' );
+            handleSearchError( form, 'Search is temporarily unavailable. Please reload the page and try again.', btn );
             return;
         }
 
@@ -1207,14 +1208,43 @@
                 var msg = ( result.data && result.data.message )
                     ? result.data.message
                     : 'Search failed. Please try again.';
-                handleSearchError( form, msg );
+                handleSearchError( form, msg, btn );
                 return;
             }
-            handleSearchResponse( result.data, form );
+            handleSearchResponse( result.data, form, btn );
         } )
         .catch( function () {
-            handleSearchError( form, 'Network error. Please check your connection and try again.' );
+            handleSearchError( form, 'Network error. Please check your connection and try again.', btn );
         } );
+    }
+
+    /**
+     * Set the search button into loading state: disabled, text change, modifier class.
+     *
+     * @param {HTMLElement} btn  The .beds24-search-form__submit element.
+     */
+    function setSearchButtonLoading( btn ) {
+        if ( ! btn ) {
+            return;
+        }
+        btn.disabled = true;
+        btn.classList.add( 'beds24-search-form__submit--loading' );
+        btn.textContent = 'Searching…'; // Searching…
+    }
+
+    /**
+     * Restore the search button to its default state after a search completes
+     * (success or error).
+     *
+     * @param {HTMLElement} btn  The .beds24-search-form__submit element.
+     */
+    function restoreSearchButton( btn ) {
+        if ( ! btn ) {
+            return;
+        }
+        btn.disabled = false;
+        btn.classList.remove( 'beds24-search-form__submit--loading' );
+        btn.textContent = 'Search Rooms';
     }
 
     /**
@@ -1224,11 +1254,13 @@
      *
      * @param {Object}      data  Parsed JSON body from the REST route.
      * @param {HTMLElement} form  The search form.
+     * @param {HTMLElement} btn   The search submit button (to restore from loading state).
      */
-    function handleSearchResponse( data, form ) {
+    function handleSearchResponse( data, form, btn ) {
         var rooms          = ( data && data.data )           ? data.data           : [];
         var currencySymbol = ( data && data.currencySymbol ) ? data.currencySymbol : '€';
 
+        restoreSearchButton( btn );
         clearError( form );
 
         var checkInEl  = form.querySelector( '.beds24-search-form__check-in' );
@@ -1273,8 +1305,10 @@
      *
      * @param {HTMLElement} form
      * @param {string}      message  User-readable error description.
+     * @param {HTMLElement} btn      The search submit button (to restore from loading state).
      */
-    function handleSearchError( form, message ) {
+    function handleSearchError( form, message, btn ) {
+        restoreSearchButton( btn );
         showError( form, message );
     }
 
@@ -1344,7 +1378,9 @@
             return;
         }
 
-        searchOffers( checkInEl.value, checkOutEl.value, form );
+        var submitBtn = form.querySelector( '.beds24-search-form__submit' );
+        setSearchButtonLoading( submitBtn );
+        searchOffers( checkInEl.value, checkOutEl.value, form, submitBtn );
     }
 
     // -----------------------------------------------------------------------

@@ -53,17 +53,22 @@ function beds24_booking_register_admin_menu(): void {
 /**
  * Render the Property Setup admin page.
  *
- * Generates the iframe CSS using default token values and displays it in a
- * copyable textarea. When the theme.json reader and token settings page land
- * in a later session, this page will call the generator with the
- * currently-configured tokens rather than the defaults.
+ * Reads design tokens from the active theme's theme.json (via
+ * beds24_read_theme_tokens()), then generates the iframe CSS with those
+ * theme-derived values overriding the defaults. On non-block themes that
+ * provide no theme.json, beds24_read_theme_tokens() returns an empty array
+ * and the generator falls back to its built-in defaults — no error.
+ *
+ * When a token settings page lands in a later session, theme-derived tokens
+ * will be further merged with operator-configured values from wp_options.
  */
 function beds24_booking_admin_setup_page(): void {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( esc_html__( 'You do not have permission to access this page.', 'beds24-booking-plugin' ) );
 	}
 
-	$css = beds24_generate_iframe_css();
+	$theme_tokens = beds24_read_theme_tokens();
+	$css          = beds24_generate_iframe_css( $theme_tokens );
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Beds24 Property Setup', 'beds24-booking-plugin' ); ?></h1>

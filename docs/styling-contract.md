@@ -571,11 +571,21 @@ The backdrop is a sibling to `.beds24-cart` inside `.beds24-booking-flow`.
 
 ---
 
+#### Search button loading state — `beds24-search-form__submit--loading` (added Session 20)
+
+Applied by JS to the submit button while the search API request is in flight. The button also receives the `disabled` HTML attribute during this period. Both are cleared on all completion paths: success, HTTP error, network failure, and missing configuration.
+
+| Class | Element | Semantics | State variants |
+|---|---|---|---|
+| `beds24-search-form__submit--loading` | modifier on `beds24-search-form__submit` | Applied during an in-flight search request. Button is also `disabled`. Text changes to "Searching…". Reduced opacity signals in-progress state without switching to the unavailable color (which signals permanent unavailability rather than transient activity). Cleared on all completion paths — the button cannot be permanently disabled. | Present during API call; removed on success or error. |
+
+---
+
 #### Pending catalog sections
 
 The following sections will be drafted when their frontend layers are built:
 
-- **State modifier classes** — `--disabled`, `--loading` variants. (Added per block as implemented)
+- **State modifier classes** — `--disabled` variants. (The `--loading` variant for the search button is documented above; add per block as implemented)
 
 ### Targeting guidance for themes
 
@@ -920,3 +930,19 @@ principles, the iframe CSS workflow.
   CSS in a copyable textarea. CSS-base.css source located at `docs/reference/CSS-base.css`
   (not `docs/CSS-base.css` as referenced in v1-plan — path difference only, content
   unchanged).
+- **2026-05-16 (Session 20):** Theme.json reader implemented (`plugin/includes/theme-json-reader.php`).
+  `beds24_read_theme_tokens()` uses `wp_get_global_settings()` (WordPress 5.9+) to
+  read the active theme's theme.json and maps palette slugs, font family slugs, spacing
+  slugs, and custom border radius to plugin token roles. Exact slug matching only — a
+  palette entry with slug `primary` maps to the `primary` role; non-matching slugs are
+  ignored (see Known Unknown 1). The admin page now calls `beds24_read_theme_tokens()`
+  and passes the result to `beds24_generate_iframe_css()`, so theme-derived values
+  override defaults where available. On non-block themes (Kadence), reader returns `[]`
+  and generator uses defaults — correct V1 behavior, no error. TT5 test: extracts
+  `font-family-body` and `font-family-heading` as "Manrope, sans-serif" via the
+  first-family fallback (TT5 uses slug `manrope`, not `body`). Color, spacing, and
+  border-radius tokens not extracted from TT5 because its slugs don't match role names.
+  This confirms Known Unknown 1: when active properties adopt block themes, slug mapping
+  via admin settings will be needed. Search button loading state added
+  (`beds24-search-form__submit--loading`): button disables, shows "Searching…" on submit;
+  restores on all four completion paths. Class catalog entry added above.
