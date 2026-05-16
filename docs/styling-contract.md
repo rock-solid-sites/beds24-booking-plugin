@@ -376,6 +376,7 @@ are not omitted.
 
 | Class | Element | Semantics | State variants | Co-occurring classes |
 |---|---|---|---|---|
+| `beds24-room-card__type-bar` | `<div>` | Room type indicator bar. First child of `.beds24-room-card`, before `__name`. Full-width colored band, 6px vertical padding. Always rendered for both available and unavailable cards. | `beds24-room-card__type-bar--shared` (background #EAF3DE, text #3B6D11) for dorm rooms; `beds24-room-card__type-bar--private` (background #E6F1FB, text #185FA5) for all other room types. | — |
 | `beds24-room-card` | `<div>` | Card root. Carries `data-room-id` attribute with the Beds24 room ID for future JS targeting (cart accumulator). | `beds24-room-card--unavailable` when the room has no offers for the selected dates. | — |
 | `beds24-room-card__name` | `<h3>` | Room name heading. Text content from the matching `beds24_room` post title. Falls back to "Room {roomId}" if no post is found (fail-loud fallback — the mismatch is also logged to console). | — | — |
 | `beds24-room-card__body` | `<div>` | Flex container for photo + description. Desktop: photo and description side by side. Mobile (≤767px): stacked vertically. | — | — |
@@ -383,7 +384,7 @@ are not omitted.
 | `beds24-room-card__content` | `<div>` | Description column. Flex-grows to fill remaining space. | — | — |
 | `beds24-room-card__description` | `<p>` | Room description text. Content from the `beds24_room` post, trimmed to 40 words. | — | — |
 | `beds24-room-card__offer` | `<div>` | Offer row at the card bottom. Contains price (available) or unavailable notice. Separated from the body by a top border. | — | — |
-| `beds24-room-card__price` | `<p>` | Price display for available rooms. Format: "from €XX / night", where XX = total offer price / nights. | — | Present on available cards only. |
+| `beds24-room-card__price` | `<p>` | Price display for available rooms. Format: "from €XX / night per bed" for dorm rooms (`roomType: "bedInDormitory"`); "from €XX / night" for all other room types. XX = total offer price / nights. | — | Present on available cards only. |
 | `beds24-room-card__unavailable-notice` | `<p>` | "Not available for selected dates" text for unavailable rooms. | — | Present on unavailable cards only. |
 | `beds24-room-card--unavailable` | modifier on `beds24-room-card` | Applied when the room has no offers for the selected dates (`room.offers` is absent or empty). Reduces opacity and mutes the room name color. | — | Co-occurs with `beds24-room-card`. |
 

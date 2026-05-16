@@ -243,6 +243,29 @@
 }
 
 /* ==========================================================================
+   Room type indicator bar
+   Sits flush at the top of the card (no border-radius, overflow:hidden on
+   card clips it). First child of .beds24-room-card, before __name.
+   ========================================================================== */
+
+.beds24-room-card__type-bar {
+    padding:    6px var(--beds24-space-md);
+    font-size:  0.75rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.beds24-room-card__type-bar--shared {
+    background-color: #EAF3DE;
+    color:            #3B6D11;
+}
+
+.beds24-room-card__type-bar--private {
+    background-color: #E6F1FB;
+    color:            #185FA5;
+}
+
+/* ==========================================================================
    Room name
    ========================================================================== */
 

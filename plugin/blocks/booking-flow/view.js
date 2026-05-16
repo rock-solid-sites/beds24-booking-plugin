@@ -840,6 +840,13 @@
         card.setAttribute( 'data-unit-price', String( perNight ) );
         card.setAttribute( 'data-room-name', roomName );
 
+        // Type bar -- first child of the card, before __name.
+        var typeBarEl       = document.createElement( 'div' );
+        typeBarEl.className = 'beds24-room-card__type-bar' +
+            ( isDorm ? ' beds24-room-card__type-bar--shared' : ' beds24-room-card__type-bar--private' );
+        typeBarEl.textContent = isDorm ? 'Shared room' : 'Private room';
+        card.appendChild( typeBarEl );
+
         // Room name heading.
         var nameEl       = document.createElement( 'h3' );
         nameEl.className = 'beds24-room-card__name';
@@ -908,7 +915,7 @@
         if ( available ) {
             var priceEl       = document.createElement( 'p' );
             priceEl.className = 'beds24-room-card__price';
-            priceEl.textContent = 'from ' + currencySymbol + perNight + ' / night';
+            priceEl.textContent = 'from ' + currencySymbol + perNight + ( isDorm ? ' / night per bed' : ' / night' );
             offerEl.appendChild( priceEl );
 
             // Cart control — dorm: qty widget; private: Add/Remove toggle.
