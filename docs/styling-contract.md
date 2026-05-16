@@ -58,7 +58,8 @@ following plugin project's proposed layered approach.
 When a theme does not define the relevant tokens (classic themes, hybrid
 themes, themes that haven't adopted FSE), the plugin's admin UI lets
 operators configure values manually. Settings are stored in `wp_options`
-via CMB2.
+via the WordPress Settings API, with one option per token role following
+the key pattern `beds24_token_{role}` (hyphens converted to underscores).
 
 **Rationale:** The plugin must be usable on themes that haven't adopted
 theme.json. The admin settings panel is the path that makes the plugin

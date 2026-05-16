@@ -1,7 +1,7 @@
 # V1 Plan — Beds24 Booking Plugin
 
 **Status:** Living document. Updated between phases of work.
-**Last updated:** 2026-05-15 (updated after Session 15: sticky bar UX fixes, session sequencing)
+**Last updated:** 2026-05-16 (updated after Session 21: admin token settings, font @import generation)
 **Purpose:** Forward visibility into V1 scope and progress. Not a binding
 schedule — work is sequenced one session at a time per project conventions.
 Read this to orient against the V1 destination; read session handoffs for
@@ -26,21 +26,8 @@ iframe.
 
 ## Current state
 
-- **Session:** 15 complete. Session 16 in planning.
-- **Session 15 scope:** Iframe Chrome load fix, sticky bar Chrome hide fix,
-  Confirm Booking transition (room results + cart hide, iframe reveal,
-  back-to-rooms flow).
-- **Most recent handoff:** `docs/session-handoff-15.md`
-- **Repo HEAD at last update:** 1c492dc
-
-- **Next sessions:**
-  - Session 16: Iframe CSS generator (paste-ready CSS for Beds24
-    "Insert in HTML &lt;HEAD&gt; bottom" field, making the iframe visually
-    match the property theme).
-  - Session 17: Mobile cart (fixed bottom bar + slide-up drawer below
-    768px breakpoint).
-  - Session 18: Card styling against the mockup (visual language from
-    `docs/mockup.html`).
+- **Session:** 21 complete.
+- **Most recent handoff:** `docs/session-handoff-21.md`
 
 ---
 
@@ -107,14 +94,22 @@ session at a time. Each area below is a destination, not a session.
 - **Class catalog.** First entries drafted in Session 9 for the search form;
   expands as each frontend area lands. Captured in `docs/styling-contract.md`
   §"CSS class catalog" as work proceeds.
-- **theme.json reader.** Reads design tokens from the active theme and
-  populates `--beds24-*` CSS variables on the plugin root element.
-  Not strictly required for Chill Zone (Kadence; non-block-theme) but
-  required for the three Twenty Twenty-Five property sites.
-- **Iframe CSS generator.** Generates paste-ready CSS payload for Beds24's
-  "Insert in HTML &lt;HEAD&gt; bottom" admin field. Plugin admin displays
-  the generated string. Manual copy-paste workflow per
-  `docs/styling-contract.md` Decision 5.
+- **theme.json reader.** Complete (Session 20). Reads design tokens from
+  the active theme via `wp_get_global_settings()` and maps them to plugin
+  token roles. On non-block themes (Kadence), returns empty and the
+  generator uses defaults — correct V1 behavior.
+- **Iframe CSS generator.** Complete (Session 16, extended Sessions 20–21).
+  Generates paste-ready CSS payload for Beds24's "Insert in HTML &lt;HEAD&gt;
+  bottom" admin field. Plugin admin displays the generated string in a
+  copyable textarea. Manual copy-paste workflow per
+  `docs/styling-contract.md` Decision 5. Admin token settings page added
+  Session 21 — operators can configure token values for themes that don't
+  provide them via theme.json; settings stored as individual `wp_options`
+  entries, theme.json values take precedence. Font `@import` generation
+  added Session 21 — named web fonts (Google Fonts) trigger automatic
+  `@import` prepended to the generated CSS; system font stacks produce
+  no import. Note: 12 token roles are stored by admin settings but not
+  yet emitted in the generator (generator extension needed).
 
 ### Anticipated, beyond V1 core
 

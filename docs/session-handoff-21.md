@@ -2,7 +2,7 @@
 
 ## What this session did
 
-Two independent tracks, no file conflicts.
+Two independent tracks, no file conflicts. Plus a doc update continuation.
 
 **Track A — Admin token settings page:** Built the design token settings UI on
 the existing Property Setup admin page. Operators can now manually configure
@@ -18,6 +18,13 @@ appropriate `@import url(...)` rule. System font stacks produce no import.
 Theme.json fonts with Google Fonts URLs in their `fontFace` src use those
 URLs directly; all other named fonts generate an import from the family name.
 
+**Doc update (continuation):** Updated `docs/styling-contract.md` Decision 2
+to reflect the actual storage implementation (WordPress Settings API with
+individual `wp_options` entries, not CMB2). Updated `docs/v1-plan.md` current
+state block (session 21, latest handoff) and Styling work map entries (theme.json
+reader marked complete, Iframe CSS generator updated to reflect Sessions 20–21
+additions including admin settings and font import).
+
 ---
 
 ## Changes shipped
@@ -28,6 +35,8 @@ URLs directly; all other named fonts generate an import from the family name.
 | `plugin/includes/beds24-admin-page.php` | A + B | Settings form below CSS textarea; updated generation pipeline (merged tokens + font sources) |
 | `plugin/beds24-booking-plugin.php` | A | Added `require_once` for `admin-token-settings.php` |
 | `plugin/includes/theme-json-reader.php` | B | Added `beds24_read_theme_font_sources()` |
+| `docs/styling-contract.md` | doc | Decision 2: CMB2 → WordPress Settings API with `beds24_token_*` option keys |
+| `docs/v1-plan.md` | doc | Current state refresh (session 21); Styling section updated for theme.json reader, Iframe CSS generator |
 | `plugin/includes/iframe-css-generator.php` | B | Added `beds24_font_needs_import()`, `beds24_generate_font_imports()`; updated `beds24_generate_iframe_css()` signature and return |
 
 ---
