@@ -648,8 +648,8 @@
 /* ==========================================================================
    Beds24 booking iframe
    Revealed by JS after Confirm Booking is clicked.
-   Height is fixed in V1 — the Beds24 booking page scrolls internally
-   for content taller than this value. Revisit in the iframe CSS session.
+   Height is fixed at 2200px — measured at 2006px with validation errors
+   visible in Session 25; 2200px provides headroom for form state variation.
    ========================================================================== */
 
 .beds24-booking-iframe-wrapper {
@@ -679,7 +679,7 @@
 .beds24-booking-iframe {
     display:    block;
     width:      100%;
-    height:     900px;
+    height:     2200px;
     border:     none;
 }
 

@@ -515,7 +515,7 @@ The iframe starts with **no `src` attribute** (not even `src=""`). In Chrome,
 `src=""` resolves to the current page URL and loads it in the iframe. The `src`
 attribute is only ever set by `openBookingIframe()`.
 
-Height is fixed at 900px in V1.
+Height is fixed at 2200px (measured at 2006px with validation errors visible in Session 25; 2200px provides headroom for form state variation).
 
 **`[hidden]` override note:** The stylesheet includes an explicit rule:
 `.beds24-cart[hidden], .beds24-room-results[hidden] { display: none !important; }`.
@@ -532,7 +532,7 @@ hide behavior across browsers.
 | `beds24-booking-iframe-wrapper` | `<div>` | Wrapper for the Beds24 booking iframe nav strip and iframe. Sibling of `.beds24-cart`. Hidden by default; JS removes `hidden` on confirm, sets it again on back. | Hidden by default; toggled by JS. |
 | `beds24-booking-iframe-nav` | `<div>` | Navigation strip above the iframe. Contains the "← Back to rooms" button. | — |
 | `beds24-booking-iframe-nav__back` | `<button type="button">` | Back-to-rooms CTA. Minimal link-style button. Clicking resets cart, hides iframe wrapper, reveals room results. | Hover: text-decoration underline. |
-| `beds24-booking-iframe` | `<iframe>` | Loads the Beds24 booking3.php page with pre-populated room selections, dates, and adult counts. `src` is set by JS at confirm time; cleared to `about:blank` on back. Fixed 900px height in V1. | — |
+| `beds24-booking-iframe` | `<iframe>` | Loads the Beds24 booking3.php page with pre-populated room selections, dates, and adult counts. `src` is set by JS at confirm time; cleared to `about:blank` on back. Fixed 2200px height (measured in Session 25). | — |
 
 ---
 
@@ -947,3 +947,7 @@ principles, the iframe CSS workflow.
   via admin settings will be needed. Search button loading state added
   (`beds24-search-form__submit--loading`): button disables, shows "Searching…" on submit;
   restores on all four completion paths. Class catalog entry added above.
+- **2026-05-16 (Session 26):** Iframe height increased from 900px to 2200px.
+  Measured at 2006px with validation errors visible in Session 25; 2200px provides
+  headroom for form state variation. Updated in `style.css` (`.beds24-booking-iframe`
+  rule) and reflected in this contract.
