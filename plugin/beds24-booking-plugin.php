@@ -31,6 +31,7 @@ require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/iframe-css-generator.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/theme-json-reader.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/admin-token-settings.php';
 require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/beds24-admin-page.php';
+require_once BEDS24_BOOKING_PLUGIN_DIR . 'includes/settings-page.php';
 
 // ---------------------------------------------------------------------------
 // Activation and deactivation hooks
@@ -59,9 +60,12 @@ function beds24_booking_plugin_activate(): void {
 function beds24_booking_plugin_deactivate(): void {
     // Access token transients expire on their own, but flush them now
     // so a reactivation starts clean.
-    $property_ids = get_option( 'beds24_booking_plugin_property_ids', [] );
-    foreach ( $property_ids as $property_id ) {
-        delete_transient( 'beds24_bkp_access_token_' . intval( $property_id ) );
+    $properties = get_option( 'beds24_booking_plugin_properties', [] );
+    foreach ( $properties as $prop ) {
+        $id = isset( $prop['id'] ) ? intval( $prop['id'] ) : 0;
+        if ( $id > 0 ) {
+            delete_transient( 'beds24_bkp_access_token_' . $id );
+        }
     }
 }
 

@@ -58,6 +58,16 @@ function beds24_booking_register_admin_menu(): void {
 		'beds24-booking',
 		'beds24_booking_admin_setup_page'
 	);
+
+	// "Properties" submenu — multi-property configuration and invite code exchange.
+	add_submenu_page(
+		'beds24-booking',
+		__( 'Properties — Beds24 Booking', 'beds24-booking-plugin' ),
+		__( 'Properties', 'beds24-booking-plugin' ),
+		'manage_options',
+		'beds24-booking-properties',
+		'beds24_booking_properties_page'
+	);
 }
 
 /**
