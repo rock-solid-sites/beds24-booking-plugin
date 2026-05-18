@@ -1,7 +1,7 @@
 # Plugin Work Plan — Beds24 Booking Plugin
 
 **Status:** Living document. Updated between phases of work.
-**Last updated:** 2026-05-18 (Session 29: documentation cleanup; removed V1 milestone framing)
+**Last updated:** 2026-05-18 (Session 30: room management and onboarding work map added)
 **Purpose:** Forward visibility into plugin scope and progress. Not a binding
 schedule — work is sequenced one session at a time per project conventions.
 Read this to orient against the plugin's current state; read session handoffs for
@@ -26,7 +26,7 @@ Booking to land in a correctly pre-populated Beds24 iframe.
 ## Current state
 
 - **Most recent code sessions:** 28a + 28b complete (agent team).
-- **Most recent handoff:** `docs/session-handoff-28.md`
+- **Most recent handoff:** `docs/session-handoff-30.md`
 
 ---
 
@@ -110,6 +110,53 @@ one session at a time. Each area below is a destination, not a session.
   properties, invite code exchange UI, default property selector. Property
   list stored in `wp_options`. Migration seeds the Chill Zone entry from
   the existing refresh token on first load after update.
+
+### Room management and onboarding
+
+Operator-facing room management, API-driven room sync, and a live admin
+preview of the booking block. Extends the settings page and `beds24_room`
+CPT from prior sessions.
+
+- **Room sync engine.** New `includes/room-sync.php`. "Sync Rooms" button
+  calls `get_properties()` and auto-creates `beds24_room` CPT posts for each
+  room, pre-populated with Beds24 room name and room ID in post meta. Re-sync
+  compares the API response against existing posts: new rooms become drafts,
+  removed rooms are flagged (not auto-deleted), changed Beds24 names surface
+  as a diff the operator can accept or ignore. Depends on: API client (exists),
+  CPT (exists), settings page (exists).
+- **Admin room list.** Custom admin screen under the Beds24 Booking menu.
+  Displays all `beds24_room` posts for the current property: thumbnail, name,
+  Beds24 ID, room type, sync status. Drag-and-drop reordering via jQuery UI
+  Sortable (in WP core) — saves to `menu_order` on the CPT. Depends on: room
+  sync engine (rooms must exist to display them).
+- **Room edit enhancements.** Meta boxes on the `beds24_room` CPT edit screen:
+  room type override (select field; falls back to API `roomType`), sync info
+  panel (original Beds24 name, last sync timestamp). Verify amenity taxonomy
+  and featured image are wired up (partially done Session 11). Depends on: room
+  sync engine (touches CPT registration and meta box files).
+- **Property-level display settings.** Extend the Properties settings page with
+  per-property fields: check-in / check-out times (displayed to guests), booking
+  page intro text (above search form), unavailable room position (inline or
+  grouped at bottom), currency display format (symbol before vs code after).
+  Depends on: settings page (exists). Independent of room sync.
+- **Frontend consumption of new settings.** Update `view.js` and `render.php`
+  to read and apply: room display order (`menu_order`), unavailable room
+  positioning, intro text, check-in/check-out times, currency format, room type
+  override from CPT meta (fed to the type bar). Depends on: property display
+  settings and room edit enhancements both complete.
+- **Live admin preview.** AJAX endpoint returning the booking block's rendered
+  HTML for the current property's settings and room state; displayed in an
+  iframe on the plugin's main admin page, refreshed when the operator saves
+  changes. Depends on: all other room management pieces complete.
+
+**Planned session sequencing:**
+
+- Round 1 (agent team — 3 parallel, non-overlapping files): room sync engine,
+  admin room list, property-level display settings.
+- Round 2 (serial — touches files from round 1): room edit enhancements.
+- Round 3 (serial — touches frontend files): frontend consumption of new
+  settings.
+- Round 4 (serial — all other pieces must be complete): live admin preview.
 
 ---
 
