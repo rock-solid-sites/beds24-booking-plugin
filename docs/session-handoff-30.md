@@ -35,28 +35,18 @@ from the dependency map ("Depends on: all other pieces being complete").
 
 ## Open items for Session 31
 
-Carried from Session 28 handoff.
-
-- **Auto Actions verification** (carried) — confirm Auto Actions fire on
+- **Auto Actions verification** — confirm Auto Actions fire on
   URL-prepopulated bookings. Needs a real booking or sandbox test; not a code
   blocker.
-- **TT5 color slug mismatch** (carried) — only relevant when a block theme is
-  active; admin settings path for TT5 until slug mapping is added.
-- **Dorm vs private card body layout** (carried) — type bar present; body
-  layout currently identical. Assess whether further visual distinction is
-  warranted before or alongside the room edit enhancements round.
-- **Block attribute for per-block property selection** (carried) — settings
-  page stores multiple properties but block always uses default. Not in the
-  room management work map; still open.
-- **VPS deploy after every local session** — operational pattern. Run the
-  deploy script after each code session.
-- **bookingcss regeneration** (carried) — if Session 28 generator output
-  changed, regenerate from the plugin admin page and re-paste into Beds24
-  "Custom CSS."
+- **TT5 color slug mismatch** — only relevant when a block theme is active;
+  admin settings path for TT5 until slug mapping is added.
+- **Per-block property selection** — deferred. Single-property-per-site model
+  covers the current use case. Revisit if a site needs multiple properties on
+  one install.
 
-**Next phase:** Room management and onboarding (Round 1 is an agent-team
-session — three parallel teammates). See `docs/v1-plan.md`
-§"Room management and onboarding" for the full work map and sequencing.
+**Next phase:** Room management and onboarding, Round 1 — agent team, three
+parallel teammates. See `docs/v1-plan.md` §"Room management and onboarding"
+for the full work map and sequencing.
 
 ---
 

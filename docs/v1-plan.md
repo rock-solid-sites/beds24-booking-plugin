@@ -178,9 +178,10 @@ verified Session 13".
 - **Cart persistence scope.** Browser session only (decided); but whether
   to persist across page reloads within the session is open. See
   `docs/architecture.md` §"Cart data model".
-- **Block attribute for per-block property selection.** Settings page stores
-  multiple properties; the block always renders the default. Per-block override
-  attribute not yet implemented.
+- **Block attribute for per-block property selection.** Deferred. The current
+  single-property-per-site model covers the use case; per-block override is not
+  needed until a site hosts multiple properties simultaneously. Revisit if that
+  requirement surfaces.
 
 ---
 
