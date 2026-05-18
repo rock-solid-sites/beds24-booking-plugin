@@ -195,6 +195,14 @@ When a session moves, renames, or removes referenced files, end with
 surviving reference as either an in-scope fix or an explicit decision to leave
 it; don't let it slide silently. *(Established: 2026-05-11)*
 
+### customhead character limit — use bookingcss for CSS payloads
+Beds24's "Insert in HTML \<HEAD\> bottom" field has an undocumented
+~2,000-character server-side limit. CSS payloads from the plugin's iframe
+CSS generator (typically 5,000–7,000 characters) exceed this limit silently —
+the save appears to succeed but content is truncated on reload. Use the
+"Custom CSS" field instead for the generated CSS payload; it accepts at least
+6,283 characters without error. *(Established: 2026-05-18)*
+
 ### Acknowledge and decide on session scope drift, don't slide
 When actual work diverges materially from named scope, pause and explicitly
 decide to rename or defer. Don't let scope drift silently — implicit acceptance
@@ -1635,3 +1643,54 @@ because the rules are harmless misses, but the intent is entirely unmet.
 **Resolution path:** Rewrite `$extended` in a code session using the verified
 class inventory from Session 23: `.booktexterror`, `.b24-guestdetails`,
 `.b24-bookingdetails`. Remove all Bootstrap 3 pattern guesses.
+
+---
+
+### 2026-05-18 — customhead has a ~2,000-character server-side limit
+
+**What happened:** Session 25c pasted the plugin's generated iframe CSS payload
+(6,283 characters) into Beds24's "Insert in HTML \<HEAD\> bottom" field. The
+save appeared to succeed — no error message, textarea showed the content — but
+on reload the field was silently truncated to approximately 2,000 characters.
+Switching to the "Custom CSS" field accepted the full payload without issue.
+
+**Root causes:**
+1. The "Insert in HTML \<HEAD\> bottom" field has an undocumented server-side
+   character limit of approximately 2,000 characters. There is no client-side
+   maxlength attribute, no error response, and no truncation indicator.
+2. The plugin's generated CSS payload (including all token roles and
+   booking-form selectors) runs 5,000–7,000 characters — well above this
+   limit. The mismatch was not discovered until attempting the first real paste
+   to the live property.
+
+**Rule established:** Use "Custom CSS" (`bookingcss`) for the generated CSS
+payload, not "Insert in HTML \<HEAD\> bottom" (`customhead`). Added to Active
+Rules. Reinforces the existing rule "Verify saves before building on them"
+(established 2026-04-20) — the detection pattern applies here; this entry adds
+the field-specific constraint.
+
+**Concrete cost:** Predecessor content that had been in `customhead` needed to
+be cleared and the correct field identified before the first real deployment.
+One extra diagnostic round.
+
+**Resolution:** Cleared `customhead` and `customheadtop` of predecessor
+content. Pasted generated CSS into "Custom CSS" field. All tokens verified via
+computed style on live booking page.
+
+---
+
+### 2026-05-18 — Agent team pattern: parallel subagents on non-overlapping files
+
+**What happened:** Session 28 ran two parallel subagents (28a "cards" and 28b
+"settings") working simultaneously on cleanly partitioned file scope: 28a
+modified room card templates, on-site CSS, and styling-contract.md; 28b
+modified PHP config files, added the settings page, and ran the VPS migration.
+No merge conflicts. Both subagents completed cleanly and the combined result
+landed in a single session.
+
+**Pattern noted (not a rule):** Parallel subagents work when file scope is
+defined and non-overlapping before launch. The coordination cost is in defining
+the boundaries; the payoff is two pieces of work completing in the time of one.
+This does not work when shared files — a central config, a shared PHP class, a
+document both agents would update — need changes from both agents. Partitioning
+must be explicit and checked before dispatch.
