@@ -130,10 +130,10 @@ when tokens change. This is the most common kind of post-rollout
 customization and the friction will produce visual mismatches between
 the on-site rendering and the iframe.
 
-This is V1.x territory, not unbounded future work. The mitigation
-mechanism is sketched in Known unknown 6 below. V1 ships without the
-mitigation; the property setup documentation surfaces the dependency
-manually until the tooling lands.
+This is post-rollout maintenance territory, not unbounded future work. The
+mitigation mechanism is sketched in Known unknown 6 below. The current
+workflow ships without the mitigation; the property setup documentation
+surfaces the dependency manually until the tooling lands.
 
 ---
 
@@ -148,9 +148,9 @@ The plugin's admin settings UI lets operators configure these same
 roles when theme.json doesn't define them. The two sources are
 layered, not overlapping: theme.json is read first, and admin
 settings supply values only for roles theme.json hasn't defined. A
-role defined in theme.json is not overridable through admin
-settings in V1. See Known unknown 2 for the reasoning and the
-condition under which an override mechanism would be added.
+role defined in theme.json is not currently overridable through admin
+settings. See Known unknown 2 for the reasoning and the condition under
+which an override mechanism would be added.
 
 ### Color tokens
 
@@ -340,8 +340,8 @@ Its classes follow the BEM `beds24-search-form` block namespace.
 | `beds24-search-form__fields` | `<div>` | Flex container holding the two date field groups. Renders side-by-side on desktop (≥768px), stacked on mobile. | — | — |
 | `beds24-search-form__field-group` | `<div>` | Wrapper for one label + input pair. Two instances: check-in and check-out. | — | — |
 | `beds24-search-form__label` | `<label>` | Field label ("Check-in", "Check-out"). Associates with its input via `for` attribute. | — | — |
-| `beds24-search-form__check-in` | `<input type="date">` | Check-in date input. Native browser date picker. `id="beds24-check-in"` in V1 (static; single-instance assumption). | — | — |
-| `beds24-search-form__check-out` | `<input type="date">` | Check-out date input. Native browser date picker. `id="beds24-check-out"` in V1. | — | — |
+| `beds24-search-form__check-in` | `<input type="date">` | Check-in date input. Native browser date picker. `id="beds24-check-in"` (static; single-instance assumption). | — | — |
+| `beds24-search-form__check-out` | `<input type="date">` | Check-out date input. Native browser date picker. `id="beds24-check-out"`. | — | — |
 | `beds24-search-form__error` | `<div>` | Validation error message region. Hidden via the HTML `hidden` attribute when no error is present. JS removes `hidden` to reveal, sets it to re-hide. Carries `role="alert"` and `aria-live="assertive"` for accessible error announcement. | Hidden by default; revealed by JS on validation failure. No CSS class variant — the `hidden` attribute is the toggle. | — |
 | `beds24-search-form__submit` | `<button type="submit">` | Search Rooms submit button. Full-width. Primary color background. | `:disabled` state styled (unavailable color, `not-allowed` cursor) for future use when the button is disabled during API loading. | — |
 
@@ -400,7 +400,7 @@ are public and stable.
 Amenity chips render from the room's `beds24_amenity` taxonomy terms. Tags
 are user-defined content — Beds24 featureCodes are **not** included here
 (featureCodes are a future addition resolved at render time; taxonomy chips
-are the only implemented chip source in V1).
+are the only currently implemented chip source).
 
 The chip container is omitted entirely when a room has no assigned terms.
 No empty container, no error.
@@ -485,7 +485,7 @@ For dorm rooms, remove clears the entire bed count (not minus-one). The dorm car
 
 At ≥768px viewport width, `.beds24-cart` is positioned `fixed; bottom: 0; left: 0; right: 0` — a full-width bar anchored to the viewport bottom. At < 768px, the cart remains inline (mobile bottom-bar-with-drawer is a later session).
 
-**No BEM modifier class.** The sticky layout is the only desktop cart layout in V1. A media query on the base `.beds24-cart` class distinguishes desktop from mobile naturally. When the mobile drawer session ships it will use its own modifier or block variant.
+**No BEM modifier class.** The sticky layout is the only desktop cart layout. A media query on the base `.beds24-cart` class distinguishes desktop from mobile naturally. The mobile drawer (Session 17) uses its own `beds24-cart__mobile-bar` and `beds24-cart__drawer` wrappers — both `display: contents` at desktop to preserve the flex layout without structural changes.
 
 **Shadow:** The bar uses `--beds24-shadow-floating` (`0 -2px 8px rgba(0,0,0,0.1)`) — an upward-directed shadow to visually separate the bar from page content above it. This token is now defined in the token defaults on `.beds24-booking-flow`.
 
@@ -741,16 +741,15 @@ changes proactively.
 include an end-to-end test of the iframe rendering. If Beds24 updates
 the iframe DOM between rollouts, the iframe CSS may need updates.
 
-### 4. Display token usage in V1
+### 4. Display token usage
 
-The `font-family-display` token is documented but its actual use in
-V1 is limited (currently planned only for "from" labels and prominent
-prices). If V1 doesn't use a display font distinctly from the heading
-font, the token may be dropped from V1 and reintroduced when needed.
+The `font-family-display` token is documented but its actual use is
+limited — planned only for "from" labels and prominent prices. If a
+display font is not used distinctly from the heading font, the token
+may be dropped and reintroduced when needed.
 
-**Verify at implementation:** Session 7+ decides whether to use the
-display token. If not used, mark as "reserved for future use" rather
-than removing — the doc references will accumulate slowly.
+**Status:** Not yet actively used as a distinct face. Token remains
+reserved; a theme can populate it whenever needed.
 
 ### 5. Mobile cart styling tokens
 
@@ -764,7 +763,7 @@ theme.json and may need to be admin-settings-only.
 8+ likely), determine whether its layout tokens need to be exposed in
 this contract or remain internal.
 
-### 6. Iframe CSS staleness mitigation (V1.x scope)
+### 6. Iframe CSS staleness mitigation (deferred)
 
 Decision 5 above describes a manual copy-paste workflow for the
 iframe CSS. This works for initial property setup but produces a
@@ -773,8 +772,8 @@ post-rollout (the most common kind of post-rollout customization),
 the on-site rendering updates immediately while the iframe CSS goes
 stale until the operator manually regenerates and re-pastes.
 
-V1 ships with the manual workflow only. V1.x adds a mitigation
-mechanism. The design conversation has thought through the UX shape
+The current workflow is manual only. A mitigation mechanism is
+deferred. The design conversation has thought through the UX shape
 in advance so the plugin project doesn't need to design it from
 scratch:
 
@@ -784,8 +783,8 @@ tokens last changed, and when the operator last confirmed pasting
 the iframe CSS. When the first is more recent than the second,
 plugin admin displays a prominent banner on relevant pages with the
 regenerated CSS and a copy button. The operator copies, pastes into
-Beds24's "Insert in HTML \<HEAD\> bottom" field, and confirms the
-paste in plugin admin to dismiss the banner.
+Beds24's "Custom CSS" field, and confirms the paste in plugin admin
+to dismiss the banner.
 
 **Approaches considered and rejected:**
 
@@ -801,13 +800,12 @@ paste in plugin admin to dismiss the banner.
   the architecture's transaction-boundary principle (the plugin
   doesn't write to Beds24 admin).
 
-**Verify at implementation:** when V1.x lands the mitigation
-(Session 9+ likely), implement the automatic-detection-with-prompt
-approach. The exact banner placement, dismiss/confirm UX, and
-timestamp storage are plugin-project decisions; the design
-conversation has only specified the shape.
+**Verify at implementation:** when the mitigation lands, implement
+the automatic-detection-with-prompt approach. The exact banner
+placement, dismiss/confirm UX, and timestamp storage are plugin-project
+decisions; the design conversation has only specified the shape.
 
-**Property setup documentation in V1:** until the mitigation lands,
+**Property setup documentation:** until the mitigation lands,
 `skills/beds24-property-rollout/references/property-setup.md` must surface the dependency
 explicitly. Specifically: a section noting that any change to design
 tokens (theme.json updates, plugin admin settings changes) requires
