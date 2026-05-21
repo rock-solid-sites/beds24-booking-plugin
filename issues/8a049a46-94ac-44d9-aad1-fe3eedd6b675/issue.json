@@ -1,0 +1,12 @@
+{
+  "uuid": "8a049a46-94ac-44d9-aad1-fe3eedd6b675",
+  "display_id": 7,
+  "title": "Fix event delegation consistency — use closestEl() for all delegated click targets",
+  "description": "Confirm Booking and Back to Rooms buttons check e.target directly instead of using closestEl(). If a user clicks a child element inside the button, e.target is the child, not the button, and the handler misses the click. Use closestEl() consistently for all delegated targets.",
+  "status": "open",
+  "priority": "medium",
+  "parent_uuid": "bd281137-abaa-4388-9b6b-42366e8b2459",
+  "created_by": "anon-61cfe212",
+  "created_at": "2026-05-21T21:03:15.940806461Z",
+  "updated_at": "2026-05-21T21:03:15.940806461Z"
+}
