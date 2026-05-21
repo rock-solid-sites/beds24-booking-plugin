@@ -8,8 +8,9 @@
   "parent_uuid": "bd281137-abaa-4388-9b6b-42366e8b2459",
   "created_by": "anon-61cfe212",
   "created_at": "2026-05-21T21:03:41.296121719Z",
-  "updated_at": "2026-05-21T21:03:43.176194458Z",
+  "updated_at": "2026-05-21T21:07:10.324547399Z",
   "labels": [
     "hardening"
-  ]
+  ],
+  "milestone_uuid": "6ebb4a74-e790-4228-93da-44a156d1b42b"
 }

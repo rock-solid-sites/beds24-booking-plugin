@@ -8,8 +8,9 @@
   "parent_uuid": "bd281137-abaa-4388-9b6b-42366e8b2459",
   "created_by": "anon-61cfe212",
   "created_at": "2026-05-21T21:03:05.612998987Z",
-  "updated_at": "2026-05-21T21:03:07.706297907Z",
+  "updated_at": "2026-05-21T21:07:10.322893916Z",
   "labels": [
     "bug"
-  ]
+  ],
+  "milestone_uuid": "6ebb4a74-e790-4228-93da-44a156d1b42b"
 }
