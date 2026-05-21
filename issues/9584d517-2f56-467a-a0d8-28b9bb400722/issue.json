@@ -1,0 +1,12 @@
+{
+  "uuid": "9584d517-2f56-467a-a0d8-28b9bb400722",
+  "display_id": 23,
+  "title": "Document adversarial review repeatable process",
+  "description": "Document the fresh-context review process: how to frame the prompt (file/module scope, context and focus areas), what to include, how to triage findings (real vs invented issues), how to track fixes. Include security-specific prompt variant. Outcome: a reusable process document or knowledge page.",
+  "status": "open",
+  "priority": "medium",
+  "parent_uuid": "be77b471-a08f-44dd-9711-eb5b8a90b1ca",
+  "created_by": "anon-61cfe212",
+  "created_at": "2026-05-21T21:05:37.310421432Z",
+  "updated_at": "2026-05-21T21:05:37.310421432Z"
+}
