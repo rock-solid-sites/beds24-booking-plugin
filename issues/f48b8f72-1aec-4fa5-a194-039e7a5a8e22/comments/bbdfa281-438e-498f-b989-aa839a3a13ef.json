@@ -1,0 +1,8 @@
+{
+  "uuid": "bbdfa281-438e-498f-b989-aa839a3a13ef",
+  "issue_uuid": "f48b8f72-1aec-4fa5-a194-039e7a5a8e22",
+  "author": "anon-61cfe212",
+  "content": "Config changes applied: tracking_mode=strict, comment_discipline=required, signing_enforcement=disabled. Removed stale tracking_mode=relaxed from agent_overrides. Added no-stubs lint command to agent_overrides.agent_lint_commands. Updated project.md to remove relaxed reference and add language rules and no-stubs sections.",
+  "created_at": "2026-05-21T21:09:36.804185241Z",
+  "kind": "plan"
+}
