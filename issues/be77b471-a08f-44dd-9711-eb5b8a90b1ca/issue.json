@@ -7,8 +7,9 @@
   "priority": "medium",
   "created_by": "anon-61cfe212",
   "created_at": "2026-05-21T21:02:34.185721409Z",
-  "updated_at": "2026-05-21T21:02:35.991529855Z",
+  "updated_at": "2026-05-21T21:07:16.223859690Z",
   "labels": [
     "process"
-  ]
+  ],
+  "milestone_uuid": "8bbd818a-c65b-47e0-97bb-896fe08e2862"
 }
