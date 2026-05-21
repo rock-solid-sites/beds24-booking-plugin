@@ -8,8 +8,11 @@
   "parent_uuid": "4ed0f48e-f569-448b-b40b-c1139b47ce47",
   "created_by": "anon-61cfe212",
   "created_at": "2026-05-21T21:04:08.349586880Z",
-  "updated_at": "2026-05-21T21:04:10.194100863Z",
+  "updated_at": "2026-05-21T21:06:51.129018220Z",
   "labels": [
     "test"
+  ],
+  "blockers": [
+    "a8f09af9-7003-480b-99ab-69a06c2254a7"
   ]
 }
