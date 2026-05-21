@@ -1,0 +1,12 @@
+{
+  "uuid": "915de363-a3c9-448e-aa5a-c7ecd42729c6",
+  "display_id": 22,
+  "title": "Review input validation paths — search form dates, admin settings, room edit inputs",
+  "description": "Review validation of: search form date inputs (check-in, check-out), admin settings fields (property ID, token fields), room edit screen inputs (room type override select). Confirm server-side validation exists for admin AJAX submissions. Part of security review session.",
+  "status": "open",
+  "priority": "medium",
+  "parent_uuid": "9dd0d9ae-5158-4c63-9cef-0996d6c31861",
+  "created_by": "anon-61cfe212",
+  "created_at": "2026-05-21T21:05:26.182069038Z",
+  "updated_at": "2026-05-21T21:05:26.182069038Z"
+}
