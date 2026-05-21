@@ -1,0 +1,12 @@
+{
+  "uuid": "e675b06c-4c33-438f-8164-b08b5e19a20c",
+  "display_id": 10,
+  "title": "Add encodeURIComponent on room IDs in buildBookingUrl",
+  "description": "Defensive hygiene. Room IDs come from the Beds24 API but should be encoded regardless before inclusion in URL. Low priority since API IDs are numeric, but correct regardless.",
+  "status": "open",
+  "priority": "low",
+  "parent_uuid": "bd281137-abaa-4388-9b6b-42366e8b2459",
+  "created_by": "anon-61cfe212",
+  "created_at": "2026-05-21T21:03:41.296121719Z",
+  "updated_at": "2026-05-21T21:03:41.296121719Z"
+}
