@@ -1,0 +1,11 @@
+{
+  "uuid": "4ed0f48e-f569-448b-b40b-c1139b47ce47",
+  "display_id": 3,
+  "title": "Epic: Automated test suite",
+  "description": "Standing epic. Test infrastructure plus sub-issues by area: PHP API client, room sync logic, settings migration, JS cart state, JS URL construction, JS event delegation routing.",
+  "status": "open",
+  "priority": "high",
+  "created_by": "anon-61cfe212",
+  "created_at": "2026-05-21T21:02:19.578241431Z",
+  "updated_at": "2026-05-21T21:02:19.578241431Z"
+}
