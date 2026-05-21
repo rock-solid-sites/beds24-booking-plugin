@@ -1,0 +1,11 @@
+{
+  "uuid": "9dd0d9ae-5158-4c63-9cef-0996d6c31861",
+  "display_id": 4,
+  "title": "Epic: Security review",
+  "description": "Single focused session with security lens. AJAX handler audit, API token handling, URL construction, input validation paths.",
+  "status": "open",
+  "priority": "high",
+  "created_by": "anon-61cfe212",
+  "created_at": "2026-05-21T21:02:26.623841988Z",
+  "updated_at": "2026-05-21T21:02:26.623841988Z"
+}
