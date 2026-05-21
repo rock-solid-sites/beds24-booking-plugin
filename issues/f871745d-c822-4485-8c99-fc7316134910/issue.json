@@ -1,0 +1,12 @@
+{
+  "uuid": "f871745d-c822-4485-8c99-fc7316134910",
+  "display_id": 24,
+  "title": "Adopt Crosslink session workflow for Code sessions",
+  "description": "Adopt crosslink session start/end --notes instead of producing markdown handoff files on the Code side. Use crosslink session action during long sessions as breadcrumbs. Log retrospective interventions via crosslink intervene. First session: run both systems in parallel to verify. After one successful parallel session, Code-side markdown handoffs move fully to Crosslink.",
+  "status": "open",
+  "priority": "high",
+  "parent_uuid": "be77b471-a08f-44dd-9711-eb5b8a90b1ca",
+  "created_by": "anon-61cfe212",
+  "created_at": "2026-05-21T21:05:46.649581154Z",
+  "updated_at": "2026-05-21T21:05:46.649581154Z"
+}
