@@ -7,5 +7,8 @@
   "priority": "high",
   "created_by": "anon-61cfe212",
   "created_at": "2026-05-21T21:02:26.623841988Z",
-  "updated_at": "2026-05-21T21:02:26.623841988Z"
+  "updated_at": "2026-05-21T21:02:28.585920490Z",
+  "labels": [
+    "security"
+  ]
 }
