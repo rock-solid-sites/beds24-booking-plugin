@@ -1,0 +1,12 @@
+{
+  "uuid": "c6059382-db73-4172-aa9a-64beb95afae2",
+  "display_id": 14,
+  "title": "Write PHP tests — room sync create/update/remove decisions",
+  "description": "Test the room sync engine's diffing logic: API response creates new posts, updates existing (name change detection), removes posts for rooms no longer in API response. Edge cases: empty response, name changes, removed rooms, property ID mismatch. Blocked by test infrastructure (#12).",
+  "status": "open",
+  "priority": "high",
+  "parent_uuid": "4ed0f48e-f569-448b-b40b-c1139b47ce47",
+  "created_by": "anon-61cfe212",
+  "created_at": "2026-05-21T21:04:17.010425424Z",
+  "updated_at": "2026-05-21T21:04:17.010425424Z"
+}
