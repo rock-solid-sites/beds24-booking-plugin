@@ -1,0 +1,8 @@
+{
+  "uuid": "a6398139-8976-4238-b68d-27512047db42",
+  "issue_uuid": "8a049a46-94ac-44d9-aad1-fe3eedd6b675",
+  "author": "anon-61cfe212",
+  "content": "Fix implemented. Both Back to Rooms and Confirm Booking now use closestEl() instead of e.target.classList.contains(). Backdrop check left as-is — it targets a full-screen overlay with no interactive children.",
+  "created_at": "2026-05-22T00:29:05.914850757Z",
+  "kind": "resolution"
+}
