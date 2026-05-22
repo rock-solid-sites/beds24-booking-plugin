@@ -3,12 +3,13 @@
   "display_id": 25,
   "title": "Evaluate MCP Expose Abilities for property setup workflow",
   "description": "Install three-plugin stack on DDEV Chillzone. Run the full property setup sequence using MCP tools. Compare against WP-CLI workflow. Evaluate: setup overhead vs workflow improvement, security surface area, maintenance burden per property site. Decision criteria determine whether to adopt for VPS workflow.",
-  "status": "open",
+  "status": "closed",
   "priority": "medium",
   "parent_uuid": "be77b471-a08f-44dd-9711-eb5b8a90b1ca",
   "created_by": "anon-61cfe212",
   "created_at": "2026-05-21T21:05:56.052515997Z",
-  "updated_at": "2026-05-21T21:07:16.228559539Z",
+  "updated_at": "2026-05-22T00:27:43.045981204Z",
+  "closed_at": "2026-05-22T00:27:43.045981204Z",
   "labels": [
     "tooling"
   ],
