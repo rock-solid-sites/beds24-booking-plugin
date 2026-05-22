@@ -1,0 +1,8 @@
+{
+  "uuid": "95da80f2-07c6-4e80-9f46-e44bdc57e5ec",
+  "issue_uuid": "e0b0f447-4cb4-43ff-bae7-5d070c48a4e0",
+  "author": "anon-61cfe212",
+  "content": "Fix implemented. renderCart now captures document.activeElement before DOM rebuild. After rebuild: if cart still has items, focus goes to the first item's remove button; if cart is empty, focus goes to the search form's check-in input.",
+  "created_at": "2026-05-22T00:30:20.718699967Z",
+  "kind": "resolution"
+}
