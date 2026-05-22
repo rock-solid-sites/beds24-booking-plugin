@@ -1,0 +1,8 @@
+{
+  "uuid": "c3fc1da8-cdfa-4ded-8616-daa9df84cde1",
+  "issue_uuid": "e675b06c-4c33-438f-8164-b08b5e19a20c",
+  "author": "anon-61cfe212",
+  "content": "Starting work: wrap room ID values in encodeURIComponent() in buildBookingUrl.",
+  "created_at": "2026-05-22T00:31:30.713733839Z",
+  "kind": "note"
+}
