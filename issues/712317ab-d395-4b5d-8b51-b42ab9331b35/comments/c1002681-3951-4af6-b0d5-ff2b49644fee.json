@@ -1,0 +1,8 @@
+{
+  "uuid": "c1002681-3951-4af6-b0d5-ff2b49644fee",
+  "issue_uuid": "712317ab-d395-4b5d-8b51-b42ab9331b35",
+  "author": "anon-61cfe212",
+  "content": "Fix implemented. AbortController + 15s timeout added to searchOffers. isSearching guard in onSubmit prevents double-submit. AbortError in catch is swallowed (timeout handler already called handleSearchError). isSearching cleared in all paths: success, error, timeout.",
+  "created_at": "2026-05-22T00:31:22.740453691Z",
+  "kind": "resolution"
+}
