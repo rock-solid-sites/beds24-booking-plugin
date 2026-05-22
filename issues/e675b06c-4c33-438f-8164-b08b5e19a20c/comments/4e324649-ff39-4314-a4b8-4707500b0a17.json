@@ -1,0 +1,8 @@
+{
+  "uuid": "4e324649-ff39-4314-a4b8-4707500b0a17",
+  "issue_uuid": "e675b06c-4c33-438f-8164-b08b5e19a20c",
+  "author": "anon-61cfe212",
+  "content": "Fix implemented. Room IDs now wrapped in encodeURIComponent() in buildBookingUrl. Defensive hygiene — API-sourced IDs are numeric in practice but encoding costs nothing.",
+  "created_at": "2026-05-22T00:31:42.934015273Z",
+  "kind": "resolution"
+}
