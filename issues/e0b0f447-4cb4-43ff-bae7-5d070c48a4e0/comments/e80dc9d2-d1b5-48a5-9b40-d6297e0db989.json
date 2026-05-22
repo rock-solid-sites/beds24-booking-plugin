@@ -1,0 +1,8 @@
+{
+  "uuid": "e80dc9d2-d1b5-48a5-9b40-d6297e0db989",
+  "issue_uuid": "e0b0f447-4cb4-43ff-bae7-5d070c48a4e0",
+  "author": "anon-61cfe212",
+  "content": "Starting work: capture document.activeElement before DOM rebuild; restore focus to first remaining remove button or to search form check-in if cart becomes empty.",
+  "created_at": "2026-05-22T00:29:14.209972761Z",
+  "kind": "note"
+}
