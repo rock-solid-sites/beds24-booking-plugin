@@ -1,0 +1,8 @@
+{
+  "uuid": "6f04dc59-9bf9-49df-a14b-e7cdf430b4cb",
+  "issue_uuid": "d40e2e66-372e-48ca-98e5-1170fc4018a0",
+  "author": "anon-61cfe212",
+  "content": "Fix implemented. handleSearchResponse now accepts checkIn/checkOut params; DOM is never re-read after fetch. searchOffers closes over the submission-time values and passes them through.",
+  "created_at": "2026-05-22T00:28:36.067389263Z",
+  "kind": "resolution"
+}
