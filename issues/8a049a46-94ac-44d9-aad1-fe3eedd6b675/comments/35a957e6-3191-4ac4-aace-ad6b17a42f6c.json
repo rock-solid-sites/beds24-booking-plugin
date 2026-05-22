@@ -1,0 +1,8 @@
+{
+  "uuid": "35a957e6-3191-4ac4-aace-ad6b17a42f6c",
+  "issue_uuid": "8a049a46-94ac-44d9-aad1-fe3eedd6b675",
+  "author": "anon-61cfe212",
+  "content": "Starting work: replace e.target.classList.contains() with closestEl() for Back to Rooms and Confirm Booking buttons in onCartClick.",
+  "created_at": "2026-05-22T00:28:44.773159524Z",
+  "kind": "note"
+}
