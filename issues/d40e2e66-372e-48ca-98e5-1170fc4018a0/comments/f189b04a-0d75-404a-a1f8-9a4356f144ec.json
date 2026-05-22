@@ -1,0 +1,8 @@
+{
+  "uuid": "f189b04a-0d75-404a-a1f8-9a4356f144ec",
+  "issue_uuid": "d40e2e66-372e-48ca-98e5-1170fc4018a0",
+  "author": "anon-61cfe212",
+  "content": "Starting work: capture dates at submit time, pass through searchOffers into handleSearchResponse.",
+  "created_at": "2026-05-22T00:27:50.383766060Z",
+  "kind": "note"
+}
